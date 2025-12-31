@@ -9,7 +9,7 @@ class Updater
     private $versionFile;
     private $backupDir;
     private $tempDir;
-    private $excludeFiles = ['config.php', '.env', 'uploads', 'backups', 'tmp', 'version.json'];
+    private $excludeFiles = ['config.php', 'config', '.env', 'uploads', 'backups', 'tmp', 'version.json', '.git', '.gitignore'];
 
     private $githubUser = 'Sahilul';
     private $githubRepo = 'absen';
