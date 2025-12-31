@@ -211,6 +211,17 @@ class PSB_model
     }
 
     /**
+     * Auto deactivate expired periods
+     */
+    public function deactivateExpiredPeriods()
+    {
+        // Update status menjadi selesai jika tanggal tutup sudah lewat
+        $this->db->query("UPDATE psb_periode SET status = 'selesai' 
+                          WHERE status = 'aktif' AND tanggal_tutup < CURDATE()");
+        return $this->db->execute();
+    }
+
+    /**
      * Get periode aktif (optional: per lembaga)
      */
     public function getPeriodeAktif($id_lembaga = null)

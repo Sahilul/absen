@@ -413,6 +413,17 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
     <!-- Footer dengan Logout -->
     <div
         class="p-4 border-t border-white/20 mt-auto bg-white/90 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none">
+        <!-- Version Info -->
+        <?php
+        $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
+        $versionData = file_exists($versionFile) ? json_decode(file_get_contents($versionFile), true) : [];
+        $appVersion = $versionData['version'] ?? '1.0.0';
+        ?>
+        <div class="text-center text-xs text-secondary-400 mb-3">
+            <span class="font-medium"><?= $namaAplikasi; ?></span>
+            <span class="text-secondary-300">•</span>
+            <span>v<?= $appVersion; ?></span>
+        </div>
         <!-- Logout -->
         <a href="<?= BASEURL; ?>/auth/logout"
             class="group flex items-center p-3 text-sm font-medium text-danger-600 hover:bg-danger-50 rounded-xl transition-all duration-200 w-full">

@@ -6,8 +6,8 @@
             <h2 class="text-2xl font-bold text-gray-800">Tahun Pelajaran</h2>
             <p class="text-gray-600 mt-1">Kelola tahun pelajaran dan semester</p>
         </div>
-        <a href="<?= BASEURL; ?>/admin/tambahTP" 
-           class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center transition-colors duration-200 shadow-sm">
+        <a href="<?= BASEURL; ?>/admin/tambahTP"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center transition-colors duration-200 shadow-sm">
             <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
             Tambah Tahun Pelajaran
         </a>
@@ -33,7 +33,8 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-600">Semester Aktif</p>
-                    <p class="text-xl font-semibold text-gray-900"><?= $_SESSION['nama_semester_aktif'] ?? 'Belum ada'; ?></p>
+                    <p class="text-xl font-semibold text-gray-900">
+                        <?= $_SESSION['nama_semester_aktif'] ?? 'Belum ada'; ?></p>
                 </div>
             </div>
         </div>
@@ -66,130 +67,149 @@
 
         <!-- Table Content -->
         <?php if (!empty($data['tp'])): ?>
-        <div class="overflow-x-auto">
-            <table class="w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tahun Pelajaran
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Periode
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Semester
-                        </th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <?php foreach ($data['tp'] as $index => $tp): ?>
-                    <tr class="hover:bg-gray-50 transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                    <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i>
-                                </div>
-                                <div>
-                                    <div class="text-sm font-medium text-gray-900">
-                                        <?= htmlspecialchars($tp['nama_tp']); ?>
+            <div class="overflow-x-auto">
+                <table class="w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tahun Pelajaran
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Periode
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Semester
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Aksi
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <?php foreach ($data['tp'] as $index => $tp): ?>
+                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                            <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                <?= htmlspecialchars($tp['nama_tp']); ?>
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                <?= 'TP-' . str_pad($tp['id_tp'], 3, '0', STR_PAD_LEFT); ?>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-xs text-gray-500">
-                                        <?= 'TP-' . str_pad($tp['id_tp'], 3, '0', STR_PAD_LEFT); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        <div class="flex items-center">
+                                            <i data-lucide="calendar-days" class="w-4 h-4 text-gray-400 mr-2"></i>
+                                            <?= date('d M Y', strtotime($tp['tgl_mulai'])); ?>
+                                        </div>
+                                        <div class="flex items-center mt-1">
+                                            <i data-lucide="calendar-x" class="w-4 h-4 text-gray-400 mr-2"></i>
+                                            <?= date('d M Y', strtotime($tp['tgl_selesai'])); ?>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">
-                                <div class="flex items-center">
-                                    <i data-lucide="calendar-days" class="w-4 h-4 text-gray-400 mr-2"></i>
-                                    <?= date('d M Y', strtotime($tp['tgl_mulai'])); ?>
-                                </div>
-                                <div class="flex items-center mt-1">
-                                    <i data-lucide="calendar-x" class="w-4 h-4 text-gray-400 mr-2"></i>
-                                    <?= date('d M Y', strtotime($tp['tgl_selesai'])); ?>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <?php
-                            $today = date('Y-m-d');
-                            $start = $tp['tgl_mulai'];
-                            $end = $tp['tgl_selesai'];
-                            
-                            if ($today < $start) {
-                                $status = 'Belum Dimulai';
-                                $color = 'bg-gray-100 text-gray-800';
-                                $icon = 'clock';
-                            } elseif ($today > $end) {
-                                $status = 'Selesai';
-                                $color = 'bg-red-100 text-red-800';
-                                $icon = 'check-circle';
-                            } else {
-                                $status = 'Aktif';
-                                $color = 'bg-green-100 text-green-800';
-                                $icon = 'play-circle';
-                            }
-                            ?>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $color; ?>">
-                                <i data-lucide="<?= $icon; ?>" class="w-3 h-3 mr-1"></i>
-                                <?= $status; ?>
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex space-x-1">
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                    <i data-lucide="sun" class="w-3 h-3 mr-1"></i>
-                                    Ganjil
-                                </span>
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                                    <i data-lucide="moon" class="w-3 h-3 mr-1"></i>
-                                    Genap
-                                </span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <div class="flex items-center justify-center space-x-3">
-                                <a href="<?= BASEURL; ?>/admin/editTP/<?= $tp['id_tp']; ?>" 
-                                   class="text-blue-600 hover:text-blue-800 transition-colors duration-150"
-                                   title="Edit tahun pelajaran">
-                                    <i data-lucide="edit-2" class="w-4 h-4"></i>
-                                </a>
-                                <a href="<?= BASEURL; ?>/admin/hapusTP/<?= $tp['id_tp']; ?>" 
-                                   class="text-red-600 hover:text-red-800 transition-colors duration-150"
-                                   title="Hapus tahun pelajaran"
-                                   onclick="return confirm('Yakin hapus tahun pelajaran <?= htmlspecialchars($tp['nama_tp']); ?>?\n\nSemua data semester, kelas, dan penugasan terkait akan ikut terhapus!')">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-        <?php else: ?>
-        <!-- Empty State -->
-        <div class="text-center py-12">
-            <div class="max-w-sm mx-auto">
-                <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <i data-lucide="calendar-off" class="w-8 h-8 text-gray-400"></i>
-                </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Belum Ada Tahun Pelajaran</h3>
-                <p class="text-gray-500 mb-6">Mulai dengan menambahkan tahun pelajaran pertama untuk sistem absensi.</p>
-                <a href="<?= BASEURL; ?>/admin/tambahTP" 
-                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
-                    Tambah Tahun Pelajaran
-                </a>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <?php
+                                    $today = date('Y-m-d');
+                                    $start = $tp['tgl_mulai'];
+                                    $end = $tp['tgl_selesai'];
+
+                                    if ($today < $start) {
+                                        $status = 'Belum Dimulai';
+                                        $color = 'bg-gray-100 text-gray-800';
+                                        $icon = 'clock';
+                                    } elseif ($today > $end) {
+                                        $status = 'Selesai';
+                                        $color = 'bg-red-100 text-red-800';
+                                        $icon = 'check-circle';
+                                    } else {
+                                        $status = 'Aktif';
+                                        $color = 'bg-green-100 text-green-800';
+                                        $icon = 'play-circle';
+                                    }
+                                    ?>
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $color; ?>">
+                                        <i data-lucide="<?= $icon; ?>" class="w-3 h-3 mr-1"></i>
+                                        <?= $status; ?>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <?php
+                                    // Get semesters for this TP
+                                    $semestersForTp = array_filter($data['all_semester'] ?? [], function ($s) use ($tp) {
+                                        return $s['id_tp'] == $tp['id_tp'];
+                                    });
+                                    ?>
+                                    <div class="flex flex-col space-y-1">
+                                        <?php foreach ($semestersForTp as $smt): ?>
+                                            <?php
+                                            $isDefault = !empty($smt['is_default']) && $smt['is_default'] == 1;
+                                            $semLabel = $smt['semester'];
+                                            $iconName = $semLabel === 'Ganjil' ? 'sun' : 'moon';
+                                            $bgColor = $semLabel === 'Ganjil' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800';
+                                            $defaultBadge = $isDefault ? 'ring-2 ring-green-500 ring-offset-1' : '';
+                                            ?>
+                                            <a href="<?= BASEURL; ?>/admin/setDefaultSemester/<?= $smt['id_semester']; ?>"
+                                                class="inline-flex items-center px-2 py-1 rounded text-xs font-medium <?= $bgColor; ?> <?= $defaultBadge; ?> hover:opacity-80 transition-opacity cursor-pointer"
+                                                title="Klik untuk jadikan semester default login"
+                                                onclick="return confirm('Jadikan <?= $tp['nama_tp'] ?> - <?= $semLabel ?> sebagai semester default untuk login?')">
+                                                <i data-lucide="<?= $iconName; ?>" class="w-3 h-3 mr-1"></i>
+                                                <?= $semLabel; ?>
+                                                <?php if ($isDefault): ?>
+                                                    <i data-lucide="check-circle" class="w-3 h-3 ml-1 text-green-600"></i>
+                                                <?php endif; ?>
+                                            </a>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center space-x-3">
+                                        <a href="<?= BASEURL; ?>/admin/editTP/<?= $tp['id_tp']; ?>"
+                                            class="text-blue-600 hover:text-blue-800 transition-colors duration-150"
+                                            title="Edit tahun pelajaran">
+                                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                        </a>
+                                        <a href="<?= BASEURL; ?>/admin/hapusTP/<?= $tp['id_tp']; ?>"
+                                            class="text-red-600 hover:text-red-800 transition-colors duration-150"
+                                            title="Hapus tahun pelajaran"
+                                            onclick="return confirm('Yakin hapus tahun pelajaran <?= htmlspecialchars($tp['nama_tp']); ?>?\n\nSemua data semester, kelas, dan penugasan terkait akan ikut terhapus!')">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
-        </div>
+        <?php else: ?>
+            <!-- Empty State -->
+            <div class="text-center py-12">
+                <div class="max-w-sm mx-auto">
+                    <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="calendar-off" class="w-8 h-8 text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Belum Ada Tahun Pelajaran</h3>
+                    <p class="text-gray-500 mb-6">Mulai dengan menambahkan tahun pelajaran pertama untuk sistem absensi.</p>
+                    <a href="<?= BASEURL; ?>/admin/tambahTP"
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                        Tambah Tahun Pelajaran
+                    </a>
+                </div>
+            </div>
         <?php endif; ?>
     </div>
 
@@ -200,11 +220,11 @@
 </main>
 
 <script>
-// Auto refresh status jika ada perubahan tanggal
-document.addEventListener('DOMContentLoaded', function() {
-    // Inisialisasi Lucide icons
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-});
+    // Auto refresh status jika ada perubahan tanggal
+    document.addEventListener('DOMContentLoaded', function () {
+        // Inisialisasi Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
 </script>

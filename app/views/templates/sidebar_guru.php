@@ -216,14 +216,24 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'guru') {
   </nav>
 
   <!-- Quick Stats (tetap) -->
-  <div class="p-4 mx-4 mb-4 bg-gradient-to-r from-success-50 to-primary-50 rounded-xl border border-white/20">
-    <div class="text-center">
-      <div class="gradient-success text-white text-xl font-bold py-1 px-3 rounded-lg inline-flex items-center">
-        <i data-lucide="calendar-check" class="w-4 h-4 mr-2"></i>
-        <span id="today-date"><?= date('d'); ?></span>
+  <div class="mx-4 mb-4">
+    <?php
+    $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
+    $versionData = file_exists($versionFile) ? json_decode(file_get_contents($versionFile), true) : [];
+    $appVersion = $versionData['version'] ?? '1.0.0';
+    ?>
+    <div class="text-center text-xs text-secondary-400 mb-2">
+      <span class="font-medium"><?= $namaAplikasi; ?></span> • <span>v<?= $appVersion; ?></span>
+    </div>
+    <div class="p-4 bg-gradient-to-r from-success-50 to-primary-50 rounded-xl border border-white/20">
+      <div class="text-center">
+        <div class="gradient-success text-white text-xl font-bold py-1 px-3 rounded-lg inline-flex items-center">
+          <i data-lucide="calendar-check" class="w-4 h-4 mr-2"></i>
+          <span id="today-date"><?= date('d'); ?></span>
+        </div>
+        <p class="text-xs text-secondary-600 mt-2 font-medium"><?= date('M Y'); ?></p>
+        <p class="text-xs text-secondary-500">Hari ini</p>
       </div>
-      <p class="text-xs text-secondary-600 mt-2 font-medium"><?= date('M Y'); ?></p>
-      <p class="text-xs text-secondary-500">Hari ini</p>
     </div>
   </div>
 </aside>

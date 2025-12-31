@@ -153,8 +153,8 @@
         <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 -translate-y-2" class="md:hidden bg-white border-b border-slate-100 absolute w-full shadow-lg z-50"
-            x-cloak>
+            x-transition:leave-end="opacity-0 -translate-y-2"
+            class="md:hidden bg-white border-b border-slate-100 absolute w-full shadow-lg z-50" x-cloak>
             <div class="px-4 py-4 space-y-3">
                 <div class="space-y-2 overflow-y-auto max-h-[80vh]">
                     <?php if (!empty($data['menus'])): ?>
@@ -347,10 +347,16 @@
                 </div>
             </div>
 
+            <?php
+            $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
+            $versionData = file_exists($versionFile) ? json_decode(file_get_contents($versionFile), true) : [];
+            $appVersion = $versionData['version'] ?? '1.0.0';
+            $namaApp = htmlspecialchars($data['settings']['nama_aplikasi'] ?? 'Smart Absensi');
+            ?>
             <div class="border-t border-white/10 pt-8 text-center text-slate-500 text-sm">
                 &copy; <?= date('Y') ?> <?= htmlspecialchars($data['settings']['yayasan_name'] ?? 'Sekolah') ?>. All
                 rights reserved.
-                Powered by Smart Absensi.
+                Powered by <?= $namaApp; ?> v<?= $appVersion; ?>.
             </div>
         </div>
     </footer>

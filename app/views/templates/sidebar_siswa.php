@@ -183,6 +183,16 @@
 
     <!-- Footer dengan info session -->
     <div class="p-4 mx-4 mb-4">
+        <?php
+        $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
+        $versionData = file_exists($versionFile) ? json_decode(file_get_contents($versionFile), true) : [];
+        $appVersion = $versionData['version'] ?? '1.0.0';
+        $pengaturanApp = getPengaturanAplikasi();
+        $namaApp = htmlspecialchars($pengaturanApp['nama_aplikasi'] ?? 'Smart Absensi');
+        ?>
+        <div class="text-center text-xs text-secondary-400 mb-3">
+            <span class="font-medium"><?= $namaApp; ?></span> • <span>v<?= $appVersion; ?></span>
+        </div>
         <div
             class="bg-gradient-to-r from-warning-50 to-primary-50 rounded-xl border border-secondary-200 md:border-white/20 p-4">
             <div class="text-center">

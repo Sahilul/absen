@@ -39,6 +39,38 @@ class AdminController extends Controller
         header('Location: ' . BASEURL . '/admin/dashboard');
         exit;
     }
+
+    /**
+     * Set semester aktif via dropdown header
+     */
+    public function setSemester()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $id_semester = filter_input(INPUT_POST, 'id_semester', FILTER_VALIDATE_INT);
+
+            if ($id_semester) {
+                $tpModel = $this->model('TahunPelajaran_model');
+                $semester = $tpModel->getSemesterById($id_semester);
+
+                if ($semester) {
+                    $_SESSION['id_semester_aktif'] = (int) $semester['id_semester'];
+                    // Format: 2023/2024 - Ganjil
+                    $_SESSION['nama_semester_aktif'] = htmlspecialchars($semester['nama_tp']) . ' - ' . htmlspecialchars($semester['semester']);
+                    $_SESSION['id_tp_aktif'] = (int) $semester['id_tp'];
+
+                    Flasher::setFlash('Semester aktif berhasil diubah ke ' . $_SESSION['nama_semester_aktif'], 'success');
+                } else {
+                    Flasher::setFlash('Semester tidak ditemukan', 'error');
+                }
+            }
+        }
+
+        // Redirect back to previous page or dashboard
+        $referer = $_SERVER['HTTP_REFERER'] ?? BASEURL . '/admin/dashboard';
+        header('Location: ' . $referer);
+        exit;
+    }
+
     // =================================================================
     // DASHBOARD - ONLY ONE VERSION
     // =================================================================
@@ -1131,6 +1163,7 @@ class AdminController extends Controller
     {
         $this->data['judul'] = 'Manajemen Tahun Pelajaran';
         $this->data['tp'] = $this->model('TahunPelajaran_model')->getAllTahunPelajaran();
+        $this->data['all_semester'] = $this->model('TahunPelajaran_model')->getAllSemester();
         $this->view('templates/header', $this->data);
         $this->view('templates/sidebar_admin', $this->data);
         $this->view('admin/tahun_pelajaran', $this->data);
@@ -1178,6 +1211,27 @@ class AdminController extends Controller
             exit;
         }
     }
+
+    /**
+     * Set semester sebagai default untuk dropdown login
+     */
+    public function setDefaultSemester($id_semester)
+    {
+        $result = $this->model('TahunPelajaran_model')->setDefaultSemester($id_semester);
+
+        if ($result !== false) {
+            // Get semester info untuk flash message
+            $smt = $this->model('TahunPelajaran_model')->getSemesterById($id_semester);
+            $namaSmtFull = ($smt['nama_tp'] ?? 'TP') . ' - ' . ($smt['semester'] ?? 'Semester');
+            Flasher::setFlash('Semester default login berhasil di-set ke: ' . $namaSmtFull, 'success');
+        } else {
+            Flasher::setFlash('Gagal mengatur semester default.', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/tahunPelajaran');
+        exit;
+    }
+
     // =================================================================
     // CRUD KELAS - METHOD TAMBAH KELAS DIPERBAIKI
     // =================================================================
@@ -4440,7 +4494,7 @@ class AdminController extends Controller
         $waliKelasModel = $this->model('WaliKelas_model');
         $pembayaranModel = $this->model('Pembayaran_model');
 
-        $kelasList = $kelasModel->getAllKelas();
+        $kelasList = $kelasModel->getAllKelasWithDetails($id_tp_aktif);
 
         // Enrich dengan info wali kelas dan total tagihan
         foreach ($kelasList as &$kelas) {

@@ -246,6 +246,14 @@ function isMenuActive($judul, $keyword)
 
   <!-- User Info -->
   <div class="p-4 border-t border-white/20 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
+    <?php
+    $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
+    $versionData = file_exists($versionFile) ? json_decode(file_get_contents($versionFile), true) : [];
+    $appVersion = $versionData['version'] ?? '1.0.0';
+    ?>
+    <div class="text-center text-xs text-secondary-400 mb-3">
+      <span class="font-medium"><?= $namaAplikasi; ?></span> • <span>v<?= $appVersion; ?></span>
+    </div>
     <div class="flex items-center gap-3">
       <div class="gradient-primary p-3 rounded-xl">
         <i data-lucide="user-circle" class="w-6 h-6 text-white"></i>

@@ -409,8 +409,13 @@ $jenisLabels = $dokumenConfigModel->getAsArray();
     </div>
 
     <footer class="bg-white border-t py-4">
+        <?php 
+        $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
+        $versionData = file_exists($versionFile) ? json_decode(file_get_contents($versionFile), true) : [];
+        $appVersion = $versionData['version'] ?? '1.0.0';
+        ?>
         <div class="max-w-4xl mx-auto px-4 text-center text-gray-400 text-xs">
-            &copy; <?= date('Y'); ?> <?= $namaSekolah; ?>
+            &copy; <?= date('Y'); ?> <?= $namaSekolah; ?> v<?= $appVersion; ?>
         </div>
     </footer>
 

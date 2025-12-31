@@ -31,7 +31,17 @@ class Penugasan_model
                   JOIN mapel ON penugasan.id_mapel = mapel.id_mapel
                   JOIN kelas ON penugasan.id_kelas = kelas.id_kelas
                   WHERE penugasan.id_semester = :id_semester
-                  ORDER BY guru.nama_guru, kelas.nama_kelas";
+                  ORDER BY guru.nama_guru, 
+                  CASE kelas.jenjang 
+                      WHEN 'VII' THEN 7 
+                      WHEN 'VIII' THEN 8 
+                      WHEN 'IX' THEN 9 
+                      WHEN 'X' THEN 10 
+                      WHEN 'XI' THEN 11 
+                      WHEN 'XII' THEN 12 
+                      ELSE 99 
+                  END ASC, 
+                  kelas.nama_kelas ASC";
 
         $this->db->query($query);
         $this->db->bind('id_semester', $id_semester);

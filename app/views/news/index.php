@@ -327,10 +327,16 @@
                 </div>
             </div>
 
+            <?php
+            $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
+            $versionData = file_exists($versionFile) ? json_decode(file_get_contents($versionFile), true) : [];
+            $appVersion = $versionData['version'] ?? '1.0.0';
+            $namaApp = htmlspecialchars($data['settings']['nama_aplikasi'] ?? 'Smart Absensi');
+            ?>
             <div class="border-t border-white/10 pt-8 text-center text-slate-500 text-sm">
                 &copy; <?= date('Y') ?> <?= htmlspecialchars($data['settings']['yayasan_name'] ?? 'Sekolah') ?>. All
                 rights reserved.
-                Powered by Smart Absensi.
+                Powered by <?= $namaApp; ?> v<?= $appVersion; ?>.
             </div>
         </div>
     </footer>

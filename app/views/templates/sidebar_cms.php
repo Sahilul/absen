@@ -159,6 +159,14 @@ function isCmsActive($judul, $target)
 
     <!-- Footer Sidebar -->
     <div class="p-4 bg-white/50 backdrop-blur-sm border-t border-white/20">
+        <?php
+        $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
+        $versionData = file_exists($versionFile) ? json_decode(file_get_contents($versionFile), true) : [];
+        $appVersion = $versionData['version'] ?? '1.0.0';
+        ?>
+        <div class="text-center text-xs text-secondary-400 mb-3">
+            <span class="font-medium"><?= $namaAplikasi; ?></span> • <span>v<?= $appVersion; ?></span>
+        </div>
         <a href="<?= BASEURL; ?>/" target="_blank"
             class="flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-teal-500 to-green-600 text-white text-sm font-medium hover:shadow-lg transition-all">
             <i data-lucide="external-link" class="w-4 h-4"></i>

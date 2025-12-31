@@ -1,7 +1,8 @@
 <?php
 
 // File: app/models/TahunPelajaran_model.php
-class TahunPelajaran_model {
+class TahunPelajaran_model
+{
     private $db;
 
     public function __construct()
@@ -84,7 +85,7 @@ class TahunPelajaran_model {
         $this->db->bind('tgl_mulai', $data['tgl_mulai']);
         $this->db->bind('tgl_selesai', $data['tgl_selesai']);
         $this->db->execute();
-        
+
         // Ambil ID dari TP yang baru saja dimasukkan
         $id_tp_baru = $this->db->lastInsertId();
 
@@ -101,5 +102,49 @@ class TahunPelajaran_model {
         $this->db->execute();
 
         return $this->db->rowCount(); // Mengembalikan hasil dari query terakhir
+    }
+
+    /**
+     * Set semester sebagai default untuk login
+     * Reset semua is_default=0, lalu set yang dipilih jadi 1
+     */
+    public function setDefaultSemester($id_semester)
+    {
+        // Reset semua ke 0
+        $this->db->query('UPDATE semester SET is_default = 0');
+        $this->db->execute();
+
+        // Set yang dipilih jadi 1
+        $this->db->query('UPDATE semester SET is_default = 1 WHERE id_semester = :id_semester');
+        $this->db->bind('id_semester', $id_semester);
+        $this->db->execute();
+
+        return $this->db->rowCount();
+    }
+
+    /**
+     * Get semester yang di-set sebagai default
+     */
+    public function getDefaultSemester()
+    {
+        $this->db->query('SELECT semester.*, tp.nama_tp 
+                         FROM semester 
+                         JOIN tp ON semester.id_tp = tp.id_tp 
+                         WHERE semester.is_default = 1 
+                         LIMIT 1');
+        return $this->db->single();
+    }
+
+    /**
+     * Get semester by ID
+     */
+    public function getSemesterById($id_semester)
+    {
+        $this->db->query('SELECT semester.*, tp.nama_tp 
+                         FROM semester 
+                         JOIN tp ON semester.id_tp = tp.id_tp 
+                         WHERE semester.id_semester = :id_semester');
+        $this->db->bind('id_semester', $id_semester);
+        return $this->db->single();
     }
 }

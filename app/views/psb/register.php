@@ -156,8 +156,13 @@ $namaSekolah = getPengaturanAplikasi()['nama_aplikasi'] ?? 'Smart Absensi';
         </div>
 
         <!-- Footer -->
+        <?php
+        $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
+        $versionData = file_exists($versionFile) ? json_decode(file_get_contents($versionFile), true) : [];
+        $appVersion = $versionData['version'] ?? '1.0.0';
+        ?>
         <p class="text-center text-white/70 text-sm mt-6">
-            &copy; <?= date('Y'); ?> <?= $namaSekolah; ?>
+            &copy; <?= date('Y'); ?> <?= $namaSekolah; ?> v<?= $appVersion; ?>
         </p>
     </div>
 

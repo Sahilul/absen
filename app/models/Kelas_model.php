@@ -14,7 +14,18 @@ class Kelas_model
     // FUNGSI BARU: Mengambil kelas berdasarkan Tahun Pelajaran
     public function getKelasByTP($id_tp)
     {
-        $this->db->query('SELECT * FROM kelas WHERE id_tp = :id_tp ORDER BY jenjang ASC, nama_kelas ASC');
+        $this->db->query("SELECT * FROM kelas WHERE id_tp = :id_tp 
+                          ORDER BY 
+                            CASE jenjang 
+                                WHEN 'VII' THEN 7 
+                                WHEN 'VIII' THEN 8 
+                                WHEN 'IX' THEN 9 
+                                WHEN 'X' THEN 10 
+                                WHEN 'XI' THEN 11 
+                                WHEN 'XII' THEN 12 
+                                ELSE 99 
+                            END ASC, 
+                            nama_kelas ASC");
         $this->db->bind('id_tp', $id_tp);
         return $this->db->resultSet();
     }
@@ -64,7 +75,17 @@ class Kelas_model
                         GROUP BY p.id_kelas
                     ) guru_count ON k.id_kelas = guru_count.id_kelas
                     WHERE k.id_tp = :id_tp
-                    ORDER BY k.jenjang ASC, k.nama_kelas ASC";
+                    ORDER BY 
+                        CASE k.jenjang 
+                            WHEN 'VII' THEN 7 
+                            WHEN 'VIII' THEN 8 
+                            WHEN 'IX' THEN 9 
+                            WHEN 'X' THEN 10 
+                            WHEN 'XI' THEN 11 
+                            WHEN 'XII' THEN 12 
+                            ELSE 99 
+                        END ASC, 
+                        k.nama_kelas ASC";
 
             $this->db->query($sql);
             $this->db->bind('id_tp', $id_tp);
@@ -98,7 +119,17 @@ class Kelas_model
                         FROM penugasan p
                         GROUP BY p.id_kelas
                     ) guru_count ON k.id_kelas = guru_count.id_kelas
-                    ORDER BY tp.nama_tp DESC, k.jenjang ASC, k.nama_kelas ASC";
+                    ORDER BY tp.nama_tp DESC, 
+                        CASE k.jenjang 
+                            WHEN 'VII' THEN 7 
+                            WHEN 'VIII' THEN 8 
+                            WHEN 'IX' THEN 9 
+                            WHEN 'X' THEN 10 
+                            WHEN 'XI' THEN 11 
+                            WHEN 'XII' THEN 12 
+                            ELSE 99 
+                        END ASC, 
+                        k.nama_kelas ASC";
 
             $this->db->query($sql);
         }

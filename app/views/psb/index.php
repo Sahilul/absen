@@ -318,11 +318,20 @@
     <!-- Footer -->
     <footer class="bg-gray-800 text-gray-300 py-8">
         <div class="max-w-6xl mx-auto px-4 text-center">
+            <?php
+            $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
+            $versionData = file_exists($versionFile) ? json_decode(file_get_contents($versionFile), true) : [];
+            $appVersion = $versionData['version'] ?? '1.0.0';
+            
+            // Get dynamic app name
+            $appSettings = getPengaturanAplikasi();
+            $appName = $appSettings['nama_aplikasi'] ?? 'Smart Absensi';
+            ?>
             <div class="flex items-center justify-center gap-2 mb-3">
                 <i data-lucide="graduation-cap" class="w-5 h-5"></i>
-                <span class="font-semibold text-white">PSB Online</span>
+                <span class="font-semibold text-white"><?= htmlspecialchars($data['pengaturan']['judul_halaman'] ?? 'PSB Online'); ?></span>
             </div>
-            <p class="text-sm">&copy; <?= date('Y'); ?> - Penerimaan Siswa Baru</p>
+            <p class="text-sm">&copy; <?= date('Y'); ?> - Powered by <?= htmlspecialchars($appName); ?> v<?= $appVersion; ?></p>
         </div>
     </footer>
 

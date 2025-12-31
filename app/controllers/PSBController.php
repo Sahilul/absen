@@ -2033,6 +2033,9 @@ class PSBController extends Controller
     {
         $this->requireAdmin();
 
+        // Auto deactivate expired periods
+        $this->psbModel->deactivateExpiredPeriods();
+
         $data = [
             'judul' => 'Kelola Periode PSB',
             'sidebar_data' => $this->getSidebarData(),

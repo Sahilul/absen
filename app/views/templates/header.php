@@ -574,10 +574,67 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
 
                 <div class="flex items-center space-x-4">
                     <!-- Session Badge dengan Gradient -->
-                    <div class="gradient-primary text-white text-sm font-semibold py-2.5 px-4 rounded-xl shadow-lg">
-                        <i data-lucide="calendar" class="w-4 h-4 inline mr-2"></i>
-                        <?= $_SESSION['nama_semester_aktif'] ?? 'Sesi Tidak Diketahui'; ?>
-                    </div>
+                    <!-- Session Badge dengan Gradient & Dropdown -->
+                    <?php if (isset($data['daftar_semester']) && !empty($data['daftar_semester'])): ?>
+                        <div class="relative" x-data="{ openSemester: false }">
+                            <button @click="openSemester = !openSemester" @click.outside="openSemester = false"
+                                class="gradient-primary text-white text-sm font-semibold py-2.5 px-4 rounded-xl shadow-lg flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity">
+                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                                <span
+                                    class="hidden sm:inline"><?= $_SESSION['nama_semester_aktif'] ?? 'Pilih Semester'; ?></span>
+                                <span
+                                    class="sm:hidden"><?= explode(' ', $_SESSION['nama_semester_aktif'] ?? '')[0]; ?>...</span>
+                                <i data-lucide="chevron-down" class="w-3 h-3 text-white/80"></i>
+                            </button>
+
+                            <!-- Dropdown Semester -->
+                            <div x-show="openSemester" style="display: none;"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95"
+                                class="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-secondary-100 z-50 overflow-hidden left-auto">
+
+                                <div class="bg-secondary-50 px-4 py-2 border-b border-secondary-100">
+                                    <p class="text-xs font-bold text-secondary-500 uppercase tracking-wider">Ganti Tahun
+                                        Pelajaran</p>
+                                </div>
+
+                                <div class="max-h-[300px] overflow-y-auto custom-scrollbar">
+                                    <?php foreach ($data['daftar_semester'] as $smt): ?>
+                                        <form action="<?= BASEURL; ?>/admin/setSemester" method="POST">
+                                            <input type="hidden" name="id_semester" value="<?= $smt['id_semester']; ?>">
+                                            <button type="submit"
+                                                class="w-full text-left px-4 py-3 hover:bg-secondary-50 transition-colors flex items-center justify-between group border-b border-secondary-50 last:border-0">
+                                                <div>
+                                                    <div
+                                                        class="font-semibold text-sm text-secondary-800 group-hover:text-primary-600 transition-colors">
+                                                        <?= htmlspecialchars($smt['nama_tp']); ?>
+                                                    </div>
+                                                    <div class="text-xs text-secondary-500">
+                                                        <?= htmlspecialchars($smt['semester']); ?>
+                                                    </div>
+                                                </div>
+                                                <?php if (($smt['id_semester'] == ($_SESSION['id_semester_aktif'] ?? 0))): ?>
+                                                    <div class="bg-green-100 text-green-600 p-1 rounded-full">
+                                                        <i data-lucide="check" class="w-3 h-3"></i>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </button>
+                                        </form>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div
+                            class="gradient-primary text-white text-sm font-semibold py-2.5 px-4 rounded-xl shadow-lg flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                            <span><?= $_SESSION['nama_semester_aktif'] ?? 'Sesi Tidak Diketahui'; ?></span>
+                        </div>
+                    <?php endif; ?>
 
                     <!-- Notifications (Optional) -->
                     <button
