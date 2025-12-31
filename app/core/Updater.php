@@ -1,29 +1,18 @@
 <?php
 
 /**
- * Updater Class
- * Handles application auto-update functionality
- * 
- * @author System
- * @version 1.0.0
+ * Updater Class - Auto-Update System
+ * GitHub: Sahilul/absen
  */
 class Updater
 {
     private $versionFile;
     private $backupDir;
     private $tempDir;
-    private $excludeFiles = [
-        'config.php',
-        '.env',
-        'uploads',
-        'backups',
-        'tmp',
-        'version.json' // Will be updated separately
-    ];
+    private $excludeFiles = ['config.php', '.env', 'uploads', 'backups', 'tmp', 'version.json'];
 
-    // GitHub repository info (Update with your repo)
-    private $githubUser = 'USERNAME';
-    private $githubRepo = 'REPOSITORY';
+    private $githubUser = 'Sahilul';
+    private $githubRepo = 'absen';
     private $githubBranch = 'main';
 
     public function __construct()
@@ -32,18 +21,12 @@ class Updater
         $this->backupDir = APPROOT . '/backups/';
         $this->tempDir = APPROOT . '/tmp/updates/';
 
-        // Create directories if not exist
-        if (!is_dir($this->backupDir)) {
+        if (!is_dir($this->backupDir))
             mkdir($this->backupDir, 0755, true);
-        }
-        if (!is_dir($this->tempDir)) {
+        if (!is_dir($this->tempDir))
             mkdir($this->tempDir, 0755, true);
-        }
     }
 
-    /**
-     * Get current application version
-     */
     public function getCurrentVersion()
     {
         if (file_exists($this->versionFile)) {
@@ -53,25 +36,14 @@ class Updater
         return '0.0.0';
     }
 
-    /**
-     * Get full version info
-     */
     public function getVersionInfo()
     {
         if (file_exists($this->versionFile)) {
             return json_decode(file_get_contents($this->versionFile), true);
         }
-        return [
-            'version' => '0.0.0',
-            'build' => 0,
-            'release_date' => 'Unknown',
-            'app_name' => 'School App'
-        ];
+        return ['version' => '0.0.0', 'build' => 0, 'release_date' => 'Unknown', 'app_name' => 'School App'];
     }
 
-    /**
-     * Check for available updates from GitHub
-     */
     public function checkForUpdates()
     {
         $result = [
@@ -85,371 +57,260 @@ class Updater
         ];
 
         try {
-            // GitHub API URL for latest release
-            $apiUrl = "https://api.github.com/repos/{$this->githubUser}/{$this->githubRepo}/releases/latest";
-
-            $response = $this->httpGet($apiUrl);
-
-            if (!$response) {
-                // Fallback: Try to get from tags
-                $tagsUrl = "https://api.github.com/repos/{$this->githubUser}/{$this->githubRepo}/tags";
-                $tagsResponse = $this->httpGet($tagsUrl);
-
-                if ($tagsResponse) {
-                    $tags = json_decode($tagsResponse, true);
-                    if (!empty($tags)) {
-                        $latestTag = $tags[0];
-                        $result['latest'] = ltrim($latestTag['name'], 'v');
-                        $result['download_url'] = "https://github.com/{$this->githubUser}/{$this->githubRepo}/archive/refs/tags/{$latestTag['name']}.zip";
-                        $result['has_update'] = version_compare($result['latest'], $result['current'], '>');
-                        $result['success'] = true;
-                    }
-                }
-            } else {
+            // Method 1: GitHub Releases
+            $response = $this->httpGet("https://api.github.com/repos/{$this->githubUser}/{$this->githubRepo}/releases/latest");
+            if ($response) {
                 $release = json_decode($response, true);
-
                 if (isset($release['tag_name'])) {
                     $result['latest'] = ltrim($release['tag_name'], 'v');
                     $result['download_url'] = $release['zipball_url'] ?? null;
                     $result['changelog'] = $release['body'] ?? '';
                     $result['has_update'] = version_compare($result['latest'], $result['current'], '>');
                     $result['success'] = true;
+                    return $result;
                 }
             }
 
-            if (!$result['success']) {
-                $result['error'] = 'Tidak dapat mengambil informasi update dari server.';
+            // Method 2: GitHub Tags
+            $tagsResponse = $this->httpGet("https://api.github.com/repos/{$this->githubUser}/{$this->githubRepo}/tags");
+            if ($tagsResponse) {
+                $tags = json_decode($tagsResponse, true);
+                if (!empty($tags) && is_array($tags)) {
+                    $result['latest'] = ltrim($tags[0]['name'], 'v');
+                    $result['download_url'] = "https://github.com/{$this->githubUser}/{$this->githubRepo}/archive/refs/tags/{$tags[0]['name']}.zip";
+                    $result['has_update'] = version_compare($result['latest'], $result['current'], '>');
+                    $result['success'] = true;
+                    return $result;
+                }
             }
 
+            // Method 3: version.json from branch
+            $rawResponse = $this->httpGet("https://raw.githubusercontent.com/{$this->githubUser}/{$this->githubRepo}/{$this->githubBranch}/version.json");
+            if ($rawResponse) {
+                $remoteVersion = json_decode($rawResponse, true);
+                if (isset($remoteVersion['version'])) {
+                    $result['latest'] = $remoteVersion['version'];
+                    $result['download_url'] = "https://github.com/{$this->githubUser}/{$this->githubRepo}/archive/refs/heads/{$this->githubBranch}.zip";
+                    $result['has_update'] = version_compare($result['latest'], $result['current'], '>');
+                    $result['success'] = true;
+                    $result['changelog'] = 'Update dari branch ' . $this->githubBranch;
+                    return $result;
+                }
+            }
+
+            $result['error'] = 'Repository tidak memiliki release, tags, atau version.json.';
         } catch (Exception $e) {
             $result['error'] = 'Error: ' . $e->getMessage();
         }
-
         return $result;
     }
 
-    /**
-     * Download update package
-     */
     public function downloadUpdate($url, $version)
     {
         $zipPath = $this->tempDir . "update_v{$version}.zip";
-
-        // Clean temp directory first
         $this->cleanTempDir();
-
         $content = $this->httpGet($url, true);
-
-        if ($content === false) {
+        if ($content === false)
             throw new Exception('Gagal mengunduh file update.');
-        }
-
-        if (file_put_contents($zipPath, $content) === false) {
+        if (file_put_contents($zipPath, $content) === false)
             throw new Exception('Gagal menyimpan file update.');
-        }
-
         return $zipPath;
     }
 
-    /**
-     * Create backup of current application
-     */
     public function createBackup()
     {
-        $currentVersion = $this->getCurrentVersion();
-        $timestamp = date('Ymd_His');
-        $backupName = "backup_v{$currentVersion}_{$timestamp}";
+        $backupName = "backup_v{$this->getCurrentVersion()}_" . date('Ymd_His');
         $backupPath = $this->backupDir . $backupName;
-
-        if (!mkdir($backupPath, 0755, true)) {
+        if (!mkdir($backupPath, 0755, true))
             throw new Exception('Gagal membuat folder backup.');
-        }
 
-        // Copy important directories
-        $dirsToBackup = ['app', 'public'];
-
-        foreach ($dirsToBackup as $dir) {
+        foreach (['app', 'public'] as $dir) {
             $source = APPROOT . '/' . $dir;
-            $dest = $backupPath . '/' . $dir;
-
-            if (is_dir($source)) {
-                $this->recursiveCopy($source, $dest);
-            }
+            if (is_dir($source))
+                $this->recursiveCopy($source, $backupPath . '/' . $dir);
         }
-
-        // Copy version.json
-        if (file_exists($this->versionFile)) {
+        if (file_exists($this->versionFile))
             copy($this->versionFile, $backupPath . '/version.json');
-        }
-
         return $backupPath;
     }
 
-    /**
-     * Install update from downloaded ZIP
-     */
     public function installUpdate($zipPath, $newVersion)
     {
-        if (!file_exists($zipPath)) {
+        if (!file_exists($zipPath))
             throw new Exception('File update tidak ditemukan.');
-        }
-
-        if (!class_exists('ZipArchive')) {
-            throw new Exception('Ekstensi PHP zip tidak tersedia. Aktifkan di aaPanel.');
-        }
+        if (!class_exists('ZipArchive'))
+            throw new Exception('Ekstensi PHP zip tidak tersedia.');
 
         $extractPath = $this->tempDir . 'extracted/';
-
-        // Clean extract directory
-        if (is_dir($extractPath)) {
+        if (is_dir($extractPath))
             $this->deleteDir($extractPath);
-        }
         mkdir($extractPath, 0755, true);
 
-        // Extract ZIP
         $zip = new ZipArchive();
-        $result = $zip->open($zipPath);
-
-        if ($result !== true) {
-            throw new Exception('Gagal membuka file ZIP. Error code: ' . $result);
-        }
-
+        if ($zip->open($zipPath) !== true)
+            throw new Exception('Gagal membuka file ZIP.');
         $zip->extractTo($extractPath);
         $zip->close();
 
-        // Find extracted folder (GitHub adds folder with repo name)
         $folders = glob($extractPath . '*', GLOB_ONLYDIR);
-        if (empty($folders)) {
+        if (empty($folders))
             throw new Exception('Struktur update tidak valid.');
-        }
-
         $sourceDir = $folders[0];
 
-        // Copy files to application root (excluding protected files)
         $this->copyUpdateFiles($sourceDir, APPROOT);
-
-        // Update version.json
+        $this->runMigrations($sourceDir);
         $this->updateVersionFile($newVersion);
-
-        // Cleanup
         $this->cleanTempDir();
-
         return true;
     }
 
-    /**
-     * Restore from backup
-     */
-    public function restoreFromBackup($backupPath)
+    private function runMigrations($sourceDir)
     {
-        if (!is_dir($backupPath)) {
-            throw new Exception('Folder backup tidak ditemukan.');
+        $migrationsDir = $sourceDir . '/migrations';
+        if (!is_dir($migrationsDir))
+            return [];
+
+        $sqlFiles = glob($migrationsDir . '/*.sql');
+        if (empty($sqlFiles))
+            return [];
+        sort($sqlFiles);
+
+        require_once APPROOT . '/app/core/Database.php';
+        $db = new Database();
+        $results = [];
+
+        foreach ($sqlFiles as $sqlFile) {
+            $sql = file_get_contents($sqlFile);
+            if (empty(trim($sql)))
+                continue;
+
+            try {
+                $statements = array_filter(array_map('trim', explode(';', $sql)), fn($s) => !empty($s));
+                foreach ($statements as $stmt) {
+                    $db->query($stmt);
+                    $db->execute();
+                }
+                $results[] = ['file' => basename($sqlFile), 'status' => 'success'];
+            } catch (Exception $e) {
+                $results[] = ['file' => basename($sqlFile), 'status' => 'error', 'message' => $e->getMessage()];
+            }
         }
 
-        // Restore directories
-        $dirsToRestore = ['app', 'public'];
+        // Archive executed migrations
+        $archiveDir = APPROOT . '/migrations/executed';
+        if (!is_dir($archiveDir))
+            mkdir($archiveDir, 0755, true);
+        foreach ($sqlFiles as $f)
+            copy($f, $archiveDir . '/' . date('Y-m-d_His') . '_' . basename($f));
 
-        foreach ($dirsToRestore as $dir) {
+        return $results;
+    }
+
+    public function restoreFromBackup($backupPath)
+    {
+        if (!is_dir($backupPath))
+            throw new Exception('Folder backup tidak ditemukan.');
+        foreach (['app', 'public'] as $dir) {
             $source = $backupPath . '/' . $dir;
             $dest = APPROOT . '/' . $dir;
-
             if (is_dir($source)) {
-                // Remove current
-                if (is_dir($dest)) {
+                if (is_dir($dest))
                     $this->deleteDir($dest);
-                }
-                // Restore from backup
                 $this->recursiveCopy($source, $dest);
             }
         }
-
-        // Restore version.json
-        $backupVersion = $backupPath . '/version.json';
-        if (file_exists($backupVersion)) {
-            copy($backupVersion, $this->versionFile);
-        }
-
+        if (file_exists($backupPath . '/version.json'))
+            copy($backupPath . '/version.json', $this->versionFile);
         return true;
     }
 
-    /**
-     * Get list of available backups
-     */
     public function getBackups()
     {
         $backups = [];
-
         if (is_dir($this->backupDir)) {
-            $dirs = glob($this->backupDir . 'backup_*', GLOB_ONLYDIR);
-
-            foreach ($dirs as $dir) {
-                $name = basename($dir);
-                $backups[] = [
-                    'name' => $name,
-                    'path' => $dir,
-                    'date' => filemtime($dir),
-                    'size' => $this->getDirSize($dir)
-                ];
+            foreach (glob($this->backupDir . 'backup_*', GLOB_ONLYDIR) as $dir) {
+                $backups[] = ['name' => basename($dir), 'path' => $dir, 'date' => filemtime($dir), 'size' => $this->getDirSize($dir)];
             }
-
-            // Sort by date descending
-            usort($backups, function ($a, $b) {
-                return $b['date'] - $a['date'];
-            });
+            usort($backups, fn($a, $b) => $b['date'] - $a['date']);
         }
-
         return $backups;
     }
 
-    /**
-     * Delete old backups (keep last N)
-     */
     public function cleanOldBackups($keep = 3)
     {
         $backups = $this->getBackups();
-
         if (count($backups) > $keep) {
-            $toDelete = array_slice($backups, $keep);
-
-            foreach ($toDelete as $backup) {
-                $this->deleteDir($backup['path']);
-            }
+            foreach (array_slice($backups, $keep) as $b)
+                $this->deleteDir($b['path']);
         }
     }
 
-    // ==================== HELPER METHODS ====================
-
-    /**
-     * HTTP GET request using cURL
-     */
     private function httpGet($url, $followRedirect = false)
     {
-        if (!function_exists('curl_init')) {
-            throw new Exception('Ekstensi PHP cURL tidak tersedia.');
-        }
-
+        if (!function_exists('curl_init'))
+            throw new Exception('cURL tidak tersedia.');
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 120,
             CURLOPT_USERAGENT => 'SchoolApp-Updater/1.0',
-            CURLOPT_HTTPHEADER => [
-                'Accept: application/vnd.github.v3+json'
-            ],
+            CURLOPT_HTTPHEADER => ['Accept: application/vnd.github.v3+json'],
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_FOLLOWLOCATION => $followRedirect
         ]);
-
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
         curl_close($ch);
-
-        if ($error) {
+        if ($error)
             throw new Exception('cURL Error: ' . $error);
-        }
-
-        if ($httpCode >= 400) {
-            return false;
-        }
-
-        return $response;
+        return $httpCode >= 400 ? false : $response;
     }
 
-    /**
-     * Recursively copy directory
-     */
-    private function recursiveCopy($source, $dest)
+    private function recursiveCopy($src, $dst)
     {
-        if (!is_dir($dest)) {
-            mkdir($dest, 0755, true);
-        }
-
-        $dir = opendir($source);
-
+        if (!is_dir($dst))
+            mkdir($dst, 0755, true);
+        $dir = opendir($src);
         while (($file = readdir($dir)) !== false) {
-            if ($file == '.' || $file == '..') {
+            if ($file == '.' || $file == '..')
                 continue;
-            }
-
-            $sourcePath = $source . '/' . $file;
-            $destPath = $dest . '/' . $file;
-
-            if (is_dir($sourcePath)) {
-                $this->recursiveCopy($sourcePath, $destPath);
-            } else {
-                copy($sourcePath, $destPath);
-            }
+            is_dir("$src/$file") ? $this->recursiveCopy("$src/$file", "$dst/$file") : copy("$src/$file", "$dst/$file");
         }
-
         closedir($dir);
     }
 
-    /**
-     * Copy update files while respecting excludes
-     */
-    private function copyUpdateFiles($source, $dest)
+    private function copyUpdateFiles($src, $dst)
     {
-        if (!is_dir($source)) {
+        if (!is_dir($src))
             return;
-        }
-
-        $dir = opendir($source);
-
+        $dir = opendir($src);
         while (($file = readdir($dir)) !== false) {
-            if ($file == '.' || $file == '..') {
+            if ($file == '.' || $file == '..' || in_array($file, $this->excludeFiles))
                 continue;
-            }
-
-            // Check if file/folder should be excluded
-            if (in_array($file, $this->excludeFiles)) {
-                continue;
-            }
-
-            $sourcePath = $source . '/' . $file;
-            $destPath = $dest . '/' . $file;
-
-            if (is_dir($sourcePath)) {
-                if (!is_dir($destPath)) {
-                    mkdir($destPath, 0755, true);
-                }
-                $this->copyUpdateFiles($sourcePath, $destPath);
-            } else {
-                copy($sourcePath, $destPath);
-            }
+            $srcPath = "$src/$file";
+            $dstPath = "$dst/$file";
+            if (is_dir($srcPath)) {
+                if (!is_dir($dstPath))
+                    mkdir($dstPath, 0755, true);
+                $this->copyUpdateFiles($srcPath, $dstPath);
+            } else
+                copy($srcPath, $dstPath);
         }
-
         closedir($dir);
     }
 
-    /**
-     * Recursively delete directory
-     */
     private function deleteDir($dir)
     {
-        if (!is_dir($dir)) {
+        if (!is_dir($dir))
             return;
+        foreach (array_diff(scandir($dir), ['.', '..']) as $file) {
+            is_dir("$dir/$file") ? $this->deleteDir("$dir/$file") : unlink("$dir/$file");
         }
-
-        $files = array_diff(scandir($dir), ['.', '..']);
-
-        foreach ($files as $file) {
-            $path = $dir . '/' . $file;
-
-            if (is_dir($path)) {
-                $this->deleteDir($path);
-            } else {
-                unlink($path);
-            }
-        }
-
         rmdir($dir);
     }
 
-    /**
-     * Clean temporary directory
-     */
     private function cleanTempDir()
     {
         if (is_dir($this->tempDir)) {
@@ -458,108 +319,53 @@ class Updater
         }
     }
 
-    /**
-     * Update version.json file
-     */
     private function updateVersionFile($newVersion)
     {
         $data = $this->getVersionInfo();
         $data['version'] = $newVersion;
         $data['build'] = intval(str_replace('.', '', $newVersion));
         $data['release_date'] = date('Y-m-d');
-
         file_put_contents($this->versionFile, json_encode($data, JSON_PRETTY_PRINT));
     }
 
-    /**
-     * Get directory size in bytes
-     */
     private function getDirSize($dir)
     {
         $size = 0;
-
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir)) as $file) {
-            if ($file->isFile()) {
+            if ($file->isFile())
                 $size += $file->getSize();
-            }
         }
-
         return $size;
     }
 
-    /**
-     * Format bytes to human readable
-     */
     public function formatBytes($bytes)
     {
         $units = ['B', 'KB', 'MB', 'GB'];
         $i = 0;
-
         while ($bytes >= 1024 && $i < count($units) - 1) {
             $bytes /= 1024;
             $i++;
         }
-
         return round($bytes, 2) . ' ' . $units[$i];
     }
 
-    /**
-     * Check system requirements
-     */
     public function checkRequirements()
     {
         return [
-            'curl' => [
-                'name' => 'cURL Extension',
-                'status' => function_exists('curl_init'),
-                'required' => true
-            ],
-            'zip' => [
-                'name' => 'ZIP Extension',
-                'status' => class_exists('ZipArchive'),
-                'required' => true
-            ],
-            'writable_app' => [
-                'name' => 'App folder writable',
-                'status' => is_writable(APPROOT . '/app'),
-                'required' => true
-            ],
-            'writable_public' => [
-                'name' => 'Public folder writable',
-                'status' => is_writable(APPROOT . '/public'),
-                'required' => true
-            ],
-            'writable_root' => [
-                'name' => 'Root folder writable',
-                'status' => is_writable(APPROOT),
-                'required' => true
-            ]
+            'curl' => ['name' => 'cURL Extension', 'status' => function_exists('curl_init'), 'required' => true],
+            'zip' => ['name' => 'ZIP Extension', 'status' => class_exists('ZipArchive'), 'required' => true],
+            'writable_app' => ['name' => 'App folder writable', 'status' => is_writable(APPROOT . '/app'), 'required' => true],
+            'writable_public' => ['name' => 'Public folder writable', 'status' => is_writable(APPROOT . '/public'), 'required' => true],
+            'writable_root' => ['name' => 'Root folder writable', 'status' => is_writable(APPROOT), 'required' => true]
         ];
     }
 
-    /**
-     * Check if all requirements are met
-     */
     public function requirementsMet()
     {
-        $reqs = $this->checkRequirements();
-
-        foreach ($reqs as $req) {
-            if ($req['required'] && !$req['status']) {
+        foreach ($this->checkRequirements() as $r) {
+            if ($r['required'] && !$r['status'])
                 return false;
-            }
         }
-
         return true;
-    }
-
-    /**
-     * Set GitHub repository info
-     */
-    public function setRepository($user, $repo, $branch = 'main')
-    {
-        $this->githubUser = $user;
-        $this->githubRepo = $repo;
-        $this->githubBranch = $branch;
     }
 }

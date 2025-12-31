@@ -340,6 +340,7 @@ class SiswaController extends Controller
         // Data yang boleh diedit oleh siswa
         $data = [
             'id_siswa' => $id_siswa,
+            'nik' => $_POST['nik'] ?? '',
             'nama_siswa' => $_POST['nama_siswa'] ?? '',
             'jenis_kelamin' => $_POST['jenis_kelamin'] ?? '',
             'tempat_lahir' => $_POST['tempat_lahir'] ?? '',
@@ -1010,6 +1011,151 @@ class SiswaController extends Controller
 
         $nama_file = 'Riwayat_Pembayaran_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $data['nama_siswa']) . '_' . date('Y-m-d') . '.pdf';
         $dompdf->stream($nama_file, ['Attachment' => true]);
+        exit;
+    }
+
+    /**
+     * Cetak SKSA (Surat Keterangan Siswa Aktif) untuk Siswa
+     * Siswa dapat men-download SKSA untuk dirinya sendiri
+     */
+    public function cetakSKSA()
+    {
+        $id_siswa = $_SESSION['id_ref'] ?? 0;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+        $id_user = $_SESSION['user_id'] ?? 0;
+
+        if (!$id_siswa) {
+            echo "Session tidak valid";
+            exit;
+        }
+
+        // Get data siswa
+        $siswaModel = $this->model('Siswa_model');
+        $siswa = $siswaModel->getSiswaById($id_siswa);
+        if (!$siswa) {
+            echo "Data siswa tidak ditemukan";
+            exit;
+        }
+
+        // Get kelas siswa
+        $siswaKelas = $this->model('Keanggotaan_model')->getKeanggotaanSiswa($id_siswa, $id_tp_aktif);
+        if (!$siswaKelas) {
+            echo "Anda belum terdaftar di kelas manapun untuk tahun pelajaran ini";
+            exit;
+        }
+
+        // Get wali kelas info
+        $waliKelasInfo = $this->model('WaliKelas_model')->getWaliKelasByKelas($siswaKelas['id_kelas'], $id_tp_aktif);
+
+        // Get pengaturan rapor
+        $pengaturanRapor = $this->model('PengaturanRapor_model')->getPengaturanByKelas($siswaKelas['id_kelas'], $id_tp_aktif);
+        if (!$pengaturanRapor) {
+            echo "Pengaturan rapor belum diatur. Silakan hubungi wali kelas atau admin.";
+            exit;
+        }
+
+        // Get atau create nomor SKSA
+        $sksaNomorModel = $this->model('SKSANomor_model');
+        $namaWaliKelas = $waliKelasInfo['nama_guru'] ?? 'Wali Kelas';
+        $nomorData = $sksaNomorModel->getOrCreateNomor(
+            $id_siswa,
+            $id_tp_aktif,
+            $id_user,
+            $namaWaliKelas
+        );
+        $nomorSurat = $nomorData['nomor_surat'];
+
+        // Array bulan Indonesia
+        $months = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+
+        // Format tanggal lahir
+        $tglLahir = '-';
+        $tempatLahir = $siswa['tempat_lahir'] ?: '-';
+        if ($siswa['tgl_lahir'] && $siswa['tgl_lahir'] !== '0000-00-00') {
+            $date = new DateTime($siswa['tgl_lahir']);
+            $tglLahir = $date->format('d F Y');
+            $tglLahir = str_replace(array_keys($months), array_values($months), $tglLahir);
+        }
+        $tempatTglLahir = $tempatLahir . ', ' . $tglLahir;
+
+        // Tanggal cetak
+        $tanggalCetak = date('d F Y');
+        $tanggalCetak = str_replace(array_keys($months), array_values($months), $tanggalCetak);
+        $tempatCetak = $pengaturanRapor['tempat_cetak'] ?: 'Tempat';
+
+        // Generate QR Code
+        $appRoot = dirname(dirname(__DIR__));
+        require_once $appRoot . '/config/qrcode.php';
+        $qrCodeDataUrl = generatePDFQRCode('sksa', $id_siswa, [
+            'nama_dokumen' => 'Surat Keterangan Siswa Aktif',
+            'nomor_surat' => $nomorSurat,
+            'nama_siswa' => $siswa['nama_siswa'],
+            'nisn' => $siswa['nisn'],
+            'kelas' => $siswaKelas['nama_kelas'],
+            'dicetak_oleh' => $siswa['nama_siswa'],
+            'jabatan_pencetak' => 'Siswa',
+            'mengetahui' => $pengaturanRapor['nama_kepsek'],
+            'jabatan_mengetahui' => 'Kepala Madrasah',
+            'tanggal_cetak' => date('Y-m-d H:i:s'),
+            'tahun_pelajaran' => $siswaKelas['nama_tp'] ?? ''
+        ]);
+
+        // Prepare data for PDF
+        $data = [
+            'siswa' => $siswa,
+            'pengaturan' => $pengaturanRapor,
+            'kelas' => $siswaKelas['nama_kelas'],
+            'tahun_pelajaran' => $siswaKelas['nama_tp'] ?? '',
+            'nomor_surat' => $nomorSurat,
+            'tempat_tgl_lahir' => $tempatTglLahir,
+            'tanggal_cetak' => $tanggalCetak,
+            'tempat_cetak' => $tempatCetak,
+            'qr_code_data_url' => $qrCodeDataUrl
+        ];
+
+        // Generate PDF using Dompdf
+        require_once $appRoot . '/app/core/dompdf/autoload.inc.php';
+
+        ob_start();
+        extract($data);
+        require_once $appRoot . '/app/views/wali_kelas/cetak_sksa.php';
+        $html = ob_get_clean();
+
+        // Setup Dompdf
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isFontSubsettingEnabled', true);
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Clear output buffers
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        // Set headers and output
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="SKSA_' . $siswa['nisn'] . '_' . date('Ymd') . '.pdf"');
+        header('Cache-Control: private, max-age=0, must-revalidate');
+
+        echo $dompdf->output();
         exit;
     }
 }

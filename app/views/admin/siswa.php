@@ -209,7 +209,7 @@
                                             </div>
                                             <div>
                                                 <div class="text-sm font-medium text-gray-900">
-                                                    <?= htmlspecialchars($siswa['nisn']); ?>
+                                                    <?= htmlspecialchars($siswa['nisn'] ?? ''); ?>
                                                 </div>
                                                 <div class="text-xs text-gray-500">
                                                     <?= 'ID-' . str_pad($siswa['id_siswa'], 4, '0', STR_PAD_LEFT); ?>

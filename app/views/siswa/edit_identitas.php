@@ -48,6 +48,19 @@ $siswa = $data['siswa'] ?? [];
                 Data Pribadi
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- NISN (Read-Only) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NISN <span
+                            class="text-xs text-gray-400">(tidak dapat diubah)</span></label>
+                    <input type="text" value="<?= htmlspecialchars($siswa['nisn'] ?? '-'); ?>"
+                        class="input-modern w-full bg-gray-100 cursor-not-allowed" readonly disabled>
+                </div>
+                <!-- NIK (Editable) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
+                    <input type="text" name="nik" value="<?= htmlspecialchars($siswa['nik'] ?? ''); ?>"
+                        class="input-modern w-full" placeholder="16 digit NIK" maxlength="16">
+                </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
                     <input type="text" name="nama_siswa" value="<?= htmlspecialchars($siswa['nama_siswa'] ?? ''); ?>"
@@ -182,9 +195,10 @@ $siswa = $data['siswa'] ?? [];
                         class="input-modern w-full">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ayah <span class="text-xs text-amber-600">🔒</span></label>
-                    <input type="text" value="<?= htmlspecialchars($siswa['ayah_no_hp'] ?? ''); ?>" 
-                        class="input-modern w-full bg-gray-100 cursor-not-allowed" readonly 
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ayah <span
+                            class="text-xs text-amber-600">🔒</span></label>
+                    <input type="text" value="<?= htmlspecialchars($siswa['ayah_no_hp'] ?? ''); ?>"
+                        class="input-modern w-full bg-gray-100 cursor-not-allowed" readonly
                         title="Hubungi Wali Kelas atau Admin untuk mengubah nomor ini">
                     <p class="text-xs text-gray-400 mt-1">Hubungi Wali Kelas/Admin untuk mengubah</p>
                 </div>
@@ -211,7 +225,8 @@ $siswa = $data['siswa'] ?? [];
                         <?php $pendidikanList = ['Tidak Sekolah', 'SD/Sederajat', 'SMP/Sederajat', 'SMA/Sederajat', 'D1', 'D2', 'D3', 'D4/S1', 'S2', 'S3']; ?>
                         <?php foreach ($pendidikanList as $p): ?>
                             <option value="<?= $p; ?>" <?= ($siswa['ayah_pendidikan'] ?? '') == $p ? 'selected' : ''; ?>>
-                                <?= $p; ?></option>
+                                <?= $p; ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -226,7 +241,8 @@ $siswa = $data['siswa'] ?? [];
                         <?php $penghasilanList = ['< Rp 1.000.000', 'Rp 1.000.000 - Rp 3.000.000', 'Rp 3.000.000 - Rp 5.000.000', 'Rp 5.000.000 - Rp 10.000.000', '> Rp 10.000.000']; ?>
                         <?php foreach ($penghasilanList as $ph): ?>
                             <option value="<?= $ph; ?>" <?= ($siswa['ayah_penghasilan'] ?? '') == $ph ? 'selected' : ''; ?>>
-                                <?= $ph; ?></option>
+                                <?= $ph; ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -251,9 +267,10 @@ $siswa = $data['siswa'] ?? [];
                         class="input-modern w-full">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ibu <span class="text-xs text-amber-600">🔒</span></label>
-                    <input type="text" value="<?= htmlspecialchars($siswa['ibu_no_hp'] ?? ''); ?>" 
-                        class="input-modern w-full bg-gray-100 cursor-not-allowed" readonly 
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ibu <span
+                            class="text-xs text-amber-600">🔒</span></label>
+                    <input type="text" value="<?= htmlspecialchars($siswa['ibu_no_hp'] ?? ''); ?>"
+                        class="input-modern w-full bg-gray-100 cursor-not-allowed" readonly
                         title="Hubungi Wali Kelas atau Admin untuk mengubah nomor ini">
                     <p class="text-xs text-gray-400 mt-1">Hubungi Wali Kelas/Admin untuk mengubah</p>
                 </div>
@@ -279,7 +296,8 @@ $siswa = $data['siswa'] ?? [];
                     <select name="ibu_pendidikan" class="input-modern w-full">
                         <?php foreach ($pendidikanList as $p): ?>
                             <option value="<?= $p; ?>" <?= ($siswa['ibu_pendidikan'] ?? '') == $p ? 'selected' : ''; ?>>
-                                <?= $p; ?></option>
+                                <?= $p; ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -293,7 +311,8 @@ $siswa = $data['siswa'] ?? [];
                     <select name="ibu_penghasilan" class="input-modern w-full">
                         <?php foreach ($penghasilanList as $ph): ?>
                             <option value="<?= $ph; ?>" <?= ($siswa['ibu_penghasilan'] ?? '') == $ph ? 'selected' : ''; ?>>
-                                <?= $ph; ?></option>
+                                <?= $ph; ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -334,7 +353,8 @@ $siswa = $data['siswa'] ?? [];
                         <option value="">-- Pilih --</option>
                         <?php foreach ($pendidikanList as $p): ?>
                             <option value="<?= $p; ?>" <?= ($siswa['wali_pendidikan'] ?? '') == $p ? 'selected' : ''; ?>>
-                                <?= $p; ?></option>
+                                <?= $p; ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -349,7 +369,8 @@ $siswa = $data['siswa'] ?? [];
                         <option value="">-- Pilih --</option>
                         <?php foreach ($penghasilanList as $ph): ?>
                             <option value="<?= $ph; ?>" <?= ($siswa['wali_penghasilan'] ?? '') == $ph ? 'selected' : ''; ?>>
-                                <?= $ph; ?></option>
+                                <?= $ph; ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>

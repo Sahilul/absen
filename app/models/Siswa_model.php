@@ -318,7 +318,7 @@ class Siswa_model
     public function updateDataSiswaByStudent($data)
     {
         $this->db->query('UPDATE siswa SET 
-            nama_siswa = :nama_siswa, jenis_kelamin = :jenis_kelamin, 
+            nik = :nik, nama_siswa = :nama_siswa, jenis_kelamin = :jenis_kelamin, 
             tgl_lahir = :tgl_lahir, tempat_lahir = :tempat_lahir, agama = :agama,
             hobi = :hobi, cita_cita = :cita_cita,
             alamat = :alamat, rt = :rt, rw = :rw, dusun = :dusun,
@@ -334,6 +334,7 @@ class Siswa_model
         ');
 
         // Bind parameters
+        $this->db->bind('nik', $data['nik'] ?? null);
         $this->db->bind('nama_siswa', $data['nama_siswa']);
         $this->db->bind('jenis_kelamin', $data['jenis_kelamin'] ?? null);
 

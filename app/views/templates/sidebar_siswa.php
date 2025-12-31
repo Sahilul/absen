@@ -153,6 +153,13 @@
                             Edit Identitas
                         </a>
                     </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/siswa/cetakSKSA"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-secondary-600 hover:bg-green-50 hover:text-green-700">
+                            <i data-lucide="file-badge" class="w-4 h-4 mr-2"></i>
+                            Cetak SKSA
+                        </a>
+                    </li>
                 </ul>
             </li>
 
