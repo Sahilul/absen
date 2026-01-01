@@ -1158,4 +1158,58 @@ class SiswaController extends Controller
         echo $dompdf->output();
         exit;
     }
+
+    // =================================================================
+    // PESAN (MESSAGING INBOX)
+    // =================================================================
+
+    /**
+     * Inbox pesan siswa
+     */
+    public function pesan()
+    {
+        $this->data['judul'] = 'Kotak Masuk Pesan';
+        $id_siswa = $_SESSION['id_ref'] ?? 0;
+
+        $pesanModel = $this->model('Pesan_model');
+        $this->data['pesan'] = $pesanModel->getInbox('siswa', $id_siswa);
+        $this->data['unread_count'] = $pesanModel->getUnreadCount('siswa', $id_siswa);
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_siswa', $this->data);
+        $this->view('siswa/pesan', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Detail pesan siswa
+     */
+    public function detailPesan($id = null)
+    {
+        if (!$id) {
+            header('Location: ' . BASEURL . '/siswa/pesan');
+            exit;
+        }
+
+        $id_siswa = $_SESSION['id_ref'] ?? 0;
+        $pesanModel = $this->model('Pesan_model');
+
+        // Cek apakah siswa ini penerima
+        if (!$pesanModel->isPenerima($id, 'siswa', $id_siswa)) {
+            Flasher::setFlash('Anda tidak memiliki akses ke pesan ini!', 'error');
+            header('Location: ' . BASEURL . '/siswa/pesan');
+            exit;
+        }
+
+        // Tandai sudah dibaca
+        $pesanModel->tandaiDibaca($id, 'siswa', $id_siswa);
+
+        $this->data['pesan'] = $pesanModel->getPesanById($id);
+        $this->data['judul'] = 'Detail Pesan';
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_siswa', $this->data);
+        $this->view('siswa/detail_pesan', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
 }

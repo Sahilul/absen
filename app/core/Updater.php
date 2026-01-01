@@ -57,7 +57,21 @@ class Updater
         ];
 
         try {
-            // Method 1: GitHub Releases
+            // Method 1 (Fastest): version.json from branch - most repos have this
+            $rawResponse = $this->httpGet("https://raw.githubusercontent.com/{$this->githubUser}/{$this->githubRepo}/{$this->githubBranch}/version.json");
+            if ($rawResponse) {
+                $remoteVersion = json_decode($rawResponse, true);
+                if (isset($remoteVersion['version'])) {
+                    $result['latest'] = $remoteVersion['version'];
+                    $result['download_url'] = "https://github.com/{$this->githubUser}/{$this->githubRepo}/archive/refs/heads/{$this->githubBranch}.zip";
+                    $result['has_update'] = version_compare($result['latest'], $result['current'], '>');
+                    $result['success'] = true;
+                    $result['changelog'] = 'Update dari branch ' . $this->githubBranch;
+                    return $result;
+                }
+            }
+
+            // Method 2: GitHub Releases (only if version.json not found)
             $response = $this->httpGet("https://api.github.com/repos/{$this->githubUser}/{$this->githubRepo}/releases/latest");
             if ($response) {
                 $release = json_decode($response, true);
@@ -71,7 +85,7 @@ class Updater
                 }
             }
 
-            // Method 2: GitHub Tags
+            // Method 3: GitHub Tags (fallback)
             $tagsResponse = $this->httpGet("https://api.github.com/repos/{$this->githubUser}/{$this->githubRepo}/tags");
             if ($tagsResponse) {
                 $tags = json_decode($tagsResponse, true);
@@ -80,20 +94,6 @@ class Updater
                     $result['download_url'] = "https://github.com/{$this->githubUser}/{$this->githubRepo}/archive/refs/tags/{$tags[0]['name']}.zip";
                     $result['has_update'] = version_compare($result['latest'], $result['current'], '>');
                     $result['success'] = true;
-                    return $result;
-                }
-            }
-
-            // Method 3: version.json from branch
-            $rawResponse = $this->httpGet("https://raw.githubusercontent.com/{$this->githubUser}/{$this->githubRepo}/{$this->githubBranch}/version.json");
-            if ($rawResponse) {
-                $remoteVersion = json_decode($rawResponse, true);
-                if (isset($remoteVersion['version'])) {
-                    $result['latest'] = $remoteVersion['version'];
-                    $result['download_url'] = "https://github.com/{$this->githubUser}/{$this->githubRepo}/archive/refs/heads/{$this->githubBranch}.zip";
-                    $result['has_update'] = version_compare($result['latest'], $result['current'], '>');
-                    $result['success'] = true;
-                    $result['changelog'] = 'Update dari branch ' . $this->githubBranch;
                     return $result;
                 }
             }
@@ -253,7 +253,7 @@ class Updater
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 120,
+            CURLOPT_TIMEOUT => 15,
             CURLOPT_USERAGENT => 'SchoolApp-Updater/1.0',
             CURLOPT_HTTPHEADER => ['Accept: application/vnd.github.v3+json'],
             CURLOPT_SSL_VERIFYPEER => true,

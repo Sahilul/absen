@@ -80,6 +80,19 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'guru') {
         </a>
       </li>
 
+      <!-- Pesan/Inbox -->
+      <li>
+        <a href="<?= BASEURL; ?>/guru/pesan"
+          class="group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= (strpos($judul, 'Pesan') !== false) ? 'gradient-success text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
+          <div
+            class="<?= (strpos($judul, 'Pesan') !== false) ? 'bg-white/20' : 'bg-indigo-100 group-hover:bg-indigo-200'; ?> p-2 rounded-lg transition-colors duration-200">
+            <i data-lucide="mail"
+              class="w-4 h-4 <?= (strpos($judul, 'Pesan') !== false) ? 'text-white' : 'text-indigo-500 group-hover:text-indigo-600'; ?>"></i>
+          </div>
+          <span class="ml-3 whitespace-nowrap">Kotak Masuk</span>
+        </a>
+      </li>
+
       <!-- Section: Aktivitas Mengajar 
       <li class="pt-6 pb-2">
         <div class="flex items-center px-3">

@@ -4,6 +4,7 @@ $guru = $data['guru'] ?? [];
 $nik = $guru['nik'] ?? '';
 $nama = $guru['nama_guru'] ?? ($_SESSION['user_nama_lengkap'] ?? '');
 $email = $guru['email'] ?? '';
+$no_wa = $guru['no_wa'] ?? '';
 ?>
 <div class="p-4 sm:p-6">
   <div class="max-w-xl mx-auto bg-white rounded-xl shadow p-5">
@@ -13,15 +14,24 @@ $email = $guru['email'] ?? '';
     <form action="<?= BASEURL ?>/guru/simpanProfil" method="POST" class="space-y-4">
       <div>
         <label class="block text-sm text-gray-700 mb-1">NIK</label>
-        <input type="text" value="<?= htmlspecialchars($nik) ?>" class="w-full border rounded px-3 py-2 bg-gray-100" disabled />
+        <input type="text" value="<?= htmlspecialchars($nik) ?>" class="w-full border rounded px-3 py-2 bg-gray-100"
+          disabled />
       </div>
       <div>
         <label class="block text-sm text-gray-700 mb-1">Nama Lengkap</label>
-        <input type="text" name="nama_guru" value="<?= htmlspecialchars($nama) ?>" class="w-full border rounded px-3 py-2" required />
+        <input type="text" name="nama_guru" value="<?= htmlspecialchars($nama) ?>"
+          class="w-full border rounded px-3 py-2" required />
       </div>
       <div>
         <label class="block text-sm text-gray-700 mb-1">Email</label>
-        <input type="email" name="email" value="<?= htmlspecialchars($email) ?>" class="w-full border rounded px-3 py-2" placeholder="opsional" />
+        <input type="email" name="email" value="<?= htmlspecialchars($email) ?>" class="w-full border rounded px-3 py-2"
+          placeholder="opsional" />
+      </div>
+      <div>
+        <label class="block text-sm text-gray-700 mb-1">No. WhatsApp</label>
+        <input type="text" name="no_wa" value="<?= htmlspecialchars($no_wa) ?>" class="w-full border rounded px-3 py-2"
+          placeholder="Contoh: 08123456789" />
+        <p class="text-xs text-gray-500 mt-1">Digunakan untuk menerima notifikasi WhatsApp</p>
       </div>
 
       <div class="flex items-center justify-end gap-2 pt-2">

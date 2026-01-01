@@ -3,10 +3,12 @@
  * File: app/models/Guru_model.php
  * Model untuk mengelola data guru
  */
-class Guru_model {
+class Guru_model
+{
     private $db;
 
-    public function __construct() {
+    public function __construct()
+    {
         require_once APPROOT . '/app/core/Database.php';
         $this->db = new Database;
     }
@@ -14,8 +16,10 @@ class Guru_model {
     /**
      * Helper: normalisasi email -> trim & jadikan NULL jika kosong
      */
-    private function normalizeEmail($email) {
-        if (!isset($email)) return null;
+    private function normalizeEmail($email)
+    {
+        if (!isset($email))
+            return null;
         $email = trim($email);
         return ($email === '') ? null : $email;
     }
@@ -23,7 +27,8 @@ class Guru_model {
     /**
      * Menghitung jumlah total guru
      */
-    public function getJumlahGuru() {
+    public function getJumlahGuru()
+    {
         $this->db->query('SELECT COUNT(*) AS total FROM guru');
         return $this->db->single()['total'];
     }
@@ -31,7 +36,8 @@ class Guru_model {
     /**
      * Mengambil semua data guru dengan info akun
      */
-    public function getAllGuru() {
+    public function getAllGuru()
+    {
         // Ambil password_plain dari akun role guru; jika tidak ada, fallback ke wali_kelas
         $this->db->query('SELECT g.*, COALESCE(ug.password_plain, uw.password_plain) AS password_plain
                           FROM guru g
@@ -44,7 +50,8 @@ class Guru_model {
     /**
      * Mengambil data guru berdasarkan ID
      */
-    public function getGuruById($id) {
+    public function getGuruById($id)
+    {
         $this->db->query('SELECT * FROM guru WHERE id_guru = :id');
         $this->db->bind('id', $id);
         return $this->db->single();
@@ -54,20 +61,27 @@ class Guru_model {
      * Menambah data guru baru
      * - Email opsional: jika kosong -> NULL (tidak menabrak UNIQUE)
      */
-    public function tambahDataGuru($data) {
+    public function tambahDataGuru($data)
+    {
         $email = $this->normalizeEmail($data['email'] ?? null);
+        $no_wa = isset($data['no_wa']) && trim($data['no_wa']) !== '' ? trim($data['no_wa']) : null;
 
-        $this->db->query('INSERT INTO guru (nik, nama_guru, email)
-                          VALUES (:nik, :nama, :email)');
+        $this->db->query('INSERT INTO guru (nik, nama_guru, email, no_wa)
+                          VALUES (:nik, :nama, :email, :no_wa)');
 
-        $this->db->bind('nik',  $data['nik']);
+        $this->db->bind('nik', $data['nik']);
         $this->db->bind('nama', $data['nama_guru']);
 
         if ($email === null) {
-            // pastikan bind sebagai NULL
             $this->db->bind('email', null, PDO::PARAM_NULL);
         } else {
             $this->db->bind('email', $email);
+        }
+
+        if ($no_wa === null) {
+            $this->db->bind('no_wa', null, PDO::PARAM_NULL);
+        } else {
+            $this->db->bind('no_wa', $no_wa);
         }
 
         $this->db->execute();
@@ -78,14 +92,16 @@ class Guru_model {
      * Update data guru
      * - Email opsional: jika kosong -> NULL (tidak menabrak UNIQUE)
      */
-    public function updateDataGuru($data) {
+    public function updateDataGuru($data)
+    {
         $email = $this->normalizeEmail($data['email'] ?? null);
+        $no_wa = isset($data['no_wa']) && trim($data['no_wa']) !== '' ? trim($data['no_wa']) : null;
 
         $this->db->query('UPDATE guru
-                          SET nik = :nik, nama_guru = :nama, email = :email
+                          SET nik = :nik, nama_guru = :nama, email = :email, no_wa = :no_wa
                           WHERE id_guru = :id');
 
-        $this->db->bind('nik',  $data['nik']);
+        $this->db->bind('nik', $data['nik']);
         $this->db->bind('nama', $data['nama_guru']);
 
         if ($email === null) {
@@ -94,7 +110,13 @@ class Guru_model {
             $this->db->bind('email', $email);
         }
 
-        $this->db->bind('id',   $data['id_guru']);
+        if ($no_wa === null) {
+            $this->db->bind('no_wa', null, PDO::PARAM_NULL);
+        } else {
+            $this->db->bind('no_wa', $no_wa);
+        }
+
+        $this->db->bind('id', $data['id_guru']);
         $this->db->execute();
         return $this->db->rowCount();
     }
@@ -102,12 +124,14 @@ class Guru_model {
     /**
      * Update profil guru tanpa mengubah NIK
      */
-    public function updateProfilGuru($id_guru, $data) {
+    public function updateProfilGuru($id_guru, $data)
+    {
         $email = $this->normalizeEmail($data['email'] ?? null);
+        $no_wa = isset($data['no_wa']) && trim($data['no_wa']) !== '' ? trim($data['no_wa']) : null;
 
         // Update tabel guru
         $this->db->query('UPDATE guru
-                          SET nama_guru = :nama, email = :email
+                          SET nama_guru = :nama, email = :email, no_wa = :no_wa
                           WHERE id_guru = :id');
 
         $this->db->bind(':nama', $data['nama_guru']);
@@ -116,9 +140,14 @@ class Guru_model {
         } else {
             $this->db->bind(':email', $email);
         }
+        if ($no_wa === null) {
+            $this->db->bind(':no_wa', null, PDO::PARAM_NULL);
+        } else {
+            $this->db->bind(':no_wa', $no_wa);
+        }
         $this->db->bind(':id', $id_guru);
         $this->db->execute();
-        
+
         // Update juga tabel users agar session sync
         $this->db->query('UPDATE users 
                           SET nama_lengkap = :nama 
@@ -126,14 +155,15 @@ class Guru_model {
         $this->db->bind(':nama', $data['nama_guru']);
         $this->db->bind(':id_ref', $id_guru);
         $this->db->execute();
-        
+
         return $this->db->rowCount();
     }
 
     /**
      * Hapus data guru
      */
-    public function hapusDataGuru($id) {
+    public function hapusDataGuru($id)
+    {
         $this->db->query('DELETE FROM guru WHERE id_guru = :id');
         $this->db->bind('id', $id);
         $this->db->execute();
@@ -143,7 +173,8 @@ class Guru_model {
     /**
      * Cek apakah guru masih memiliki penugasan
      */
-    public function cekKeterkaitanData($id_guru) {
+    public function cekKeterkaitanData($id_guru)
+    {
         $this->db->query('SELECT COUNT(*) AS total FROM penugasan WHERE id_guru = :id');
         $this->db->bind('id', $id_guru);
         return $this->db->single()['total'];
@@ -152,7 +183,8 @@ class Guru_model {
     /**
      * Mengambil guru yang sudah melakukan input jurnal hari ini
      */
-    public function getGuruWithTodayJournal($id_semester) {
+    public function getGuruWithTodayJournal($id_semester)
+    {
         $today = date('Y-m-d');
         $this->db->query('SELECT DISTINCT g.id_guru, g.nama_guru
                           FROM guru g
@@ -168,11 +200,16 @@ class Guru_model {
     /**
      * Generic getter kompatibel dengan berbagai nama method
      */
-    public function getAll() {
-        if (method_exists($this, 'getAllGuru')) return $this->getAllGuru();
-        if (method_exists($this, 'getGuru'))    return $this->getGuru();
-        if (method_exists($this, 'getAllData')) return $this->getAllData();
-        if (method_exists($this, 'all'))        return $this->all();
+    public function getAll()
+    {
+        if (method_exists($this, 'getAllGuru'))
+            return $this->getAllGuru();
+        if (method_exists($this, 'getGuru'))
+            return $this->getGuru();
+        if (method_exists($this, 'getAllData'))
+            return $this->getAllData();
+        if (method_exists($this, 'all'))
+            return $this->all();
         // fallback
         $this->db->query('SELECT id_guru, nama_guru FROM guru ORDER BY nama_guru ASC');
         return $this->db->resultSet();

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,16 +9,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
         <!-- Page Header with Breadcrumb -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
             <div class="flex items-center">
-                <a href="<?= BASEURL; ?>/admin/guru" 
-                   class="text-gray-500 hover:text-indigo-600 mr-4 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200">
+                <a href="<?= BASEURL; ?>/admin/guru"
+                    class="text-gray-500 hover:text-indigo-600 mr-4 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200">
                     <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 </a>
                 <div>
@@ -40,8 +45,8 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-indigo-700">
-                        <span class="font-medium">Mengedit Data:</span> 
-                        <?= htmlspecialchars($data['guru']['nama_guru']); ?> 
+                        <span class="font-medium">Mengedit Data:</span>
+                        <?= htmlspecialchars($data['guru']['nama_guru']); ?>
                         (NIK: <?= htmlspecialchars($data['guru']['nik']); ?>)<br>
                         <span class="text-xs">Pastikan perubahan data sudah benar sebelum menyimpan.</span>
                     </p>
@@ -68,7 +73,7 @@
             <div class="p-8">
                 <form action="<?= BASEURL; ?>/admin/prosesUpdateGuru" method="POST">
                     <input type="hidden" name="id_guru" value="<?= $data['guru']['id_guru']; ?>">
-                    
+
                     <div class="space-y-6">
                         <!-- Data Pribadi Section -->
                         <div class="bg-gray-50 rounded-lg p-4 mb-6">
@@ -84,13 +89,10 @@
                                         <i data-lucide="user" class="w-4 h-4 inline mr-2"></i>
                                         Nama Lengkap Guru
                                     </label>
-                                    <input type="text" 
-                                           name="nama_guru" 
-                                           id="nama_guru" 
-                                           required 
-                                           value="<?= htmlspecialchars($data['guru']['nama_guru']); ?>"
-                                           placeholder="Masukkan nama lengkap guru"
-                                           class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                                    <input type="text" name="nama_guru" id="nama_guru" required
+                                        value="<?= htmlspecialchars($data['guru']['nama_guru']); ?>"
+                                        placeholder="Masukkan nama lengkap guru"
+                                        class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
                                 </div>
 
                                 <!-- Row: NIK dan Email -->
@@ -100,14 +102,12 @@
                                             <i data-lucide="id-card" class="w-4 h-4 inline mr-2"></i>
                                             NIK <span class="text-gray-500">(Username)</span>
                                         </label>
-                                        <input type="text" 
-                                               name="nik" 
-                                               id="nik" 
-                                               required 
-                                               value="<?= htmlspecialchars($data['guru']['nik']); ?>"
-                                               placeholder="Contoh: 1234567890123456"
-                                               class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
-                                        <p class="text-xs text-gray-500 mt-1">NIK digunakan sebagai username untuk login</p>
+                                        <input type="text" name="nik" id="nik" required
+                                            value="<?= htmlspecialchars($data['guru']['nik']); ?>"
+                                            placeholder="Contoh: 1234567890123456"
+                                            class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                                        <p class="text-xs text-gray-500 mt-1">NIK digunakan sebagai username untuk login
+                                        </p>
                                     </div>
 
                                     <div>
@@ -115,14 +115,25 @@
                                             <i data-lucide="mail" class="w-4 h-4 inline mr-2"></i>
                                             Email
                                         </label>
-                                             <input type="email" 
-                                                 name="email" 
-                                                 id="email" 
-                                                 value="<?= htmlspecialchars($data['guru']['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                               placeholder="contoh@email.com"
-                                               class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                                        <input type="email" name="email" id="email"
+                                            value="<?= htmlspecialchars($data['guru']['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                            placeholder="contoh@email.com"
+                                            class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
                                         <p class="text-xs text-gray-500 mt-1">Opsional</p>
                                     </div>
+                                </div>
+
+                                <!-- No. WhatsApp -->
+                                <div>
+                                    <label for="no_wa" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i data-lucide="phone" class="w-4 h-4 inline mr-2"></i>
+                                        No. WhatsApp
+                                    </label>
+                                    <input type="text" name="no_wa" id="no_wa"
+                                        value="<?= htmlspecialchars($data['guru']['no_wa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                        placeholder="Contoh: 08123456789"
+                                        class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                                    <p class="text-xs text-gray-500 mt-1">Digunakan untuk notifikasi WhatsApp</p>
                                 </div>
                             </div>
                         </div>
@@ -133,11 +144,12 @@
                                 <i data-lucide="lock" class="w-4 h-4 mr-2"></i>
                                 Ubah Password
                             </h4>
-                            
+
                             <div class="mb-4 p-3 bg-yellow-100 rounded-lg border-l-4 border-yellow-400">
                                 <p class="text-sm text-yellow-800">
                                     <i data-lucide="alert-triangle" class="w-4 h-4 inline mr-2"></i>
-                                    <strong>Perhatian:</strong> Kosongkan field ini jika tidak ingin mengubah password guru.
+                                    <strong>Perhatian:</strong> Kosongkan field ini jika tidak ingin mengubah password
+                                    guru.
                                 </p>
                             </div>
 
@@ -147,15 +159,13 @@
                                     Password Baru
                                 </label>
                                 <div class="relative">
-                                    <input type="password" 
-                                           name="password_baru" 
-                                           id="password_baru" 
-                                           placeholder="Masukkan password baru (opsional)"
-                                           class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 pr-10">
-                                    <button type="button" 
-                                            onclick="togglePassword()" 
-                                            class="absolute inset-y-0 right-0 flex items-center pr-3 mt-1">
-                                        <i data-lucide="eye" id="eye-icon" class="w-4 h-4 text-gray-400 hover:text-gray-600"></i>
+                                    <input type="password" name="password_baru" id="password_baru"
+                                        placeholder="Masukkan password baru (opsional)"
+                                        class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 pr-10">
+                                    <button type="button" onclick="togglePassword()"
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3 mt-1">
+                                        <i data-lucide="eye" id="eye-icon"
+                                            class="w-4 h-4 text-gray-400 hover:text-gray-600"></i>
                                     </button>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ingin mengubah password</p>
@@ -166,13 +176,13 @@
                     <!-- Form Actions -->
                     <div class="mt-8 pt-6 border-t border-gray-200">
                         <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
-                            <a href="<?= BASEURL; ?>/admin/guru" 
-                               class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 px-6 rounded-lg text-center transition-colors duration-200 flex items-center justify-center">
+                            <a href="<?= BASEURL; ?>/admin/guru"
+                                class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 px-6 rounded-lg text-center transition-colors duration-200 flex items-center justify-center">
                                 <i data-lucide="x" class="w-4 h-4 mr-2"></i>
                                 Batal
                             </a>
-                            <button type="submit" 
-                                    class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 shadow-sm flex items-center justify-center">
+                            <button type="submit"
+                                class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 shadow-sm flex items-center justify-center">
                                 <i data-lucide="save" class="w-4 h-4 mr-2"></i>
                                 Update Data Guru
                             </button>
@@ -194,84 +204,85 @@
     </main>
 
     <script>
-    // Toggle password visibility
-    function togglePassword() {
-        const passwordField = document.getElementById('password_baru');
-        const eyeIcon = document.getElementById('eye-icon');
-        
-        if (passwordField.type === 'password') {
-            passwordField.type = 'text';
-            eyeIcon.setAttribute('data-lucide', 'eye-off');
-        } else {
-            passwordField.type = 'password';
-            eyeIcon.setAttribute('data-lucide', 'eye');
-        }
-        lucide.createIcons();
-    }
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordField = document.getElementById('password_baru');
+            const eyeIcon = document.getElementById('eye-icon');
 
-    // Form validation and enhancement
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Lucide icons
-        if (typeof lucide !== 'undefined') {
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                passwordField.type = 'password';
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
             lucide.createIcons();
         }
 
-        // NIK validation
-        const nikField = document.getElementById('nik');
-        nikField.addEventListener('input', function(e) {
-            // Only allow numbers
-            e.target.value = e.target.value.replace(/\D/g, '');
-            
-            // Limit to 16 digits for NIK
-            if (e.target.value.length > 16) {
-                e.target.value = e.target.value.slice(0, 16);
+        // Form validation and enhancement
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
             }
-        });
 
-        // Name field enhancement
-        const namaField = document.getElementById('nama_guru');
-        namaField.addEventListener('input', function(e) {
-            // Capitalize first letter of each word
-            e.target.value = e.target.value.replace(/\w\S*/g, function(txt) {
-                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            // NIK validation
+            const nikField = document.getElementById('nik');
+            nikField.addEventListener('input', function (e) {
+                // Only allow numbers
+                e.target.value = e.target.value.replace(/\D/g, '');
+
+                // Limit to 16 digits for NIK
+                if (e.target.value.length > 16) {
+                    e.target.value = e.target.value.slice(0, 16);
+                }
+            });
+
+            // Name field enhancement
+            const namaField = document.getElementById('nama_guru');
+            namaField.addEventListener('input', function (e) {
+                // Capitalize first letter of each word
+                e.target.value = e.target.value.replace(/\w\S*/g, function (txt) {
+                    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                });
+            });
+
+            // Email validation enhancement
+            const emailField = document.getElementById('email');
+            emailField.addEventListener('blur', function (e) {
+                const email = e.target.value;
+                if (email && !email.includes('@')) {
+                    e.target.setCustomValidity('Format email tidak valid');
+                    e.target.reportValidity();
+                } else {
+                    e.target.setCustomValidity('');
+                }
+            });
+
+            // NIK change confirmation
+            const originalNik = nikField.value;
+            nikField.addEventListener('change', function (e) {
+                if (originalNik !== e.target.value && originalNik !== '') {
+                    const confirmed = confirm(
+                        `Anda akan mengubah NIK dari "${originalNik}" menjadi "${e.target.value}".\n\n` +
+                        'NIK digunakan sebagai username untuk login. Pastikan perubahan ini benar. Lanjutkan?'
+                    );
+
+                    if (!confirmed) {
+                        e.target.value = originalNik;
+                    }
+                }
+            });
+
+            // Form submission enhancement
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function (e) {
+                const submitButton = form.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Menyimpan...';
             });
         });
-
-        // Email validation enhancement
-        const emailField = document.getElementById('email');
-        emailField.addEventListener('blur', function(e) {
-            const email = e.target.value;
-            if (email && !email.includes('@')) {
-                e.target.setCustomValidity('Format email tidak valid');
-                e.target.reportValidity();
-            } else {
-                e.target.setCustomValidity('');
-            }
-        });
-
-        // NIK change confirmation
-        const originalNik = nikField.value;
-        nikField.addEventListener('change', function(e) {
-            if (originalNik !== e.target.value && originalNik !== '') {
-                const confirmed = confirm(
-                    `Anda akan mengubah NIK dari "${originalNik}" menjadi "${e.target.value}".\n\n` +
-                    'NIK digunakan sebagai username untuk login. Pastikan perubahan ini benar. Lanjutkan?'
-                );
-                
-                if (!confirmed) {
-                    e.target.value = originalNik;
-                }
-            }
-        });
-
-        // Form submission enhancement
-        const form = document.querySelector('form');
-        form.addEventListener('submit', function(e) {
-            const submitButton = form.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Menyimpan...';
-        });
-    });
     </script>
 </body>
+
 </html>

@@ -369,6 +369,7 @@ class GuruController extends Controller
 
         $nama_guru = trim($_POST['nama_guru'] ?? '');
         $email = trim($_POST['email'] ?? '');
+        $no_wa = trim($_POST['no_wa'] ?? '');
 
         if (empty($nama_guru)) {
             Flasher::setFlash('Gagal', 'Nama tidak boleh kosong', 'danger');
@@ -379,6 +380,7 @@ class GuruController extends Controller
         $updated = $this->model('Guru_model')->updateProfilGuru($id_guru, [
             'nama_guru' => $nama_guru,
             'email' => $email,
+            'no_wa' => $no_wa,
         ]);
 
         if ($updated !== false) {
@@ -387,7 +389,7 @@ class GuruController extends Controller
             if ($guruUpdated) {
                 $_SESSION['user_nama_lengkap'] = $guruUpdated['nama_guru'];
             }
-            Flasher::setFlash('Berhasil', $updated > 0 ? 'Profil diperbarui' : 'Tidak ada perubahan', 'success');
+            Flasher::setFlash('Berhasil', 'Profil berhasil disimpan', 'success');
         } else {
             Flasher::setFlash('Gagal', 'Terjadi kesalahan saat menyimpan', 'danger');
         }
@@ -1993,6 +1995,60 @@ class GuruController extends Controller
         $filename = 'RPP_' . $rpp['nama_mapel'] . '_' . $rpp['nama_kelas'] . '_' . date('Y-m-d') . '.pdf';
         $dompdf->stream($filename, ['Attachment' => 1]);
         exit;
+    }
+
+    // =================================================================
+    // PESAN (MESSAGING INBOX)
+    // =================================================================
+
+    /**
+     * Inbox pesan guru
+     */
+    public function pesan()
+    {
+        $this->data['judul'] = 'Kotak Masuk Pesan';
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+
+        $pesanModel = $this->model('Pesan_model');
+        $this->data['pesan'] = $pesanModel->getInbox('guru', $id_guru);
+        $this->data['unread_count'] = $pesanModel->getUnreadCount('guru', $id_guru);
+
+        $this->view('templates/header', $this->data);
+        $this->loadSidebar();
+        $this->view('guru/pesan', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Detail pesan guru
+     */
+    public function detailPesan($id = null)
+    {
+        if (!$id) {
+            header('Location: ' . BASEURL . '/guru/pesan');
+            exit;
+        }
+
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+        $pesanModel = $this->model('Pesan_model');
+
+        // Cek apakah guru ini penerima
+        if (!$pesanModel->isPenerima($id, 'guru', $id_guru)) {
+            Flasher::setFlash('Anda tidak memiliki akses ke pesan ini!', 'error');
+            header('Location: ' . BASEURL . '/guru/pesan');
+            exit;
+        }
+
+        // Tandai sudah dibaca
+        $pesanModel->tandaiDibaca($id, 'guru', $id_guru);
+
+        $this->data['pesan'] = $pesanModel->getPesanById($id);
+        $this->data['judul'] = 'Detail Pesan';
+
+        $this->view('templates/header', $this->data);
+        $this->loadSidebar();
+        $this->view('guru/detail_pesan', $this->data);
+        $this->view('templates/footer', $this->data);
     }
 }
 ?>

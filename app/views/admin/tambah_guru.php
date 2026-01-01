@@ -11,15 +11,24 @@
             <div class="space-y-6">
                 <div>
                     <label for="nama_guru" class="block text-sm font-medium text-gray-700">Nama Lengkap Guru</label>
-                    <input type="text" name="nama_guru" id="nama_guru" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <input type="text" name="nama_guru" id="nama_guru" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
                 </div>
                 <div>
                     <label for="nik" class="block text-sm font-medium text-gray-700">NIK (akan menjadi Username)</label>
-                    <input type="text" name="nik" id="nik" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <input type="text" name="nik" id="nik" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
                 </div>
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">Email (Opsional)</label>
-                    <input type="email" name="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <input type="email" name="email" id="email"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label for="no_wa" class="block text-sm font-medium text-gray-700">No. WhatsApp (Opsional)</label>
+                    <input type="text" name="no_wa" id="no_wa" placeholder="Contoh: 08123456789"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <p class="text-xs text-gray-500 mt-1">Digunakan untuk notifikasi WhatsApp</p>
                 </div>
 
                 <div class="border-t pt-6">
@@ -28,12 +37,16 @@
 
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" name="password" id="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <input type="password" name="password" id="password" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
                 </div>
             </div>
             <div class="mt-8 pt-5 border-t border-gray-200 flex justify-end space-x-3">
-                <a href="<?= BASEURL; ?>/admin/guru" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg">Batal</a>
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Simpan Data</button>
+                <a href="<?= BASEURL; ?>/admin/guru"
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg">Batal</a>
+                <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Simpan
+                    Data</button>
             </div>
         </form>
     </div>

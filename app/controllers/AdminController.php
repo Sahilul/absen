@@ -5659,5 +5659,250 @@ Waktu: ' . date('d/m/Y H:i:s');
         // Direct to new print view
         $this->view('admin/cetak_kartu_login_siswa', $this->data);
     }
+
+    // =================================================================
+    // PESAN (MESSAGING SYSTEM)
+    // =================================================================
+
+    /**
+     * Halaman utama pesan - daftar terkirim
+     */
+    public function pesan()
+    {
+        $this->data['judul'] = 'Pesan';
+        $pesanModel = $this->model('Pesan_model');
+
+        // Admin ID = 0 (system)
+        $this->data['pesan_terkirim'] = $pesanModel->getPesanTerkirim('admin', 0);
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/pesan', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Form kirim pesan baru
+     */
+    public function kirimPesan()
+    {
+        $this->data['judul'] = 'Tulis Pesan Baru';
+        $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+
+        // Data untuk dropdown
+        $this->data['kelas'] = $this->model('Kelas_model')->getKelasByTP($id_tp);
+        $this->data['guru'] = $this->model('Guru_model')->getAllGuru();
+        $this->data['siswa'] = $this->model('Siswa_model')->getAllSiswaWithKelas($id_tp);
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/kirim_pesan', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Proses kirim pesan
+     */
+    public function prosesKirimPesan()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/pesan');
+            exit;
+        }
+
+        $target_type = $_POST['target_type'] ?? '';
+        $judul = trim($_POST['judul'] ?? '');
+        $isi = trim($_POST['isi'] ?? '');
+
+        // Validasi
+        if (empty($target_type) || empty($judul) || empty($isi)) {
+            Flasher::setFlash('Semua field wajib diisi!', 'error');
+            header('Location: ' . BASEURL . '/admin/kirimPesan');
+            exit;
+        }
+
+        // Tentukan target_id
+        $target_id = null;
+        if ($target_type === 'kelas') {
+            $target_id = $_POST['target_kelas'] ?? null;
+        } elseif ($target_type === 'guru_individual') {
+            $target_id = $_POST['target_guru'] ?? null;
+        } elseif ($target_type === 'siswa_individual') {
+            $target_id = $_POST['target_siswa'] ?? null;
+        }
+
+        // Upload lampiran
+        $lampiran = null;
+        if (!empty($_FILES['lampiran']['name'])) {
+            $allowed = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'zip'];
+            $ext = strtolower(pathinfo($_FILES['lampiran']['name'], PATHINFO_EXTENSION));
+
+            if (!in_array($ext, $allowed)) {
+                Flasher::setFlash('Format file tidak diizinkan!', 'error');
+                header('Location: ' . BASEURL . '/admin/kirimPesan');
+                exit;
+            }
+
+            if ($_FILES['lampiran']['size'] > 10 * 1024 * 1024) {
+                Flasher::setFlash('Ukuran file maksimal 10MB!', 'error');
+                header('Location: ' . BASEURL . '/admin/kirimPesan');
+                exit;
+            }
+
+            $lampiran = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', $_FILES['lampiran']['name']);
+            $uploadPath = APPROOT . '/public/uploads/pesan/' . $lampiran;
+            move_uploaded_file($_FILES['lampiran']['tmp_name'], $uploadPath);
+        }
+
+        $pesanModel = $this->model('Pesan_model');
+        $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+
+        // Insert pesan
+        $id_pesan = $pesanModel->kirimPesan([
+            'pengirim_type' => 'admin',
+            'pengirim_id' => 0,
+            'judul' => $judul,
+            'isi' => $isi,
+            'target_type' => $target_type,
+            'target_id' => $target_id,
+            'lampiran' => $lampiran
+        ]);
+
+        // Tentukan penerima
+        $penerima_list = [];
+        switch ($target_type) {
+            case 'semua_guru':
+                $guru = $pesanModel->getAllGuruIds();
+                foreach ($guru as $g) {
+                    $penerima_list[] = ['type' => 'guru', 'id' => $g['id']];
+                }
+                break;
+            case 'semua_siswa':
+                $siswa = $pesanModel->getAllSiswaIds();
+                foreach ($siswa as $s) {
+                    $penerima_list[] = ['type' => 'siswa', 'id' => $s['id']];
+                }
+                break;
+            case 'kelas':
+                $siswa = $pesanModel->getSiswaIdsByKelas($target_id, $id_tp);
+                foreach ($siswa as $s) {
+                    $penerima_list[] = ['type' => 'siswa', 'id' => $s['id']];
+                }
+                break;
+            case 'guru_individual':
+                $penerima_list[] = ['type' => 'guru', 'id' => $target_id];
+                break;
+            case 'siswa_individual':
+                $penerima_list[] = ['type' => 'siswa', 'id' => $target_id];
+                break;
+        }
+
+        // Insert penerima
+        $pesanModel->kirimKePenerima($id_pesan, $penerima_list);
+
+        // ========================================
+        // KIRIM VIA WHATSAPP
+        // ========================================
+        $wa_sent = 0;
+        $wa_failed = 0;
+
+        try {
+            require_once APPROOT . '/app/core/Fonnte.php';
+            $fonnte = new Fonnte();
+
+            // Format pesan WA
+            $waMessage = "📩 *PESAN DARI SEKOLAH*\n\n";
+            $waMessage .= "*{$judul}*\n\n";
+            $waMessage .= $isi;
+            if (!empty($lampiran)) {
+                $waMessage .= "\n\n📎 _Lampiran tersedia di aplikasi_";
+            }
+            $waMessage .= "\n\n━━━━━━━━━━━━━━━━━━━━━\n";
+            $waMessage .= "_Pesan ini dikirim otomatis._";
+
+            // Kirim ke masing-masing penerima yang punya no_wa
+            foreach ($penerima_list as $penerima) {
+                $no_wa = null;
+
+                if ($penerima['type'] === 'guru') {
+                    $guru = $pesanModel->getGuruWithNoWa($penerima['id']);
+                    $no_wa = $guru['no_wa'] ?? null;
+                } elseif ($penerima['type'] === 'siswa') {
+                    $siswa = $pesanModel->getSiswaWithNoWa($penerima['id']);
+                    $no_wa = $siswa['no_wa'] ?? null;
+                }
+
+                if (!empty($no_wa)) {
+                    $result = $fonnte->send($no_wa, $waMessage);
+                    if (!empty($result['status']) && $result['status'] === true) {
+                        $wa_sent++;
+                    } else {
+                        $wa_failed++;
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            error_log("WhatsApp send error: " . $e->getMessage());
+        }
+
+        // Flash message dengan info WA
+        $flashMsg = "Pesan berhasil disimpan untuk " . count($penerima_list) . " penerima.";
+        if ($wa_sent > 0) {
+            $flashMsg .= " ✅ {$wa_sent} pesan WhatsApp terkirim.";
+        }
+        if ($wa_failed > 0) {
+            $flashMsg .= " ⚠️ {$wa_failed} WA gagal.";
+        }
+
+        Flasher::setFlash($flashMsg, 'success');
+        header('Location: ' . BASEURL . '/admin/pesan');
+        exit;
+    }
+
+    /**
+     * Detail pesan
+     */
+    public function detailPesan($id = null)
+    {
+        if (!$id) {
+            header('Location: ' . BASEURL . '/admin/pesan');
+            exit;
+        }
+
+        $pesanModel = $this->model('Pesan_model');
+        $this->data['pesan'] = $pesanModel->getPesanById($id);
+
+        if (!$this->data['pesan']) {
+            Flasher::setFlash('Pesan tidak ditemukan!', 'error');
+            header('Location: ' . BASEURL . '/admin/pesan');
+            exit;
+        }
+
+        $this->data['penerima'] = $pesanModel->getPenerimaPesan($id);
+        $this->data['judul'] = 'Detail Pesan';
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/detail_pesan', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Hapus pesan
+     */
+    public function hapusPesan($id = null)
+    {
+        if (!$id || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/pesan');
+            exit;
+        }
+
+        $pesanModel = $this->model('Pesan_model');
+        $pesanModel->hapusPesan($id);
+
+        Flasher::setFlash('Pesan berhasil dihapus!', 'success');
+        header('Location: ' . BASEURL . '/admin/pesan');
+        exit;
+    }
 }
 
