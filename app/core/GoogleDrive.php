@@ -375,11 +375,12 @@ class GoogleDrive
     }
 
     /**
-     * Get public URL untuk file
+     * Get public URL untuk file (direct image embed)
      */
     public function getPublicUrl($fileId)
     {
-        return 'https://drive.google.com/uc?id=' . $fileId;
+        // Format lh3 lebih reliable untuk embed gambar langsung
+        return 'https://lh3.googleusercontent.com/d/' . $fileId;
     }
 
     /**
