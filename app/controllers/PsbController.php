@@ -1,11 +1,11 @@
 <?php
 
 /**
- * File: app/controllers/PSBController.php
+ * File: app/controllers/PsbController.php
  * Controller untuk PSB (Penerimaan Siswa Baru)
  * Menangani halaman publik dan admin dashboard PSB
  */
-class PSBController extends Controller
+class PsbController extends Controller
 {
 
     private $psbModel;

@@ -58,7 +58,7 @@ class App
 
             if (in_array($method, $publicMethods)) {
                 error_log("App.php - PSB public route detected: " . $method);
-                $this->handlePublicRoute('PSBController', $url);
+                $this->handlePublicRoute('PsbController', $url);
                 return;
             }
             // Admin PSB methods will go through normal auth flow
