@@ -125,7 +125,8 @@ $selected_lembaga = $data['selected_lembaga'] ?? '';
                                 </div>
                                 <?php if (!empty($tamu['bertemu_dengan'])): ?>
                                     <div class="text-xs text-gray-500 mt-1">Bertemu:
-                                        <?= htmlspecialchars($tamu['bertemu_dengan']) ?></div>
+                                        <?= htmlspecialchars($tamu['bertemu_dengan']) ?>
+                                    </div>
                                 <?php endif; ?>
                                 <div class="flex items-center justify-between mt-3">
                                     <div class="text-xs text-gray-500">
@@ -137,13 +138,6 @@ $selected_lembaga = $data['selected_lembaga'] ?? '';
                                             class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg">
                                             <i data-lucide="eye" class="w-4 h-4"></i>
                                         </a>
-                                        <?php if (empty($tamu['waktu_pulang'])): ?>
-                                            <a href="<?= BASEURL ?>/bukuTamu/setPulang/<?= $tamu['id'] ?>"
-                                                class="p-2 text-green-600 hover:bg-green-50 rounded-lg"
-                                                onclick="return confirm('Tandai tamu sudah pulang?')">
-                                                <i data-lucide="log-out" class="w-4 h-4"></i>
-                                            </a>
-                                        <?php endif; ?>
                                         <a href="<?= BASEURL ?>/bukuTamu/hapus/<?= $tamu['id'] ?>"
                                             class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                                             onclick="return confirm('Hapus data tamu ini?')">
@@ -191,7 +185,8 @@ $selected_lembaga = $data['selected_lembaga'] ?? '';
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="text-gray-700 truncate max-w-[200px]">
-                                        <?= htmlspecialchars($tamu['keperluan']) ?></div>
+                                        <?= htmlspecialchars($tamu['keperluan']) ?>
+                                    </div>
                                     <?php if (!empty($tamu['bertemu_dengan'])): ?>
                                         <div class="text-xs text-gray-500">Bertemu: <?= htmlspecialchars($tamu['bertemu_dengan']) ?>
                                         </div>
@@ -212,13 +207,6 @@ $selected_lembaga = $data['selected_lembaga'] ?? '';
                                             class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="Detail">
                                             <i data-lucide="eye" class="w-4 h-4"></i>
                                         </a>
-                                        <?php if (empty($tamu['waktu_pulang'])): ?>
-                                            <a href="<?= BASEURL ?>/bukuTamu/setPulang/<?= $tamu['id'] ?>"
-                                                class="p-2 text-green-600 hover:bg-green-50 rounded-lg" title="Set Pulang"
-                                                onclick="return confirm('Tandai tamu sudah pulang?')">
-                                                <i data-lucide="log-out" class="w-4 h-4"></i>
-                                            </a>
-                                        <?php endif; ?>
                                         <a href="<?= BASEURL ?>/bukuTamu/hapus/<?= $tamu['id'] ?>"
                                             class="p-2 text-red-600 hover:bg-red-50 rounded-lg" title="Hapus"
                                             onclick="return confirm('Hapus data tamu ini?')">

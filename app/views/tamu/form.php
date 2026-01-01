@@ -80,6 +80,22 @@
                         class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
+                <!-- Waktu Datang & Pulang -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Waktu Datang <span
+                                class="text-red-500">*</span></label>
+                        <input type="datetime-local" name="waktu_datang" id="waktuDatang" required
+                            class="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Waktu Pulang</label>
+                        <input type="datetime-local" name="waktu_pulang" id="waktuPulang"
+                            class="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        <p class="text-xs text-gray-400 mt-1">Kosongkan jika belum pulang</p>
+                    </div>
+                </div>
+
                 <!-- Foto Kehadiran -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Foto Kehadiran <span
@@ -312,6 +328,11 @@
 
         // Init
         startCamera();
+
+        // Set default waktu datang to now
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('waktuDatang').value = now.toISOString().slice(0, 16);
     </script>
 </body>
 

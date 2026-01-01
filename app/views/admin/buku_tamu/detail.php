@@ -74,18 +74,7 @@ $tamu = $data['tamu'] ?? [];
                     </p>
                 </div>
             </div>
-
-            <?php if (empty($tamu['waktu_pulang'])): ?>
-                <div class="mt-6 pt-4 border-t">
-                    <a href="<?= BASEURL ?>/bukuTamu/setPulang/<?= $tamu['id'] ?>"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl"
-                        onclick="return confirm('Tandai tamu sudah pulang?')">
-                        <i data-lucide="log-out" class="w-4 h-4"></i> Set Waktu Pulang
-                    </a>
-                </div>
-            <?php endif; ?>
         </div>
-    </div>
 </main>
 
 <script>

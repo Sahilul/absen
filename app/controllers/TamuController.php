@@ -125,6 +125,11 @@ class TamuController extends Controller
 
         // Save to database
         $bukuTamuModel = $this->model('BukuTamu_model');
+
+        // Parse waktu datang/pulang
+        $waktu_datang = !empty($_POST['waktu_datang']) ? date('Y-m-d H:i:s', strtotime($_POST['waktu_datang'])) : date('Y-m-d H:i:s');
+        $waktu_pulang = !empty($_POST['waktu_pulang']) ? date('Y-m-d H:i:s', strtotime($_POST['waktu_pulang'])) : null;
+
         $bukuTamuModel->create([
             'id_link' => $link['id'],
             'id_lembaga' => $link['id_lembaga'],
@@ -135,7 +140,9 @@ class TamuController extends Controller
             'keperluan' => $keperluan,
             'bertemu_dengan' => trim($_POST['bertemu_dengan'] ?? ''),
             'foto_drive_id' => $foto_drive_id,
-            'foto_url' => $foto_url
+            'foto_url' => $foto_url,
+            'waktu_datang' => $waktu_datang,
+            'waktu_pulang' => $waktu_pulang
         ]);
 
         // Mark link as used
