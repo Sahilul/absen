@@ -35,6 +35,7 @@ $namaTp = $data['nama_tp'] ?? '';
                 <ul class="list-disc list-inside space-y-1 text-blue-700">
                     <li><strong>Bendahara</strong> - Dapat menginput pembayaran untuk SEMUA kelas</li>
                     <li><strong>Petugas PSB</strong> - Dapat mengelola data PSB</li>
+                    <li><strong>Petugas Buku Tamu</strong> - Dapat mengelola buku tamu digital</li>
                     <li>Satu guru bisa memiliki beberapa fungsi sekaligus</li>
                     <li>Wali kelas juga bisa merangkap sebagai bendahara</li>
                 </ul>
@@ -76,7 +77,8 @@ $namaTp = $data['nama_tp'] ?? '';
                             <?php foreach ($fungsiTersedia as $kode => $label): ?>
                                 <th
                                     class="px-4 py-3 text-center text-xs font-medium text-secondary-500 uppercase tracking-wider">
-                                    <?= $label; ?></th>
+                                    <?= $label; ?>
+                                </th>
                             <?php endforeach; ?>
                         </tr>
                     </thead>

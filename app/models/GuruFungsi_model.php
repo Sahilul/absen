@@ -60,6 +60,17 @@ class GuruFungsi_model
     }
 
     /**
+     * Check if guru is petugas buku tamu for given TP
+     */
+    public function isPetugasBukuTamu($id_guru, $id_tp)
+    {
+        $this->db->query('SELECT id FROM guru_fungsi WHERE id_guru = :id_guru AND fungsi = "petugas_buku_tamu" AND id_tp = :id_tp AND is_active = 1');
+        $this->db->bind('id_guru', $id_guru);
+        $this->db->bind('id_tp', $id_tp);
+        return $this->db->single() ? true : false;
+    }
+
+    /**
      * Check if guru has specific function
      */
     public function hasFungsi($id_guru, $fungsi, $id_tp)
@@ -169,6 +180,7 @@ class GuruFungsi_model
         return [
             'bendahara' => 'Bendahara',
             'petugas_psb' => 'Petugas PSB',
+            'petugas_buku_tamu' => 'Petugas Buku Tamu',
             'admin_cms' => 'Admin CMS',
             'kurikulum' => 'Kurikulum',
             'kesiswaan' => 'Kesiswaan'
