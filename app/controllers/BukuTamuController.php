@@ -96,7 +96,7 @@ class BukuTamuController extends Controller
         $this->data['lembaga_list'] = $lembagaModel->getAll();
 
         $this->view('templates/header', $this->data);
-        $this->view('templates/sidebar_admin', $this->data);
+        $this->view($this->getSidebar(), $this->data);
         $this->view('admin/buku_tamu/lembaga', $this->data);
         $this->view('templates/footer', $this->data);
     }
@@ -174,7 +174,7 @@ class BukuTamuController extends Controller
         $this->data['lembaga_list'] = $lembagaModel->getActive();
 
         $this->view('templates/header', $this->data);
-        $this->view('templates/sidebar_admin', $this->data);
+        $this->view($this->getSidebar(), $this->data);
         $this->view('admin/buku_tamu/generate_link', $this->data);
         $this->view('templates/footer', $this->data);
     }
