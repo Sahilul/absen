@@ -434,7 +434,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
 
     <!-- Footer dengan Logout -->
     <div
-        class="p-4 border-t border-white/20 mt-auto bg-white/90 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none">
+        class="flex-shrink-0 p-4 border-t border-white/20 mt-auto bg-white/95 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none pb-safe">
         <!-- Version Info -->
         <?php
         $versionFile = dirname(dirname(dirname(__DIR__))) . '/version.json';
@@ -507,6 +507,11 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
 
     .sidebar-nav::-webkit-scrollbar-thumb:hover {
         background-color: rgba(156, 163, 175, 0.5);
+    }
+
+    /* Safe area padding for mobile (iPhone notch, etc) */
+    .pb-safe {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
     }
 
     /* Alpine.js collapse animation */
