@@ -369,6 +369,33 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             </li>
 
             <!-- ============================================== -->
+            <!-- DROPDOWN: APLIKASI LAIN -->
+            <!-- ============================================== -->
+            <?php $appLainActive = isGroupActive($judul, ['Buku Tamu', 'Kelola Lembaga', 'Generate Link']); ?>
+            <li class="pt-2" x-data="{ open: <?= $appLainActive ? 'true' : 'false' ?> }">
+                <button @click="open = !open"
+                    class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $appLainActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
+                    <div
+                        class="<?= $appLainActive ? 'bg-primary-200' : 'bg-teal-100 group-hover:bg-teal-200' ?> p-2 rounded-lg transition-colors duration-200">
+                        <i data-lucide="boxes"
+                            class="w-4 h-4 <?= $appLainActive ? 'text-primary-700' : 'text-teal-600' ?>"></i>
+                    </div>
+                    <span class="ml-3 whitespace-nowrap flex-1 text-left">Aplikasi Lain</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"
+                        :class="open ? 'rotate-180' : ''"></i>
+                </button>
+                <ul x-show="open" x-collapse class="mt-1 ml-4 space-y-1 border-l-2 border-teal-200 pl-3">
+                    <li>
+                        <a href="<?= BASEURL; ?>/bukuTamu"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Buku Tamu') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-teal-50 hover:text-teal-700' ?>">
+                            <i data-lucide="book-user" class="w-4 h-4 mr-2"></i>
+                            Buku Tamu Digital
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- ============================================== -->
             <!-- DROPDOWN: PENGATURAN -->
             <!-- ============================================== -->
             <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru']); ?>
