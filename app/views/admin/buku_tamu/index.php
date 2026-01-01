@@ -152,8 +152,8 @@ $selected_lembaga = $data['selected_lembaga'] ?? '';
             </div>
 
             <!-- Desktop Table View -->
-            <div class="hidden md:block overflow-x-auto">
-                <table class="w-full text-sm">
+            <div id="tableContainer" class="hidden md:block overflow-x-auto">
+                <table id="tamuTable" class="w-full text-sm">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-3 text-left font-medium text-gray-600">Nama / Instansi</th>
@@ -234,7 +234,33 @@ $selected_lembaga = $data['selected_lembaga'] ?? '';
     }
 
     function printTable() {
-        const printContent = document.querySelector('table').outerHTML;
+        // Temporarily show table if hidden (mobile)
+        const tableContainer = document.getElementById('tableContainer');
+        const wasHidden = tableContainer && tableContainer.classList.contains('hidden');
+        if (wasHidden) {
+            tableContainer.classList.remove('hidden');
+        }
+        
+        const table = document.getElementById('tamuTable');
+        if (!table) {
+            alert('Tidak ada data untuk dicetak');
+            if (wasHidden) tableContainer.classList.add('hidden');
+            return;
+        }
+
+        // Clone table and remove action column
+        const tableClone = table.cloneNode(true);
+        const rows = tableClone.querySelectorAll('tr');
+        rows.forEach(row => {
+            const lastCell = row.lastElementChild;
+            if (lastCell) lastCell.remove();
+        });
+        
+        // Restore hidden state
+        if (wasHidden) {
+            tableContainer.classList.add('hidden');
+        }
+
         const lembaga = document.getElementById('filterLembaga').selectedOptions[0].text;
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`
@@ -246,17 +272,17 @@ $selected_lembaga = $data['selected_lembaga'] ?? '';
                     body { font-family: Arial, sans-serif; padding: 20px; }
                     h2 { text-align: center; margin-bottom: 5px; }
                     p { text-align: center; color: #666; margin-bottom: 20px; }
-                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: #f5f5f5; }
-                    .no-print { display: none; }
-                    img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+                    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+                    th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
+                    th { background-color: #f5f5f5; font-weight: bold; }
+                    img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
+                    @media print { body { margin: 0; } }
                 </style>
             </head>
             <body>
                 <h2>Buku Tamu Digital</h2>
-                <p>${lembaga} - Dicetak: ${new Date().toLocaleDateString('id-ID')}</p>
-                ${printContent}
+                <p>${lembaga} - Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                ${tableClone.outerHTML}
                 <script>window.print(); window.close();<\/script>
             </body>
             </html>
