@@ -57,6 +57,14 @@ class UpdateController extends Controller
 
     public function install()
     {
+        // Clear any previous output
+        if (ob_get_level())
+            ob_end_clean();
+
+        // Suppress errors from being output
+        error_reporting(0);
+        ini_set('display_errors', 0);
+
         header('Content-Type: application/json');
         try {
             if (!$this->updater->requirementsMet())

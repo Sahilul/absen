@@ -92,7 +92,8 @@ function formatBytes($bytes)
                                     <div>
                                         <p class="font-medium text-gray-800 text-sm"><?= htmlspecialchars($b['name']) ?></p>
                                         <p class="text-xs text-gray-500"><?= date('d M Y H:i', $b['date']) ?> •
-                                            <?= formatBytes($b['size']) ?></p>
+                                            <?= formatBytes($b['size']) ?>
+                                        </p>
                                     </div>
                                     <div class="flex gap-2">
                                         <button onclick="restoreBackup('<?= $b['name'] ?>')"
@@ -135,7 +136,7 @@ function formatBytes($bytes)
         </div>
     </div>
 </main>
-<div id="loadingModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+<div id="loadingModal" class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center hidden">
     <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center">
         <div class="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4">
         </div>
