@@ -57,6 +57,10 @@ class UpdateController extends Controller
 
     public function install()
     {
+        // Extend execution time and memory for large updates
+        @set_time_limit(300); // 5 minutes
+        @ini_set('memory_limit', '256M');
+
         // Clear any previous output
         if (ob_get_level())
             ob_end_clean();
@@ -66,6 +70,12 @@ class UpdateController extends Controller
         ini_set('display_errors', 0);
 
         header('Content-Type: application/json');
+
+        // Flush headers immediately
+        if (function_exists('fastcgi_finish_request')) {
+            // For FastCGI - don't use this as we need to return response
+        }
+
         try {
             if (!$this->updater->requirementsMet())
                 throw new Exception('Sistem tidak memenuhi persyaratan.');
@@ -81,6 +91,8 @@ class UpdateController extends Controller
             echo json_encode(['success' => true, 'message' => 'Update ke v' . $info['latest'] . ' berhasil!', 'backup_path' => basename($backupPath)]);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        } catch (Error $e) {
+            echo json_encode(['success' => false, 'error' => 'Fatal error: ' . $e->getMessage()]);
         }
         exit;
     }
