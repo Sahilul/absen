@@ -31,8 +31,27 @@ class UpdateController extends Controller
 
     public function check()
     {
+        // Clear any previous output
+        if (ob_get_level())
+            ob_end_clean();
+
+        // Suppress errors from being output
+        error_reporting(0);
+        ini_set('display_errors', 0);
+
         header('Content-Type: application/json');
-        echo json_encode($this->updater->checkForUpdates());
+
+        try {
+            $result = $this->updater->checkForUpdates();
+            echo json_encode($result);
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'current' => $this->updater->getCurrentVersion(),
+                'has_update' => false
+            ]);
+        }
         exit;
     }
 
