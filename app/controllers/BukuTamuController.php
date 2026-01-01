@@ -273,7 +273,7 @@ class BukuTamuController extends Controller
         }
 
         $this->view('templates/header', $this->data);
-        $this->view('templates/sidebar_admin', $this->data);
+        $this->view($this->getSidebar(), $this->data);
         $this->view('admin/buku_tamu/detail', $this->data);
         $this->view('templates/footer', $this->data);
     }
