@@ -165,23 +165,25 @@ function isMenuActive($judul, $keyword)
       <?php endif; ?>
 
       <?php
-      // Check if user has additional functions (bendahara, petugas_psb, admin_cms)
+      // Check if user has additional functions (bendahara, petugas_psb, admin_cms, petugas_buku_tamu)
       $isBendahara = false;
       $isPetugasPSB = false;
       $isAdminCms = false;
+      $isPetugasBukuTamu = false;
       if (isset($_SESSION['id_ref']) && isset($_SESSION['id_tp_aktif'])) {
         require_once APPROOT . '/app/models/GuruFungsi_model.php';
         $guruFungsiModel = new GuruFungsi_model();
         $isBendahara = $guruFungsiModel->isBendahara($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
         $isPetugasPSB = $guruFungsiModel->isPetugasPSB($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
         $isAdminCms = $guruFungsiModel->isAdminCMS($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
+        $isPetugasBukuTamu = $guruFungsiModel->isPetugasBukuTamu($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
       }
       ?>
 
-      <?php if ($isBendahara || $isPetugasPSB || $isAdminCms): ?>
+      <?php if ($isBendahara || $isPetugasPSB || $isAdminCms || $isPetugasBukuTamu): ?>
         <!-- DROPDOWN: Tugas Tambahan -->
         <?php
-        $tugasTambahanActive = strpos($judul, 'Bendahara') !== false || strpos($judul, 'PSB') !== false || strpos($judul, 'Penerimaan') !== false || strpos($judul, 'CMS') !== false || strpos($judul, 'Berita') !== false || strpos($judul, 'Post') !== false;
+        $tugasTambahanActive = strpos($judul, 'Bendahara') !== false || strpos($judul, 'PSB') !== false || strpos($judul, 'Penerimaan') !== false || strpos($judul, 'CMS') !== false || strpos($judul, 'Berita') !== false || strpos($judul, 'Post') !== false || strpos($judul, 'Buku Tamu') !== false;
         ?>
         <li class="pt-2" x-data="{ open: <?= $tugasTambahanActive ? 'true' : 'false' ?> }">
           <button @click="open = !open"
@@ -221,6 +223,15 @@ function isMenuActive($judul, $keyword)
                   class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= (strpos($judul, 'CMS') !== false || strpos($judul, 'Berita') !== false || strpos($judul, 'Post') !== false) ? 'bg-purple-100 text-purple-700' : 'text-secondary-600 hover:bg-purple-50 hover:text-purple-700' ?>">
                   <i data-lucide="newspaper" class="w-4 h-4 mr-2"></i>
                   Admin CMS
+                </a>
+              </li>
+            <?php endif; ?>
+            <?php if ($isPetugasBukuTamu): ?>
+              <li>
+                <a href="<?= BASEURL; ?>/bukuTamu"
+                  class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= strpos($judul, 'Buku Tamu') !== false ? 'bg-indigo-100 text-indigo-700' : 'text-secondary-600 hover:bg-indigo-50 hover:text-indigo-700' ?>">
+                  <i data-lucide="book-open" class="w-4 h-4 mr-2"></i>
+                  Buku Tamu
                 </a>
               </li>
             <?php endif; ?>

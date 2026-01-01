@@ -3,13 +3,55 @@
 class BukuTamuController extends Controller
 {
     private $data = [];
+    private $isPetugas = false;
 
     public function __construct()
     {
-        // Cek login admin
-        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+        // Cek login
+        if (!isset($_SESSION['role'])) {
             header('Location: ' . BASEURL . '/auth/login');
             exit;
+        }
+
+        $role = $_SESSION['role'];
+
+        // Admin always has access
+        if ($role === 'admin') {
+            return;
+        }
+
+        // Check if guru/wali_kelas has petugas_buku_tamu function
+        if (in_array($role, ['guru', 'wali_kelas'])) {
+            $id_guru = $_SESSION['id_ref'] ?? 0;
+            $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+
+            if ($id_guru && $id_tp) {
+                require_once APPROOT . '/app/models/GuruFungsi_model.php';
+                $guruFungsiModel = new GuruFungsi_model();
+                if ($guruFungsiModel->isPetugasBukuTamu($id_guru, $id_tp)) {
+                    $this->isPetugas = true;
+                    return;
+                }
+            }
+        }
+
+        // No access
+        header('Location: ' . BASEURL . '/auth/login');
+        exit;
+    }
+
+    /**
+     * Get correct sidebar based on user role
+     */
+    private function getSidebar()
+    {
+        $role = $_SESSION['role'] ?? '';
+        if ($role === 'admin') {
+            return 'templates/sidebar_admin';
+        } elseif ($role === 'wali_kelas') {
+            return 'templates/sidebar_walikelas';
+        } else {
+            return 'templates/sidebar_guru';
         }
     }
 
@@ -38,7 +80,7 @@ class BukuTamuController extends Controller
         $this->data['lembaga_list'] = $lembagaModel->getActive();
 
         $this->view('templates/header', $this->data);
-        $this->view('templates/sidebar_admin', $this->data);
+        $this->view($this->getSidebar(), $this->data);
         $this->view('admin/buku_tamu/index', $this->data);
         $this->view('templates/footer', $this->data);
     }

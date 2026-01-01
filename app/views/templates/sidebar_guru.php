@@ -11,10 +11,11 @@ $baseDir = dirname(dirname(dirname(__DIR__))); // Path ke root folder absen
 $logoPath = $baseDir . '/public/img/app/' . $logoApp;
 $logoExists = !empty($logoApp) && file_exists($logoPath);
 
-// Check if user is bendahara, petugas PSB, or admin CMS
+// Check if user is bendahara, petugas PSB, admin CMS, or petugas buku tamu
 $isBendahara = false;
 $isPetugasPSB = false;
 $isAdminCms = false;
+$isPetugasBukuTamu = false;
 $id_guru = $_SESSION['id_ref'] ?? 0;
 $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
 
@@ -26,6 +27,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'guru') {
     $isBendahara = $guruFungsiModel->isBendahara($id_guru, $id_tp_aktif);
     $isPetugasPSB = $guruFungsiModel->isPetugasPSB($id_guru, $id_tp_aktif);
     $isAdminCms = $guruFungsiModel->isAdminCMS($id_guru, $id_tp_aktif);
+    $isPetugasBukuTamu = $guruFungsiModel->isPetugasBukuTamu($id_guru, $id_tp_aktif);
   }
 }
 ?>
@@ -166,6 +168,22 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'guru') {
               </div>
               <span class="ml-3 whitespace-nowrap">Admin CMS</span>
               <span class="ml-auto bg-purple-100 text-purple-700 py-0.5 px-2 rounded-full text-xs font-medium">Extra</span>
+            </a>
+          </li>
+        <?php endif; ?>
+
+        <?php if ($isPetugasBukuTamu): ?>
+          <!-- Menu Buku Tamu -->
+          <li>
+            <a href="<?= BASEURL; ?>/bukuTamu"
+              class="group flex items-center p-3 text-sm font-medium rounded-xl transition-all duration-200 <?= strpos($judul, 'Buku Tamu') !== false ? 'gradient-primary text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
+              <div
+                class="<?= strpos($judul, 'Buku Tamu') !== false ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-indigo-100'; ?> p-2 rounded-lg transition-colors duration-200">
+                <i data-lucide="book-open"
+                  class="w-4 h-4 <?= strpos($judul, 'Buku Tamu') !== false ? 'text-white' : 'text-secondary-500 group-hover:text-indigo-600'; ?>"></i>
+              </div>
+              <span class="ml-3 whitespace-nowrap">Buku Tamu</span>
+              <span class="ml-auto bg-indigo-100 text-indigo-700 py-0.5 px-2 rounded-full text-xs font-medium">Extra</span>
             </a>
           </li>
         <?php endif; ?>
