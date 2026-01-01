@@ -23,8 +23,18 @@ class BukuTamuController extends Controller
         $bukuTamuModel = $this->model('BukuTamu_model');
         $lembagaModel = $this->model('BukuTamuLembaga_model');
 
-        $this->data['stats'] = $bukuTamuModel->getStats();
-        $this->data['tamu_list'] = $bukuTamuModel->getAll(50);
+        // Filter by lembaga
+        $id_lembaga = $_GET['lembaga'] ?? null;
+        $this->data['selected_lembaga'] = $id_lembaga;
+
+        if ($id_lembaga) {
+            $this->data['stats'] = $bukuTamuModel->getStats($id_lembaga);
+            $this->data['tamu_list'] = $bukuTamuModel->getByLembaga($id_lembaga, 50);
+        } else {
+            $this->data['stats'] = $bukuTamuModel->getStats();
+            $this->data['tamu_list'] = $bukuTamuModel->getAll(50);
+        }
+
         $this->data['lembaga_list'] = $lembagaModel->getActive();
 
         $this->view('templates/header', $this->data);

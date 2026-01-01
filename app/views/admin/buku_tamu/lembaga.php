@@ -27,50 +27,84 @@ $lembaga_list = $data['lembaga_list'] ?? [];
                 <p>Belum ada lembaga</p>
             </div>
         <?php else: ?>
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left font-medium text-gray-600">Nama Lembaga</th>
-                        <th class="px-4 py-3 text-left font-medium text-gray-600">Kode</th>
-                        <th class="px-4 py-3 text-center font-medium text-gray-600">Status</th>
-                        <th class="px-4 py-3 text-center font-medium text-gray-600">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <?php foreach ($lembaga_list as $lb): ?>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3 font-medium"><?= htmlspecialchars($lb['nama_lembaga']) ?></td>
-                            <td class="px-4 py-3"><code
-                                    class="bg-gray-100 px-2 py-0.5 rounded"><?= htmlspecialchars($lb['kode_lembaga'] ?? '-') ?></code>
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <?php if ($lb['is_active']): ?>
-                                    <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">Aktif</span>
-                                <?php else: ?>
-                                    <span class="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">Nonaktif</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <div class="flex items-center justify-center gap-1">
-                                    <button onclick='editLembaga(<?= json_encode($lb) ?>)'
-                                        class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg">
-                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
-                                    </button>
-                                    <a href="<?= BASEURL ?>/bukuTamu/toggleLembaga/<?= $lb['id'] ?>"
-                                        class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg">
-                                        <i data-lucide="power" class="w-4 h-4"></i>
-                                    </a>
-                                    <a href="<?= BASEURL ?>/bukuTamu/hapusLembaga/<?= $lb['id'] ?>"
-                                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                                        onclick="return confirm('Hapus lembaga ini?')">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </a>
-                                </div>
-                            </td>
+            <!-- Mobile Card View -->
+            <div class="md:hidden divide-y">
+                <?php foreach ($lembaga_list as $lb): ?>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-semibold text-gray-900"><?= htmlspecialchars($lb['nama_lembaga']) ?></div>
+                                <code
+                                    class="text-xs bg-gray-100 px-2 py-0.5 rounded"><?= htmlspecialchars($lb['kode_lembaga'] ?? '-') ?></code>
+                            </div>
+                            <?php if ($lb['is_active']): ?>
+                                <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">Aktif</span>
+                            <?php else: ?>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">Nonaktif</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="flex items-center gap-2 mt-3 pt-3 border-t">
+                            <button onclick='editLembaga(<?= json_encode($lb) ?>)'
+                                class="flex-1 py-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-sm font-medium">Edit</button>
+                            <a href="<?= BASEURL ?>/bukuTamu/toggleLembaga/<?= $lb['id'] ?>"
+                                class="flex-1 py-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg text-sm font-medium text-center">Toggle</a>
+                            <a href="<?= BASEURL ?>/bukuTamu/hapusLembaga/<?= $lb['id'] ?>"
+                                class="py-2 px-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg"
+                                onclick="return confirm('Hapus lembaga ini?')">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden md:block">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-medium text-gray-600">Nama Lembaga</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-600">Kode</th>
+                            <th class="px-4 py-3 text-center font-medium text-gray-600">Status</th>
+                            <th class="px-4 py-3 text-center font-medium text-gray-600">Aksi</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y">
+                        <?php foreach ($lembaga_list as $lb): ?>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 font-medium"><?= htmlspecialchars($lb['nama_lembaga']) ?></td>
+                                <td class="px-4 py-3"><code
+                                        class="bg-gray-100 px-2 py-0.5 rounded"><?= htmlspecialchars($lb['kode_lembaga'] ?? '-') ?></code>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <?php if ($lb['is_active']): ?>
+                                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">Aktif</span>
+                                    <?php else: ?>
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">Nonaktif</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button onclick='editLembaga(<?= json_encode($lb) ?>)'
+                                            class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg">
+                                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                        </button>
+                                        <a href="<?= BASEURL ?>/bukuTamu/toggleLembaga/<?= $lb['id'] ?>"
+                                            class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg">
+                                            <i data-lucide="power" class="w-4 h-4"></i>
+                                        </a>
+                                        <a href="<?= BASEURL ?>/bukuTamu/hapusLembaga/<?= $lb['id'] ?>"
+                                            class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                            onclick="return confirm('Hapus lembaga ini?')">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         <?php endif; ?>
     </div>
 </main>

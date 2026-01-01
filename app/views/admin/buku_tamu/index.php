@@ -2,6 +2,7 @@
 $stats = $data['stats'] ?? [];
 $tamu_list = $data['tamu_list'] ?? [];
 $lembaga_list = $data['lembaga_list'] ?? [];
+$selected_lembaga = $data['selected_lembaga'] ?? '';
 ?>
 <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 sm:p-6">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -75,12 +76,20 @@ $lembaga_list = $data['lembaga_list'] ?? [];
     <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
         <div class="px-4 py-3 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <h3 class="font-semibold text-gray-800">Daftar Kunjungan Tamu</h3>
-            <select id="filterLembaga" class="px-3 py-1.5 border rounded-lg text-sm" onchange="filterByLembaga()">
-                <option value="">Semua Lembaga</option>
-                <?php foreach ($lembaga_list as $lb): ?>
-                    <option value="<?= $lb['id'] ?>"><?= htmlspecialchars($lb['nama_lembaga']) ?></option>
-                <?php endforeach; ?>
-            </select>
+            <div class="flex items-center gap-2">
+                <select id="filterLembaga" class="px-3 py-1.5 border rounded-lg text-sm" onchange="filterByLembaga()">
+                    <option value="">Semua Lembaga</option>
+                    <?php foreach ($lembaga_list as $lb): ?>
+                        <option value="<?= $lb['id'] ?>" <?= ($selected_lembaga == $lb['id']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($lb['nama_lembaga']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <button onclick="printTable()"
+                    class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm flex items-center gap-1">
+                    <i data-lucide="printer" class="w-4 h-4"></i> Print
+                </button>
+            </div>
         </div>
 
         <?php if (empty($tamu_list)): ?>
@@ -89,7 +98,67 @@ $lembaga_list = $data['lembaga_list'] ?? [];
                 <p>Belum ada data tamu</p>
             </div>
         <?php else: ?>
-            <div class="overflow-x-auto">
+            <!-- Mobile Card View -->
+            <div class="md:hidden divide-y">
+                <?php foreach ($tamu_list as $tamu): ?>
+                    <div class="p-4">
+                        <div class="flex items-start gap-3">
+                            <?php if (!empty($tamu['foto_url'])): ?>
+                                <img src="<?= $tamu['foto_url'] ?>" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                            <?php else: ?>
+                                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="user" class="w-6 h-6 text-gray-400"></i>
+                                </div>
+                            <?php endif; ?>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <div class="font-semibold text-gray-900"><?= htmlspecialchars($tamu['nama_tamu']) ?>
+                                        </div>
+                                        <div class="text-xs text-gray-500"><?= htmlspecialchars($tamu['instansi'] ?? '-') ?>
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs"><?= htmlspecialchars($tamu['nama_lembaga']) ?></span>
+                                </div>
+                                <div class="text-sm text-gray-600 mt-2 line-clamp-2"><?= htmlspecialchars($tamu['keperluan']) ?>
+                                </div>
+                                <?php if (!empty($tamu['bertemu_dengan'])): ?>
+                                    <div class="text-xs text-gray-500 mt-1">Bertemu:
+                                        <?= htmlspecialchars($tamu['bertemu_dengan']) ?></div>
+                                <?php endif; ?>
+                                <div class="flex items-center justify-between mt-3">
+                                    <div class="text-xs text-gray-500">
+                                        <i data-lucide="clock" class="w-3 h-3 inline"></i>
+                                        <?= date('d M Y, H:i', strtotime($tamu['waktu_datang'])) ?>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <a href="<?= BASEURL ?>/bukuTamu/detail/<?= $tamu['id'] ?>"
+                                            class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </a>
+                                        <?php if (empty($tamu['waktu_pulang'])): ?>
+                                            <a href="<?= BASEURL ?>/bukuTamu/setPulang/<?= $tamu['id'] ?>"
+                                                class="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                                                onclick="return confirm('Tandai tamu sudah pulang?')">
+                                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                        <a href="<?= BASEURL ?>/bukuTamu/hapus/<?= $tamu['id'] ?>"
+                                            class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                            onclick="return confirm('Hapus data tamu ini?')">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50">
                         <tr>
@@ -175,5 +244,37 @@ $lembaga_list = $data['lembaga_list'] ?? [];
             window.location.href = '<?= BASEURL ?>/bukuTamu';
         }
     }
+
+    function printTable() {
+        const printContent = document.querySelector('table').outerHTML;
+        const lembaga = document.getElementById('filterLembaga').selectedOptions[0].text;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Buku Tamu - ${lembaga}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    h2 { text-align: center; margin-bottom: 5px; }
+                    p { text-align: center; color: #666; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background-color: #f5f5f5; }
+                    .no-print { display: none; }
+                    img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+                </style>
+            </head>
+            <body>
+                <h2>Buku Tamu Digital</h2>
+                <p>${lembaga} - Dicetak: ${new Date().toLocaleDateString('id-ID')}</p>
+                ${printContent}
+                <script>window.print(); window.close();<\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
     document.addEventListener('DOMContentLoaded', () => { if (typeof lucide !== 'undefined') lucide.createIcons(); });
 </script>

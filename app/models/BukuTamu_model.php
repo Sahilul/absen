@@ -104,30 +104,31 @@ class BukuTamu_model
 
     public function getStats($id_lembaga = null)
     {
-        $where = $id_lembaga ? "WHERE id_lembaga = :id_lembaga" : "";
+        $andWhere = $id_lembaga ? " AND id_lembaga = :id_lembaga" : "";
+        $where = $id_lembaga ? " WHERE id_lembaga = :id_lembaga" : "";
 
         $stats = [];
 
         // Today
-        $this->db->query("SELECT COUNT(*) as total FROM buku_tamu WHERE DATE(waktu_datang) = CURDATE() $where");
+        $this->db->query("SELECT COUNT(*) as total FROM buku_tamu WHERE DATE(waktu_datang) = CURDATE()" . $andWhere);
         if ($id_lembaga)
             $this->db->bind('id_lembaga', $id_lembaga);
         $stats['today'] = $this->db->single()['total'] ?? 0;
 
         // This week
-        $this->db->query("SELECT COUNT(*) as total FROM buku_tamu WHERE YEARWEEK(waktu_datang) = YEARWEEK(NOW()) $where");
+        $this->db->query("SELECT COUNT(*) as total FROM buku_tamu WHERE YEARWEEK(waktu_datang) = YEARWEEK(NOW())" . $andWhere);
         if ($id_lembaga)
             $this->db->bind('id_lembaga', $id_lembaga);
         $stats['week'] = $this->db->single()['total'] ?? 0;
 
         // This month
-        $this->db->query("SELECT COUNT(*) as total FROM buku_tamu WHERE MONTH(waktu_datang) = MONTH(NOW()) AND YEAR(waktu_datang) = YEAR(NOW()) $where");
+        $this->db->query("SELECT COUNT(*) as total FROM buku_tamu WHERE MONTH(waktu_datang) = MONTH(NOW()) AND YEAR(waktu_datang) = YEAR(NOW())" . $andWhere);
         if ($id_lembaga)
             $this->db->bind('id_lembaga', $id_lembaga);
         $stats['month'] = $this->db->single()['total'] ?? 0;
 
         // Total
-        $this->db->query("SELECT COUNT(*) as total FROM buku_tamu $where");
+        $this->db->query("SELECT COUNT(*) as total FROM buku_tamu" . $where);
         if ($id_lembaga)
             $this->db->bind('id_lembaga', $id_lembaga);
         $stats['total'] = $this->db->single()['total'] ?? 0;
