@@ -5810,15 +5810,20 @@ Waktu: ' . date('d/m/Y H:i:s');
             require_once APPROOT . '/app/core/Fonnte.php';
             $fonnte = new Fonnte();
 
-            // Format pesan WA
-            $waMessage = "📩 *PESAN DARI SEKOLAH*\n\n";
+            // Format pesan WA - ambil nama aplikasi dari database
+            $pengaturanModel = $this->model('PengaturanAplikasi_model');
+            $pengaturan = $pengaturanModel->getPengaturan();
+            $namaApp = $pengaturan['nama_aplikasi'] ?? $pengaturan['nama_sekolah'] ?? 'Sekolah';
+
+            $waMessage = "📩 *PESAN DARI {$namaApp}*\n\n";
             $waMessage .= "*{$judul}*\n\n";
             $waMessage .= $isi;
             if (!empty($lampiran)) {
                 $waMessage .= "\n\n📎 _Lampiran tersedia di aplikasi_";
             }
             $waMessage .= "\n\n━━━━━━━━━━━━━━━━━━━━━\n";
-            $waMessage .= "_Pesan ini dikirim otomatis._";
+            $waMessage .= "_Pesan ini dikirim otomatis dari {$namaApp}_\n\n";
+            $waMessage .= "✅ *Apabila sudah menerima pesan ini, mohon balas dengan mengetik:* YA";
 
             // Kirim ke masing-masing penerima yang punya no_wa
             foreach ($penerima_list as $penerima) {
