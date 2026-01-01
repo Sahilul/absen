@@ -47,7 +47,7 @@ class Pesan_model
      */
     public function getAllGuruIds()
     {
-        $this->db->query("SELECT id_guru as id FROM guru WHERE status = 'aktif'");
+        $this->db->query("SELECT id_guru as id FROM guru");
         return $this->db->resultSet();
     }
 
