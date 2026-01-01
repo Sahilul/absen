@@ -73,8 +73,16 @@ $tamu = $data['tamu'] ?? [];
                         <?= $tamu['waktu_pulang'] ? date('d M Y, H:i', strtotime($tamu['waktu_pulang'])) : '<span class="text-orange-600">Belum pulang</span>' ?>
                     </p>
                 </div>
+                <?php if (!empty($tamu['catatan'])): ?>
+                    <div class="sm:col-span-2">
+                        <label class="text-xs text-gray-500 uppercase">Catatan</label>
+                        <p class="font-medium text-gray-900 bg-yellow-50 p-3 rounded-lg mt-1">
+                            <?= nl2br(htmlspecialchars($tamu['catatan'])) ?></p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
+    </div>
 </main>
 
 <script>

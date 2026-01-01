@@ -96,6 +96,12 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                    <textarea name="catatan" rows="2" placeholder="Catatan tambahan (opsional)"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+
                 <!-- Foto Kehadiran -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Foto Kehadiran <span

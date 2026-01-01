@@ -139,6 +139,7 @@ class TamuController extends Controller
             'email' => trim($_POST['email'] ?? ''),
             'keperluan' => $keperluan,
             'bertemu_dengan' => trim($_POST['bertemu_dengan'] ?? ''),
+            'catatan' => trim($_POST['catatan'] ?? ''),
             'foto_drive_id' => $foto_drive_id,
             'foto_url' => $foto_url,
             'waktu_datang' => $waktu_datang,

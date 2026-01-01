@@ -12,8 +12,8 @@ class BukuTamu_model
     public function create($data)
     {
         $this->db->query("INSERT INTO buku_tamu 
-            (id_link, id_lembaga, nama_tamu, instansi, no_hp, email, keperluan, bertemu_dengan, foto_drive_id, foto_url, waktu_datang, waktu_pulang) 
-            VALUES (:id_link, :id_lembaga, :nama_tamu, :instansi, :no_hp, :email, :keperluan, :bertemu_dengan, :foto_drive_id, :foto_url, :waktu_datang, :waktu_pulang)");
+            (id_link, id_lembaga, nama_tamu, instansi, no_hp, email, keperluan, bertemu_dengan, catatan, foto_drive_id, foto_url, waktu_datang, waktu_pulang) 
+            VALUES (:id_link, :id_lembaga, :nama_tamu, :instansi, :no_hp, :email, :keperluan, :bertemu_dengan, :catatan, :foto_drive_id, :foto_url, :waktu_datang, :waktu_pulang)");
 
         $this->db->bind('id_link', $data['id_link'] ?? null);
         $this->db->bind('id_lembaga', $data['id_lembaga']);
@@ -23,6 +23,7 @@ class BukuTamu_model
         $this->db->bind('email', $data['email'] ?? null);
         $this->db->bind('keperluan', $data['keperluan']);
         $this->db->bind('bertemu_dengan', $data['bertemu_dengan'] ?? null);
+        $this->db->bind('catatan', $data['catatan'] ?? null);
         $this->db->bind('foto_drive_id', $data['foto_drive_id'] ?? null);
         $this->db->bind('foto_url', $data['foto_url'] ?? null);
         $this->db->bind('waktu_datang', $data['waktu_datang'] ?? date('Y-m-d H:i:s'));
