@@ -268,32 +268,64 @@
                 </div>
 
                 <!-- Institution Cards -->
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-<?= min(count($data['institutions']), 5) ?> gap-6">
-                    <?php
-                    $colors = [
-                        'blue' => ['bg' => 'bg-blue-500', 'light' => 'bg-blue-50', 'text' => 'text-blue-600'],
-                        'green' => ['bg' => 'bg-green-500', 'light' => 'bg-green-50', 'text' => 'text-green-600'],
-                        'orange' => ['bg' => 'bg-orange-500', 'light' => 'bg-orange-50', 'text' => 'text-orange-600'],
-                        'purple' => ['bg' => 'bg-purple-500', 'light' => 'bg-purple-50', 'text' => 'text-purple-600'],
-                        'pink' => ['bg' => 'bg-pink-500', 'light' => 'bg-pink-50', 'text' => 'text-pink-600'],
-                        'teal' => ['bg' => 'bg-teal-500', 'light' => 'bg-teal-50', 'text' => 'text-teal-600'],
-                        'indigo' => ['bg' => 'bg-indigo-500', 'light' => 'bg-indigo-50', 'text' => 'text-indigo-600'],
-                        'red' => ['bg' => 'bg-red-500', 'light' => 'bg-red-50', 'text' => 'text-red-600']
-                    ];
-                    foreach ($data['institutions'] as $inst):
-                        $color = $colors[$inst['color']] ?? $colors['blue'];
-                        ?>
-                        <div
-                            class="group text-center p-6 rounded-2xl <?= $color['light'] ?> border border-slate-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                            <!-- Icon -->
-                            <div
-                                class="<?= $color['bg'] ?> w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform">
-                                <i data-lucide="<?= htmlspecialchars($inst['icon']) ?>" class="w-8 h-8 text-white"></i>
-                            </div>
+                <!-- Logic: Grid 2 cols for few items, Auto-scrolling carousel for many -->
+                <?php $institutionCount = count($data['institutions']); ?>
+                <?php if ($institutionCount > 2): ?>
+                    <!-- Auto-scrolling Carousel for many items -->
+                    <div class="relative overflow-hidden" x-data="{
+                        scrollEl: null,
+                        init() {
+                            this.scrollEl = this.$refs.carousel;
+                            this.autoScroll();
+                        },
+                        autoScroll() {
+                            setInterval(() => {
+                                if (this.scrollEl) {
+                                    const maxScroll = this.scrollEl.scrollWidth - this.scrollEl.clientWidth;
+                                    if (this.scrollEl.scrollLeft >= maxScroll - 10) {
+                                        this.scrollEl.scrollTo({ left: 0, behavior: 'smooth' });
+                                    } else {
+                                        this.scrollEl.scrollBy({ left: 300, behavior: 'smooth' });
+                                    }
+                                }
+                            }, 3000);
+                        }
+                    }">
+                        <div x-ref="carousel"
+                            class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide md:grid md:grid-cols-3 lg:grid-cols-<?= min($institutionCount, 5) ?> md:overflow-visible md:pb-0 md:gap-6">
+                        <?php else: ?>
+                            <!-- Centered Grid for few items (2 columns on mobile) -->
+                            <div class="grid grid-cols-2 md:flex md:justify-center gap-4 md:gap-6">
+                            <?php endif; ?>
+                            <?php
+                            $colors = [
+                                'blue' => ['bg' => 'bg-blue-500', 'light' => 'bg-blue-50', 'text' => 'text-blue-600'],
+                                'green' => ['bg' => 'bg-green-500', 'light' => 'bg-green-50', 'text' => 'text-green-600'],
+                                'orange' => ['bg' => 'bg-orange-500', 'light' => 'bg-orange-50', 'text' => 'text-orange-600'],
+                                'purple' => ['bg' => 'bg-purple-500', 'light' => 'bg-purple-50', 'text' => 'text-purple-600'],
+                                'pink' => ['bg' => 'bg-pink-500', 'light' => 'bg-pink-50', 'text' => 'text-pink-600'],
+                                'teal' => ['bg' => 'bg-teal-500', 'light' => 'bg-teal-50', 'text' => 'text-teal-600'],
+                                'indigo' => ['bg' => 'bg-indigo-500', 'light' => 'bg-indigo-50', 'text' => 'text-indigo-600'],
+                                'red' => ['bg' => 'bg-red-500', 'light' => 'bg-red-50', 'text' => 'text-red-600']
+                            ];
+                            foreach ($data['institutions'] as $inst):
+                                $color = $colors[$inst['color']] ?? $colors['blue'];
+                                // Item class: wider for carousel, flexible for grid
+                                $itemClass = ($institutionCount > 2)
+                                    ? 'min-w-[75vw] sm:min-w-[280px] md:min-w-0 flex-shrink-0 snap-center'
+                                    : 'md:w-[320px]';
+                                ?>
+                                <div
+                                    class="<?= $itemClass ?> group text-center p-6 rounded-2xl <?= $color['light'] ?> border border-slate-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                                    <!-- Icon -->
+                                    <div
+                                        class="<?= $color['bg'] ?> w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform">
+                                        <i data-lucide="<?= htmlspecialchars($inst['icon']) ?>" class="w-8 h-8 text-white"></i>
+                                    </div>
 
-                            <!-- Count -->
-                            <div class="text-4xl md:text-5xl font-bold <?= $color['text'] ?> mb-2"
-                                x-data="{ count: 0, target: <?= (int) $inst['student_count'] ?> }" x-init="
+                                    <!-- Count -->
+                                    <div class="text-4xl md:text-5xl font-bold <?= $color['text'] ?> mb-2"
+                                        x-data="{ count: 0, target: <?= (int) $inst['student_count'] ?> }" x-init="
                                 let start = 0;
                                 const duration = 2000;
                                 const step = target / (duration / 16);
@@ -308,20 +340,24 @@
                                 }, 16);
                              " x-text="count.toLocaleString('id-ID')">0</div>
 
-                            <!-- Label -->
-                            <h4 class="font-bold text-slate-800 text-lg">
-                                <?= htmlspecialchars($inst['short_name'] ?: $inst['name']) ?>
-                            </h4>
-                            <?php if (!empty($inst['description'])): ?>
-                                <p class="text-slate-500 text-sm mt-1 line-clamp-1"><?= htmlspecialchars($inst['description']) ?>
-                                </p>
-                            <?php else: ?>
-                                <p class="text-slate-500 text-sm mt-1">Siswa Aktif</p>
-                            <?php endif; ?>
+                                    <!-- Label -->
+                                    <h4 class="font-bold text-slate-800 text-lg">
+                                        <?= htmlspecialchars($inst['short_name'] ?: $inst['name']) ?>
+                                    </h4>
+                                    <?php if (!empty($inst['description'])): ?>
+                                        <p class="text-slate-500 text-sm mt-1 line-clamp-1">
+                                            <?= htmlspecialchars($inst['description']) ?>
+                                        </p>
+                                    <?php else: ?>
+                                        <p class="text-slate-500 text-sm mt-1">Siswa Aktif</p>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                    <?php endforeach; ?>
+                        <?php if ($institutionCount > 2): ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
-            </div>
         </section>
     <?php endif; ?>
 
