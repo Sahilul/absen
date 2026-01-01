@@ -279,4 +279,146 @@ class BukuTamuController extends Controller
         echo json_encode(['success' => true, 'data' => $data]);
         exit;
     }
+
+    /**
+     * Download PDF Buku Tamu
+     */
+    public function downloadPDF()
+    {
+        $id_lembaga = $_GET['lembaga'] ?? null;
+
+        $bukuTamuModel = $this->model('BukuTamu_model');
+        $lembagaModel = $this->model('BukuTamuLembaga_model');
+
+        // Get data
+        if ($id_lembaga) {
+            $tamu_list = $bukuTamuModel->getByLembaga($id_lembaga, 1000);
+            $lembaga = $lembagaModel->getById($id_lembaga);
+            $lembagaName = $lembaga['nama_lembaga'] ?? 'Semua Lembaga';
+        } else {
+            $tamu_list = $bukuTamuModel->getAll(1000);
+            $lembagaName = 'Semua Lembaga';
+        }
+
+        // Get pengaturan aplikasi
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $pengaturan = $pengaturanModel->getPengaturan();
+        $namaApp = $pengaturan['nama_aplikasi'] ?? $pengaturan['nama_sekolah'] ?? 'Sistem Informasi Sekolah';
+
+        // Build HTML
+        $html = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; font-size: 10px; line-height: 1.3; }
+        .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .header h1 { font-size: 16px; margin: 0; font-weight: bold; }
+        .header h2 { font-size: 12px; margin: 5px 0 0 0; color: #666; font-weight: normal; }
+        .info { background: #f5f5f5; padding: 8px 12px; margin-bottom: 15px; border-radius: 4px; }
+        .info span { margin-right: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
+        th { background: #f0f0f0; font-weight: bold; font-size: 9px; }
+        td { font-size: 9px; }
+        .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; }
+        .footer-content { display: table; width: 100%; }
+        .footer-left { display: table-cell; width: 70%; vertical-align: bottom; font-size: 8px; color: #666; }
+        .footer-right { display: table-cell; width: 30%; text-align: right; }
+        .qr-section { text-align: center; }
+        .qr-section img { width: 80px; height: 80px; }
+        .qr-section p { font-size: 7px; color: #666; margin: 5px 0 0 0; }
+        .validity-note { font-size: 8px; color: #666; font-style: italic; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DAFTAR BUKU TAMU</h1>
+        <h2>' . htmlspecialchars($namaApp) . '</h2>
+    </div>
+    
+    <div class="info">
+        <span><strong>Lembaga:</strong> ' . htmlspecialchars($lembagaName) . '</span>
+        <span><strong>Tanggal Cetak:</strong> ' . date('d/m/Y H:i') . ' WIB</span>
+        <span><strong>Total Data:</strong> ' . count($tamu_list) . ' tamu</span>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th style="width:25px;">No</th>
+                <th style="width:18%">Nama / Instansi</th>
+                <th style="width:12%">No. HP</th>
+                <th style="width:22%">Keperluan</th>
+                <th style="width:12%">Bertemu</th>
+                <th style="width:10%">Lembaga</th>
+                <th style="width:13%">Waktu Datang</th>
+                <th style="width:13%">Waktu Pulang</th>
+            </tr>
+        </thead>
+        <tbody>';
+
+        if (empty($tamu_list)) {
+            $html .= '<tr><td colspan="8" style="text-align:center;color:#666;">Belum ada data tamu</td></tr>';
+        } else {
+            $no = 1;
+            foreach ($tamu_list as $t) {
+                $waktuDatang = $t['waktu_datang'] ? date('d/m/Y H:i', strtotime($t['waktu_datang'])) : '-';
+                $waktuPulang = $t['waktu_pulang'] ? date('d/m/Y H:i', strtotime($t['waktu_pulang'])) : '-';
+                $html .= '<tr>
+                    <td style="text-align:center;">' . $no++ . '</td>
+                    <td>' . htmlspecialchars($t['nama_tamu']) . '<br><small style="color:#666;">' . htmlspecialchars($t['instansi'] ?? '-') . '</small></td>
+                    <td>' . htmlspecialchars($t['no_hp']) . '</td>
+                    <td>' . htmlspecialchars(mb_substr($t['keperluan'], 0, 50)) . (strlen($t['keperluan']) > 50 ? '...' : '') . '</td>
+                    <td>' . htmlspecialchars($t['bertemu_dengan'] ?? '-') . '</td>
+                    <td>' . htmlspecialchars($t['nama_lembaga']) . '</td>
+                    <td>' . $waktuDatang . '</td>
+                    <td>' . $waktuPulang . '</td>
+                </tr>';
+            }
+        }
+
+        $html .= '
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <p>Dokumen ini dicetak secara otomatis oleh sistem dan sah tanpa tanda tangan.</p>
+                <p>Dicetak pada: ' . date('d/m/Y H:i:s') . ' WIB</p>
+                <p class="validity-note">Scan QR code untuk memverifikasi keaslian dokumen ini.</p>
+            </div>
+            <div class="footer-right">
+                <div class="qr-section" id="qr-placeholder">
+                    <!-- QR will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>';
+
+        // Generate PDF using dompdf
+        require_once APPROOT . '/app/core/dompdf/autoload.inc.php';
+
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+
+        $dompdf = new \Dompdf\Dompdf($options);
+
+        // Add QR code for validation
+        require_once APPROOT . '/app/core/PDFQRHelper.php';
+        $docId = 'buku_tamu_' . ($id_lembaga ?: 'all') . '_' . date('Ymd');
+        $html = PDFQRHelper::addQRToPDF($html, 'buku_tamu', $docId);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'Buku_Tamu_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $lembagaName) . '_' . date('Ymd_His') . '.pdf';
+        $dompdf->stream($filename, ['Attachment' => true]);
+        exit;
+    }
 }

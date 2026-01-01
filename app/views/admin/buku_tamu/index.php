@@ -85,10 +85,10 @@ $selected_lembaga = $data['selected_lembaga'] ?? '';
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <button onclick="printTable()"
-                    class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm flex items-center gap-1">
-                    <i data-lucide="printer" class="w-4 h-4"></i> Print
-                </button>
+                <a href="<?= BASEURL ?>/bukuTamu/downloadPDF<?= $selected_lembaga ? '?lembaga=' . $selected_lembaga : '' ?>"
+                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm flex items-center gap-1">
+                    <i data-lucide="download" class="w-4 h-4"></i> Download PDF
+                </a>
             </div>
         </div>
 
@@ -231,63 +231,6 @@ $selected_lembaga = $data['selected_lembaga'] ?? '';
         } else {
             window.location.href = '<?= BASEURL ?>/bukuTamu';
         }
-    }
-
-    function printTable() {
-        // Temporarily show table if hidden (mobile)
-        const tableContainer = document.getElementById('tableContainer');
-        const wasHidden = tableContainer && tableContainer.classList.contains('hidden');
-        if (wasHidden) {
-            tableContainer.classList.remove('hidden');
-        }
-        
-        const table = document.getElementById('tamuTable');
-        if (!table) {
-            alert('Tidak ada data untuk dicetak');
-            if (wasHidden) tableContainer.classList.add('hidden');
-            return;
-        }
-
-        // Clone table and remove action column
-        const tableClone = table.cloneNode(true);
-        const rows = tableClone.querySelectorAll('tr');
-        rows.forEach(row => {
-            const lastCell = row.lastElementChild;
-            if (lastCell) lastCell.remove();
-        });
-        
-        // Restore hidden state
-        if (wasHidden) {
-            tableContainer.classList.add('hidden');
-        }
-
-        const lembaga = document.getElementById('filterLembaga').selectedOptions[0].text;
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Buku Tamu - ${lembaga}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
-                    h2 { text-align: center; margin-bottom: 5px; }
-                    p { text-align: center; color: #666; margin-bottom: 20px; }
-                    table { width: 100%; border-collapse: collapse; font-size: 11px; }
-                    th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
-                    th { background-color: #f5f5f5; font-weight: bold; }
-                    img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
-                    @media print { body { margin: 0; } }
-                </style>
-            </head>
-            <body>
-                <h2>Buku Tamu Digital</h2>
-                <p>${lembaga} - Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                ${tableClone.outerHTML}
-                <script>window.print(); window.close();<\/script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
     }
 
     document.addEventListener('DOMContentLoaded', () => { if (typeof lucide !== 'undefined') lucide.createIcons(); });
