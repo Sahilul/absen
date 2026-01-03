@@ -981,6 +981,9 @@ class AdminController extends Controller
                 header('Location: ' . BASEURL . '/admin/tambahGuru');
                 exit;
             }
+        } else {
+            header('Location: ' . BASEURL . '/admin/guru');
+            exit;
         }
     }
 
@@ -1040,6 +1043,10 @@ class AdminController extends Controller
                 Flasher::setFlash('Tidak ada perubahan data.', 'info');
             }
 
+            header('Location: ' . BASEURL . '/admin/guru');
+            exit;
+        } else {
+            // Jika diakses via GET, kembalikan ke halaman guru
             header('Location: ' . BASEURL . '/admin/guru');
             exit;
         }

@@ -226,7 +226,7 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
             </button>
         </div>
 
-        <form id="guruForm" class="p-6 space-y-4">
+        <form id="guruForm" method="POST" class="p-6 space-y-4">
             <input type="hidden" name="id_guru" id="formIdGuru">
 
             <div>
