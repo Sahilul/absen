@@ -44,6 +44,12 @@ class Fonnte
             'auth_type' => 'token',
             'website' => 'https://starsender.online'
         ],
+        'onesender' => [
+            'name' => 'OneSender 2.0',
+            'url' => 'https://api.onesender.id/api/v1/message/send-text',
+            'auth_type' => 'token',
+            'website' => 'https://onesender.id'
+        ],
     ];
 
     public function __construct($token = null)
@@ -109,6 +115,8 @@ class Fonnte
                 return $this->sendViaDripsender($target, $message);
             case 'starsender':
                 return $this->sendViaStarsender($target, $message);
+            case 'onesender':
+                return $this->sendViaOneSender($target, $message);
             case 'fonnte':
             default:
                 return $this->sendViaFonnte($target, $message);
@@ -261,6 +269,63 @@ class Fonnte
     private function sendViaStarsender($target, $message)
     {
         return $this->sendViaFonnte($target, $message); // Similar API
+    }
+
+    /**
+     * Kirim via OneSender 2.0
+     * API Docs: https://documenter.getpostman.com/view/11282121/Uyr8md8U
+     */
+    private function sendViaOneSender($target, $message)
+    {
+        if (empty($this->token)) {
+            return ['status' => false, 'reason' => 'API Key OneSender tidak dikonfigurasi'];
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $this->apiUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => json_encode([
+                'to' => $target,
+                'isGroup' => false,
+                'text' => $message
+            ]),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $this->token
+            ],
+            CURLOPT_SSL_VERIFYPEER => true,
+        ]);
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            return ['status' => false, 'reason' => 'cURL Error: ' . $err];
+        }
+
+        // Debug: Log raw response
+        error_log("OneSender Response (HTTP $httpCode): " . $response);
+
+        $result = json_decode($response, true);
+
+        // OneSender returns { "status": true/false, "message": "..." }
+        if ($httpCode >= 200 && $httpCode < 300) {
+            if (isset($result['status']) && $result['status'] === true) {
+                return ['status' => true, 'reason' => $result['message'] ?? 'Sent'];
+            }
+            // Some responses may use different structure
+            if ($httpCode == 200 && !empty($response)) {
+                return ['status' => true, 'reason' => 'Message sent (HTTP 200)'];
+            }
+        }
+
+        $errorMsg = $result['message'] ?? $result['error'] ?? "HTTP $httpCode: " . substr($response, 0, 200);
+        return ['status' => false, 'reason' => $errorMsg];
     }
 
     /**

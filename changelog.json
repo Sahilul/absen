@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.6.9",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Integrasi WA Gateway OneSender 2.0 dengan custom URL"
+                }
+            ]
+        },
+        {
             "version": "1.6.8",
             "date": "2026-01-04",
             "type": "improvement",

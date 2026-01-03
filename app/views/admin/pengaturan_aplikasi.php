@@ -134,6 +134,7 @@ $logoExists = !empty($logoFile) && file_exists($logoPath);
                     'wablas' => ['name' => 'Wablas', 'auth' => 'token', 'url' => 'https://solo.wablas.com/api/send-message'],
                     'dripsender' => ['name' => 'Dripsender', 'auth' => 'token', 'url' => 'https://api.dripsender.id/send'],
                     'starsender' => ['name' => 'Starsender', 'auth' => 'token', 'url' => 'https://api.starsender.online/api/send'],
+                    'onesender' => ['name' => 'OneSender 2.0', 'auth' => 'token', 'url' => 'https://api.onesender.id/api/v1/message/send-text'],
                 ];
                 ?>
 
