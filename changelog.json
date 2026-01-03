@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.6.2",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Menu Keuangan siswa dikontrol oleh MENU_PEMBAYARAN_ENABLED"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Access control pada halaman pembayaran siswa"
+                }
+            ]
+        },
+        {
             "version": "1.6.1",
             "date": "2026-01-04",
             "type": "patch",

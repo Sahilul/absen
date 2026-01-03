@@ -86,36 +86,38 @@
             </li>
 
             <!-- DROPDOWN: Keuangan -->
-            <?php $keuanganActive = in_array($judul, ['Pembayaran', 'Riwayat Pembayaran']); ?>
-            <li class="pt-2" x-data="{ open: <?= $keuanganActive ? 'true' : 'false' ?> }">
-                <button @click="open = !open"
-                    class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $keuanganActive ? 'bg-emerald-50 text-emerald-700' : 'text-secondary-600 hover:bg-white/50' ?>">
-                    <div
-                        class="<?= $keuanganActive ? 'bg-emerald-200' : 'bg-emerald-100 group-hover:bg-emerald-200' ?> p-2 rounded-lg transition-colors duration-200">
-                        <i data-lucide="wallet"
-                            class="w-4 h-4 <?= $keuanganActive ? 'text-emerald-700' : 'text-emerald-600' ?>"></i>
-                    </div>
-                    <span class="ml-3 whitespace-nowrap flex-1 text-left">Keuangan</span>
-                    <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"
-                        :class="open ? 'rotate-180' : ''"></i>
-                </button>
-                <ul x-show="open" x-collapse class="mt-1 ml-4 space-y-1 border-l-2 border-emerald-200 pl-3">
-                    <li>
-                        <a href="<?= BASEURL; ?>/siswa/pembayaran"
-                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= ($judul == 'Pembayaran') ? 'bg-emerald-100 text-emerald-700' : 'text-secondary-600 hover:bg-emerald-50 hover:text-emerald-700' ?>">
-                            <i data-lucide="credit-card" class="w-4 h-4 mr-2"></i>
-                            Pembayaran
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?= BASEURL; ?>/siswa/riwayatPembayaran"
-                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= ($judul == 'Riwayat Pembayaran') ? 'bg-emerald-100 text-emerald-700' : 'text-secondary-600 hover:bg-emerald-50 hover:text-emerald-700' ?>">
-                            <i data-lucide="receipt" class="w-4 h-4 mr-2"></i>
-                            Riwayat Pembayaran
-                        </a>
-                    </li>
-                </ul>
-            </li>
+            <?php if (defined('MENU_PEMBAYARAN_ENABLED') && MENU_PEMBAYARAN_ENABLED): ?>
+                <?php $keuanganActive = in_array($judul, ['Pembayaran', 'Riwayat Pembayaran']); ?>
+                <li class="pt-2" x-data="{ open: <?= $keuanganActive ? 'true' : 'false' ?> }">
+                    <button @click="open = !open"
+                        class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $keuanganActive ? 'bg-emerald-50 text-emerald-700' : 'text-secondary-600 hover:bg-white/50' ?>">
+                        <div
+                            class="<?= $keuanganActive ? 'bg-emerald-200' : 'bg-emerald-100 group-hover:bg-emerald-200' ?> p-2 rounded-lg transition-colors duration-200">
+                            <i data-lucide="wallet"
+                                class="w-4 h-4 <?= $keuanganActive ? 'text-emerald-700' : 'text-emerald-600' ?>"></i>
+                        </div>
+                        <span class="ml-3 whitespace-nowrap flex-1 text-left">Keuangan</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"
+                            :class="open ? 'rotate-180' : ''"></i>
+                    </button>
+                    <ul x-show="open" x-collapse class="mt-1 ml-4 space-y-1 border-l-2 border-emerald-200 pl-3">
+                        <li>
+                            <a href="<?= BASEURL; ?>/siswa/pembayaran"
+                                class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= ($judul == 'Pembayaran') ? 'bg-emerald-100 text-emerald-700' : 'text-secondary-600 hover:bg-emerald-50 hover:text-emerald-700' ?>">
+                                <i data-lucide="credit-card" class="w-4 h-4 mr-2"></i>
+                                Pembayaran
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?= BASEURL; ?>/siswa/riwayatPembayaran"
+                                class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= ($judul == 'Riwayat Pembayaran') ? 'bg-emerald-100 text-emerald-700' : 'text-secondary-600 hover:bg-emerald-50 hover:text-emerald-700' ?>">
+                                <i data-lucide="receipt" class="w-4 h-4 mr-2"></i>
+                                Riwayat Pembayaran
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            <?php endif; ?>
 
             <!-- DROPDOWN: Profil Saya (Dokumen + Edit Identitas) -->
             <?php

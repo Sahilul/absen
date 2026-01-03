@@ -258,7 +258,8 @@
                                         <p class="text-sm font-semibold text-green-800">Akun Terhubung</p>
                                         <?php if (!empty($data['google_drive_email'])): ?>
                                             <p class="text-sm text-green-700 font-medium">
-                                                <?= htmlspecialchars($data['google_drive_email']); ?></p>
+                                                <?= htmlspecialchars($data['google_drive_email']); ?>
+                                            </p>
                                         <?php else: ?>
                                             <p class="text-xs text-green-600">Akun Google tersambung</p>
                                         <?php endif; ?>
@@ -358,19 +359,6 @@
                 </button>
             </div>
         </form>
-    </div>
-
-    <!-- Info Box -->
-    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start">
-        <i data-lucide="info" class="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0"></i>
-        <div class="text-sm text-blue-800">
-            <p class="font-medium mb-1">Keterangan</p>
-            <ul class="list-disc list-inside space-y-1">
-                <li>Pengaturan disimpan di database, tidak perlu edit file config</li>
-                <li>User yang sedang login perlu refresh halaman untuk melihat perubahan</li>
-                <li>File config bisa dienkripsi IonCube tanpa kehilangan fungsionalitas</li>
-            </ul>
-        </div>
     </div>
 </main>
 

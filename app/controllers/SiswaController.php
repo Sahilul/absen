@@ -147,6 +147,11 @@ class SiswaController extends Controller
 
     public function pembayaran()
     {
+        // Cek apakah menu pembayaran aktif
+        if (!defined('MENU_PEMBAYARAN_ENABLED') || !MENU_PEMBAYARAN_ENABLED) {
+            header('Location: ' . BASEURL . '/siswa/dashboard');
+            exit;
+        }
         $this->data['judul'] = 'Pembayaran';
         $id_siswa = $_SESSION['id_ref'];
         $id_semester_aktif = $_SESSION['id_semester_aktif'];
@@ -261,6 +266,11 @@ class SiswaController extends Controller
     // Menampilkan halaman riwayat pembayaran siswa
     public function riwayatPembayaran()
     {
+        // Cek apakah menu pembayaran aktif
+        if (!defined('MENU_PEMBAYARAN_ENABLED') || !MENU_PEMBAYARAN_ENABLED) {
+            header('Location: ' . BASEURL . '/siswa/dashboard');
+            exit;
+        }
         $this->data['judul'] = 'Riwayat Pembayaran';
         $id_siswa = $_SESSION['id_ref'];
         // Ambil data riwayat pembayaran dari model
@@ -911,6 +921,11 @@ class SiswaController extends Controller
     // Export PDF Riwayat Pembayaran Siswa
     public function downloadRiwayatPembayaranPDF()
     {
+        // Cek apakah menu pembayaran aktif
+        if (!defined('MENU_PEMBAYARAN_ENABLED') || !MENU_PEMBAYARAN_ENABLED) {
+            header('Location: ' . BASEURL . '/siswa/dashboard');
+            exit;
+        }
         $id_siswa = $_SESSION['id_ref'];
         $id_semester = $_SESSION['id_semester_aktif'];
         $db = new Database();
