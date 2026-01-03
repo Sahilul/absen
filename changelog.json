@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.6.5",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix popup update muncul terus di halaman update"
+                }
+            ]
+        },
+        {
             "version": "1.6.4",
             "date": "2026-01-04",
             "type": "patch",

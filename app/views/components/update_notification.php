@@ -8,6 +8,12 @@
 $updateCheck = null;
 $showUpdateModal = false;
 
+// Jangan tampilkan modal di halaman update untuk mencegah loop
+$currentUrl = $_SERVER['REQUEST_URI'] ?? '';
+if (strpos($currentUrl, '/admin/update') !== false || strpos($currentUrl, '/update') !== false) {
+    return;
+}
+
 if (!isset($_SESSION['update_check_time']) || (time() - $_SESSION['update_check_time']) > 3600) {
     try {
         $updater = new Updater();
