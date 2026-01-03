@@ -66,7 +66,30 @@ class Updater
                     $result['download_url'] = "https://github.com/{$this->githubUser}/{$this->githubRepo}/archive/refs/heads/{$this->githubBranch}.zip";
                     $result['has_update'] = version_compare($result['latest'], $result['current'], '>');
                     $result['success'] = true;
-                    $result['changelog'] = 'Update dari branch ' . $this->githubBranch;
+
+                    // Fetch changelog.json for detailed changelog
+                    $changelogResponse = $this->httpGet("https://raw.githubusercontent.com/{$this->githubUser}/{$this->githubRepo}/{$this->githubBranch}/changelog.json");
+                    if ($changelogResponse) {
+                        $changelogData = json_decode($changelogResponse, true);
+                        if (isset($changelogData['versions'])) {
+                            foreach ($changelogData['versions'] as $ver) {
+                                if ($ver['version'] === $result['latest']) {
+                                    $changes = [];
+                                    foreach ($ver['changes'] ?? [] as $change) {
+                                        $changes[] = $change['description'] ?? '';
+                                    }
+                                    $result['changelog'] = implode("\n", $changes);
+                                    $result['changelog_data'] = $ver;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (empty($result['changelog'])) {
+                        $result['changelog'] = 'Update ke versi ' . $result['latest'];
+                    }
+
                     return $result;
                 }
             }

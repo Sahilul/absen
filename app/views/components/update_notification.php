@@ -26,16 +26,6 @@ $dismissedVersion = $_SESSION['update_dismissed_version'] ?? null;
 if ($updateCheck && $updateCheck['has_update'] && $updateCheck['latest'] !== $dismissedVersion) {
     $showUpdateModal = true;
 }
-
-// Load changelog
-$changelog = [];
-if ($showUpdateModal) {
-    $changelogPath = APPROOT . '/changelog.json';
-    if (file_exists($changelogPath)) {
-        $changelogData = json_decode(file_get_contents($changelogPath), true);
-        $changelog = $changelogData['versions'] ?? [];
-    }
-}
 ?>
 
 <?php if ($showUpdateModal && $updateCheck): ?>
@@ -70,11 +60,20 @@ if ($showUpdateModal) {
                 </h4>
 
                 <?php
-                $latestChangelog = null;
-                foreach ($changelog as $ver) {
-                    if ($ver['version'] === $updateCheck['latest']) {
-                        $latestChangelog = $ver;
-                        break;
+                // Prioritas: changelog_data dari Updater (GitHub), lalu local file
+                $latestChangelog = $updateCheck['changelog_data'] ?? null;
+
+                if (!$latestChangelog) {
+                    // Fallback: cek local changelog.json
+                    $changelogPath = APPROOT . '/changelog.json';
+                    if (file_exists($changelogPath)) {
+                        $changelogData = json_decode(file_get_contents($changelogPath), true);
+                        foreach ($changelogData['versions'] ?? [] as $ver) {
+                            if ($ver['version'] === $updateCheck['latest']) {
+                                $latestChangelog = $ver;
+                                break;
+                            }
+                        }
                     }
                 }
                 ?>
@@ -104,7 +103,8 @@ if ($showUpdateModal) {
                     </ul>
                 <?php else: ?>
                     <p class="text-sm text-gray-600">
-                        <?= htmlspecialchars($updateCheck['changelog'] ?: 'Perbaikan dan peningkatan performa.') ?></p>
+                        <?= htmlspecialchars($updateCheck['changelog'] ?: 'Perbaikan dan peningkatan performa.') ?>
+                    </p>
                 <?php endif; ?>
             </div>
 

@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.6.3",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Changelog sekarang diambil dari GitHub, bukan lokal"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Popup update menampilkan detail perubahan dari GitHub"
+                }
+            ]
+        },
+        {
             "version": "1.6.2",
             "date": "2026-01-04",
             "type": "patch",
