@@ -87,6 +87,7 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">NIK</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Nama Guru</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">No. WA</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Password</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Aksi</th>
                         </tr>
@@ -113,6 +114,13 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
                                         <span class="text-sm text-gray-700"><?= htmlspecialchars($guru['no_wa']) ?></span>
                                     <?php else: ?>
                                         <span class="text-xs text-gray-400 italic">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <?php if (!empty($guru['password_plain'])): ?>
+                                        <code class="px-2 py-1 bg-gray-100 rounded text-xs font-mono text-gray-800"><?= htmlspecialchars($guru['password_plain']) ?></code>
+                                    <?php else: ?>
+                                        <span class="text-xs text-gray-400 italic">Belum diset</span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="px-4 py-3">
@@ -183,6 +191,15 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
                                 <span><?= htmlspecialchars($guru['no_wa']) ?></span>
                             </div>
                         <?php endif; ?>
+
+                        <div class="flex items-center gap-2 text-gray-600">
+                            <i data-lucide="key" class="w-4 h-4 text-gray-400"></i>
+                            <?php if (!empty($guru['password_plain'])): ?>
+                                <code class="px-1.5 py-0.5 bg-gray-100 rounded text-xs font-mono"><?= htmlspecialchars($guru['password_plain']) ?></code>
+                            <?php else: ?>
+                                <span class="text-xs italic text-gray-400">Belum diset</span>
+                            <?php endif; ?>
+                        </div>
                     </div>
 
                     <div class="flex gap-2 pt-3 border-t border-gray-100">
