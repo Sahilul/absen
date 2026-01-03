@@ -120,35 +120,29 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                 </a>
             </li>
 
-            <!-- ============================================== -->
-            <!-- PESAN -->
-            <!-- ============================================== -->
-            <li>
-                <a href="<?= BASEURL; ?>/admin/pesan"
-                    class="group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= isActive($judul, 'Pesan') ? 'gradient-primary text-white shadow-lg' : 'text-secondary-600 hover:bg-white/50 hover:text-secondary-800'; ?>">
-                    <div
-                        class="<?= isActive($judul, 'Pesan') ? 'bg-white/20' : 'bg-indigo-100 group-hover:bg-indigo-200'; ?> p-2 rounded-lg transition-colors duration-200">
-                        <i data-lucide="mail"
-                            class="w-4 h-4 <?= isActive($judul, 'Pesan') ? 'text-white' : 'text-indigo-500 group-hover:text-indigo-600'; ?>"></i>
-                    </div>
-                    <span class="ml-3 whitespace-nowrap flex-1">Pesan</span>
-                </a>
-            </li>
 
             <!-- ============================================== -->
             <!-- DROPDOWN: APLIKASI LAIN -->
             <!-- ============================================== -->
-            <li class="pt-4" x-data="{ open: false }">
+            <?php $aplikasiLainActive = isGroupActive($judul, ['Pesan', 'Buku Tamu', 'PSB', 'Surat Tugas', 'Website']); ?>
+            <li class="pt-4" x-data="{ open: <?= $aplikasiLainActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
-                    class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 text-secondary-600 hover:bg-white/50">
-                    <div class="bg-purple-100 group-hover:bg-purple-200 p-2 rounded-lg transition-colors duration-200">
-                        <i data-lucide="layout-grid" class="w-4 h-4 text-purple-600"></i>
+                    class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $aplikasiLainActive ? 'bg-purple-50 text-purple-700' : 'text-secondary-600 hover:bg-white/50' ?>">
+                    <div class="<?= $aplikasiLainActive ? 'bg-purple-200' : 'bg-purple-100 group-hover:bg-purple-200' ?> p-2 rounded-lg transition-colors duration-200">
+                        <i data-lucide="layout-grid" class="w-4 h-4 <?= $aplikasiLainActive ? 'text-purple-700' : 'text-purple-600' ?>"></i>
                     </div>
                     <span class="ml-3 whitespace-nowrap flex-1 text-left">Aplikasi Lain</span>
                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"
                         :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <ul x-show="open" x-collapse class="mt-1 ml-4 space-y-1 border-l-2 border-purple-200 pl-3">
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/pesan"
+                            class="group flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pesan') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-indigo-50 hover:text-indigo-700' ?>">
+                            <i data-lucide="mail" class="w-4 h-4 mr-2 text-indigo-600"></i>
+                            Pesan
+                        </a>
+                    </li>
                     <li>
                         <a href="<?= BASEURL; ?>/bukuTamu"
                             class="group flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Buku Tamu') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-teal-50 hover:text-teal-700' ?>">

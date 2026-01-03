@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.6.8",
+            "date": "2026-01-04",
+            "type": "improvement",
+            "changes": [
+                {
+                    "type": "improvement",
+                    "description": "Memindahkan menu Pesan ke dalam folder Aplikasi Lain di sidebar admin"
+                }
+            ]
+        },
+        {
             "version": "1.6.7",
             "date": "2026-01-04",
             "type": "feature",
