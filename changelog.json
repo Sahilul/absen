@@ -1,0 +1,76 @@
+{
+    "versions": [
+        {
+            "version": "1.6.1",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Popup notifikasi update otomatis di halaman admin"
+                },
+                {
+                    "type": "feature",
+                    "description": "Changelog ditampilkan saat ada update baru"
+                }
+            ]
+        },
+        {
+            "version": "1.6.0",
+            "date": "2026-01-04",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Pengaturan sistem disimpan di database (bisa diubah via web admin)"
+                },
+                {
+                    "type": "feature",
+                    "description": "File config.php bisa dienkripsi IonCube tanpa kehilangan fungsionalitas"
+                },
+                {
+                    "type": "feature",
+                    "description": "Tombol WhatsApp di halaman lisensi blokir"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Pengaturan Menu baca/simpan langsung ke database"
+                }
+            ]
+        },
+        {
+            "version": "1.5.2",
+            "date": "2026-01-01",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan bug upload dokumen siswa"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Optimasi performa dashboard"
+                }
+            ]
+        },
+        {
+            "version": "1.5.0",
+            "date": "2025-12-28",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Sistem PSB (Penerimaan Siswa Baru)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Integrasi Google Drive untuk dokumen"
+                },
+                {
+                    "type": "feature",
+                    "description": "Google OAuth Single Sign-On"
+                }
+            ]
+        }
+    ]
+}

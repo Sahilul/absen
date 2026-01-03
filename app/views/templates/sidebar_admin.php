@@ -615,3 +615,9 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
         }
     });
 </script>
+
+<?php
+// Include update notification modal
+require_once APPROOT . '/app/core/Updater.php';
+include APPROOT . '/app/views/components/update_notification.php';
+?>

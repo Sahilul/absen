@@ -139,4 +139,16 @@ class UpdateController extends Controller
         }
         rmdir($dir);
     }
+
+    public function dismissNotification()
+    {
+        $version = $_GET['version'] ?? '';
+        if (!empty($version)) {
+            $_SESSION['update_dismissed_version'] = $version;
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true]);
+        exit;
+    }
 }
