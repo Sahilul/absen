@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.6.4",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan notifikasi flash message saat tambah/edit guru"
+                },
+                {
+                    "type": "fix",
+                    "description": "Perbaikan update password guru pada form edit"
+                }
+            ]
+        },
+        {
             "version": "1.6.3",
             "date": "2026-01-04",
             "type": "patch",

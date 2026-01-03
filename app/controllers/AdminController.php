@@ -996,22 +996,28 @@ class AdminController extends Controller
     public function prosesUpdateGuru()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $this->model('Guru_model')->updateDataGuru($_POST);
-            if (!empty($_POST['password_baru'])) {
+            $updated = $this->model('Guru_model')->updateDataGuru($_POST);
+            $passUpdated = false;
+
+            // Cek field 'password' atau 'password_baru' (untuk kompatibilitas)
+            $newPass = !empty($_POST['password']) ? $_POST['password'] : ($_POST['password_baru'] ?? '');
+
+            if (!empty($newPass)) {
                 $userModel = $this->model('User_model');
                 $idGuru = (int) $_POST['id_guru'];
-                $newPass = $_POST['password_baru'];
 
                 // Cek akun role guru terlebih dahulu
                 $existingGuru = $userModel->getByRef($idGuru, 'guru');
                 if ($existingGuru) {
                     $userModel->updatePassword($idGuru, 'guru', $newPass);
+                    $passUpdated = true;
                 } else {
                     // Jika tidak ada, cek jika akun wali_kelas
                     $existingWali = $userModel->getByRef($idGuru, 'wali_kelas');
                     if ($existingWali) {
                         // Update password pada akun wali_kelas agar konsisten dengan tampilan
                         $userModel->updatePassword($idGuru, 'wali_kelas', $newPass);
+                        $passUpdated = true;
                     } else {
                         // Tidak ada akun sama sekali -> buat akun role guru
                         $guru = $this->model('Guru_model')->getGuruById($idGuru);
@@ -1023,9 +1029,17 @@ class AdminController extends Controller
                             'role' => 'guru',
                             'id_ref' => $idGuru
                         ]);
+                        $passUpdated = true;
                     }
                 }
             }
+
+            if ($updated > 0 || $passUpdated) {
+                Flasher::setFlash('Data guru berhasil diperbarui.', 'success');
+            } else {
+                Flasher::setFlash('Tidak ada perubahan data.', 'info');
+            }
+
             header('Location: ' . BASEURL . '/admin/guru');
             exit;
         }

@@ -3,7 +3,8 @@
 $guruList = $data['guru'] ?? [];
 $totalGuru = count($guruList);
 $totalAkunAktif = count(array_filter($guruList, function ($g) {
-    return !empty($g['password_plain']); }));
+    return !empty($g['password_plain']);
+}));
 $totalBelumPassword = $totalGuru - $totalAkunAktif;
 ?>
 <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 sm:p-6">
@@ -278,11 +279,12 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
 
 <script>
     const BASEURL = '<?= BASEURL ?>';
-    let isEditMode = false;
 
     function openEditModal(guru) {
-        isEditMode = true;
         document.getElementById('modalTitle').textContent = 'Edit Data Guru';
+        const form = document.getElementById('guruForm');
+        form.action = BASEURL + '/admin/prosesUpdateGuru';
+
         document.getElementById('formIdGuru').value = guru.id_guru;
         document.getElementById('formNamaGuru').value = guru.nama_guru;
         document.getElementById('formNik').value = guru.nik;
@@ -298,8 +300,10 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
     }
 
     function openAddModal() {
-        isEditMode = false;
         document.getElementById('modalTitle').textContent = 'Tambah Guru Baru';
+        const form = document.getElementById('guruForm');
+        form.action = BASEURL + '/admin/prosesTambahGuru';
+
         document.getElementById('formIdGuru').value = '';
         document.getElementById('formNamaGuru').value = '';
         document.getElementById('formNik').value = '';
@@ -319,31 +323,7 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
         document.getElementById('editModal').classList.remove('flex');
     }
 
-    document.getElementById('guruForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const btn = document.getElementById('btnSubmit');
-        btn.disabled = true;
-        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Menyimpan...';
-
-        const formData = new FormData(this);
-        const url = isEditMode ? BASEURL + '/admin/prosesUpdateGuru' : BASEURL + '/admin/prosesTambahGuru';
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData
-            });
-
-            // Reload page after save
-            location.reload();
-        } catch (error) {
-            alert('Terjadi kesalahan: ' + error.message);
-            btn.disabled = false;
-            btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> <span>Simpan</span>';
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-    });
+    // Form submit handler removed to allow natural submission with Flash messages
 
     function confirmDelete(id, nama) {
         if (confirm('Apakah Anda yakin ingin menghapus data guru ' + nama + '?\n\nSemua data terkait akan ikut terhapus!')) {
