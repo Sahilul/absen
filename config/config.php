@@ -58,47 +58,50 @@ function getBaseUrl()
 }
 
 // ===== SET BASE URL =====
-// AUTO-DETECT (Recommended - works for localhost & hosting)
 define('BASEURL', getBaseUrl());
 
-// ATAU HARDCODE (jika auto-detect bermasalah):
-// define('BASEURL', 'https://sabilillah.id');  // <-- Uncomment & edit untuk force manual
+function getSystemSetting($key, $default = null)
+{
+    static $settings = null;
 
-// Atau gunakan environment variable untuk fleksibilitas:
-// define('BASEURL', getenv('APP_URL') ?: getBaseUrl());
+    if ($settings === null) {
+        // Check if database config is loaded
+        if (!defined('DB_HOST')) {
+            // Load database.php first
+            require_once __DIR__ . '/database.php';
+        }
 
-// Secret key for QR token generation and security
-// WAJIB GANTI untuk production!
-define('SECRET_KEY', 'absen_qr_secret_key_2024_change_in_production');
+        try {
+            if (!class_exists('Database')) {
+                require_once APPROOT . '/app/core/Database.php';
+            }
+            $db = new Database();
+            $db->query("SELECT key_name, value FROM pengaturan_sistem");
+            $results = $db->resultSet();
+            $settings = [];
+            foreach ($results as $row) {
+                $settings[$row['key_name']] = $row['value'];
+            }
+        } catch (Exception $e) {
+            $settings = [];
+        }
+    }
 
-// QR feature flag (set true to enable QR in PDFs)
-define('QR_ENABLED', true);
+    return $settings[$key] ?? $default;
+}
 
-// =============================================================================
-// GOOGLE OAUTH 2.0 CONFIGURATION
-// =============================================================================
-// Untuk mendapatkan Client ID dan Secret:
-// 1. Buka https://console.cloud.google.com/
-// 2. Buat project baru atau pilih existing
-// 3. Enable Google+ API atau People API
-// 4. Credentials > Create Credentials > OAuth 2.0 Client ID
-// 5. Authorized redirect URIs: http://localhost/absen/auth/googleCallback
-// 6. Copy Client ID dan Client Secret ke sini
-// =============================================================================
+define('SECRET_KEY', getSystemSetting('secret_key', 'absen_qr_secret_key_2024'));
+define('QR_ENABLED', getSystemSetting('qr_enabled', '1') == '1');
 
-define('GOOGLE_OAUTH_ENABLED', true); // Set false untuk disable login Google
-define('GOOGLE_CLIENT_ID', '63579907962-r14anpfr1fdi87eqgp2om3e5l9scal07.apps.googleusercontent.com');
-define('GOOGLE_CLIENT_SECRET', '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');
+define('GOOGLE_OAUTH_ENABLED', getSystemSetting('google_oauth_enabled', '0') == '1');
+define('GOOGLE_CLIENT_ID', getSystemSetting('google_client_id', ''));
+define('GOOGLE_CLIENT_SECRET', getSystemSetting('google_client_secret', ''));
 define('GOOGLE_REDIRECT_URI', BASEURL . '/auth/googleCallback');
+define('GOOGLE_ALLOWED_DOMAIN', getSystemSetting('google_allowed_domain', ''));
 
-// Domain yang diizinkan untuk Google OAuth (optional, kosongkan untuk allow all)
-// Contoh: 'sabilillah.id' akan hanya allow email @sabilillah.id
-define('GOOGLE_ALLOWED_DOMAIN', 'sabilillah.id');
-
-// Menu visibility settings (can be changed via Admin > Pengaturan Menu)
-define('MENU_INPUT_NILAI_ENABLED', true);
-define('MENU_PEMBAYARAN_ENABLED', true);
-define('MENU_RAPOR_ENABLED', true);
+define('MENU_INPUT_NILAI_ENABLED', getSystemSetting('menu_input_nilai_enabled', '1') == '1');
+define('MENU_PEMBAYARAN_ENABLED', getSystemSetting('menu_pembayaran_enabled', '1') == '1');
+define('MENU_RAPOR_ENABLED', getSystemSetting('menu_rapor_enabled', '1') == '1');
 
 // =============================================================================
 // PENGATURAN APLIKASI HELPER
@@ -357,4 +360,140 @@ function getPengaturanWajibRPP()
     }
 }
 
+// =============================================================================
+// PENGATURAN LISENSI (DILINDUNGI IONCUBE)
+// =============================================================================
+// PENTING: File config.php HARUS dienkripsi dengan IonCube!
+// Jika tidak, client bisa menonaktifkan pengecekan lisensi.
+// =============================================================================
+
+// Aktifkan pengecekan lisensi (WAJIB true untuk production)
+define('LICENSE_ENABLED', true);
+
+// URL License Server API
+define('LICENSE_SERVER_URL', 'https://license.sabilillah.id/api/check');
+
+// Bypass localhost untuk development (set false untuk production ketat)
+define('LICENSE_BYPASS_LOCALHOST', true);
+
+// Cache duration dalam detik (24 jam = 86400)
+define('LICENSE_CACHE_TTL', 86400);
+
+/**
+ * Verifikasi Lisensi
+ * @return bool
+ */
+function verifyLicense(): bool
+{
+    if (!LICENSE_ENABLED) {
+        return true;
+    }
+
+    $domain = getLicenseDomain();
+
+    if (LICENSE_BYPASS_LOCALHOST && isLicenseLocalhost($domain)) {
+        return true;
+    }
+
+    $cached = getLicenseCache();
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    $isValid = callLicenseApi($domain);
+    saveLicenseCache($isValid, $domain);
+
+    return $isValid;
+}
+
+function getLicenseDomain(): string
+{
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    return strtolower(preg_replace('#:\d+$#', '', $host));
+}
+
+function isLicenseLocalhost(string $domain): bool
+{
+    return in_array($domain, ['localhost', '127.0.0.1', '::1']) || strpos($domain, 'localhost') !== false;
+}
+
+function getLicenseCache(): ?bool
+{
+    $cacheFile = APPROOT . '/tmp/license_cache.json';
+    if (!file_exists($cacheFile))
+        return null;
+
+    $data = json_decode(file_get_contents($cacheFile), true);
+    if (!$data || !isset($data['valid'], $data['time']))
+        return null;
+    if (time() - $data['time'] > LICENSE_CACHE_TTL)
+        return null;
+
+    return (bool) $data['valid'];
+}
+
+function saveLicenseCache(bool $isValid, string $domain): void
+{
+    $dir = APPROOT . '/tmp';
+    if (!is_dir($dir))
+        mkdir($dir, 0755, true);
+
+    file_put_contents($dir . '/license_cache.json', json_encode([
+        'valid' => $isValid,
+        'time' => time(),
+        'domain' => $domain
+    ]));
+}
+
+function callLicenseApi(string $domain): bool
+{
+    $url = LICENSE_SERVER_URL . '?domain=' . urlencode($domain);
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => false
+        ]);
+        $response = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code === 200 && $response) {
+            $data = json_decode($response, true);
+            return isset($data['valid']) && $data['valid'] === true;
+        }
+    }
+
+    $ctx = stream_context_create(['http' => ['timeout' => 10], 'ssl' => ['verify_peer' => false]]);
+    $response = @file_get_contents($url, false, $ctx);
+    if ($response) {
+        $data = json_decode($response, true);
+        return isset($data['valid']) && $data['valid'] === true;
+    }
+
+    return getLicenseCache() ?? false;
+}
+
+function showLicenseBlockedPage(): void
+{
+    $domain = getLicenseDomain();
+    echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lisensi Tidak Valid</title><script src="https://cdn.tailwindcss.com"></script></head>';
+    echo '<body class="bg-gradient-to-br from-red-900 to-red-800 min-h-screen flex items-center justify-center p-4"><div class="max-w-lg w-full"><div class="bg-white rounded-2xl shadow-2xl p-8 text-center">';
+    echo '<div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6"><svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>';
+    echo '<h1 class="text-2xl font-bold text-gray-800 mb-2">Lisensi Tidak Valid</h1>';
+    echo '<p class="text-gray-600 mb-6">Domain <strong>' . htmlspecialchars($domain) . '</strong> tidak terdaftar.</p>';
+    echo '<div class="bg-gray-50 rounded-lg p-4 mb-6"><p class="text-sm text-gray-500">Hubungi administrator untuk mendaftarkan domain Anda.</p></div>';
+    echo '<button onclick="location.reload()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 px-6 rounded-lg font-medium">Coba Lagi</button>';
+    echo '</div></div></body></html>';
+    exit;
+}
+
+// =============================================================================
+// END LICENSE
+// =============================================================================
+
 require_once 'database.php';
+

@@ -10,7 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_httponly', 1); // Prevent JavaScript access
     ini_set('session.use_strict_mode', 1); // Prevent session fixation
     ini_set('session.cookie_samesite', 'Lax'); // CSRF protection
-    
+
     session_name('ABSEN_SESSION'); // Custom session name
     session_start();
 }
@@ -18,8 +18,14 @@ if (session_status() === PHP_SESSION_NONE) {
 // Mendefinisikan path root aplikasi
 define('APPROOT', dirname(dirname(__FILE__)));
 
-// MEMANGGIL FILE KONFIGURASI BARU
+// MEMANGGIL FILE KONFIGURASI 
 require_once APPROOT . '/config/config.php';
+
+//=======================================
+if (!verifyLicense()) {
+    showLicenseBlockedPage();
+}
+//============================================================================
 
 // Early handling for public QR validation links like /validate/<type>/<token>
 // This bypasses the MVC router and avoids auth redirects for scanned QR codes

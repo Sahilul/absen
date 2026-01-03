@@ -4020,43 +4020,16 @@ class AdminController extends Controller
     {
         $this->data['judul'] = 'Pengaturan Menu';
 
-        $configPath = __DIR__ . '/../../config/config.php';
-        $configContent = is_file($configPath) ? file_get_contents($configPath) : '';
+        // Baca dari database via PengaturanSistem_model
+        $pengaturanModel = $this->model('PengaturanSistem_model');
+        $settings = $pengaturanModel->getAll();
 
-        $inputNilaiEnabled = true;
-        $pembayaranEnabled = true;
-        $googleOAuthEnabled = true;
-        $googleClientId = '';
-        $googleClientSecret = '';
-        $googleAllowedDomain = 'sabilillah.id';
-
-        if ($configContent !== false && $configContent !== '') {
-            if (preg_match("/define\('MENU_INPUT_NILAI_ENABLED',\s*(true|false)\)/", $configContent, $matchNilai)) {
-                $inputNilaiEnabled = $matchNilai[1] === 'true';
-            }
-            if (preg_match("/define\('MENU_PEMBAYARAN_ENABLED',\s*(true|false)\)/", $configContent, $matchPembayaran)) {
-                $pembayaranEnabled = $matchPembayaran[1] === 'true';
-            }
-            if (preg_match("/define\('GOOGLE_OAUTH_ENABLED',\s*(true|false)\)/", $configContent, $matchOAuth)) {
-                $googleOAuthEnabled = $matchOAuth[1] === 'true';
-            }
-            if (preg_match("/define\('GOOGLE_CLIENT_ID',\s*'([^']*)'\)/", $configContent, $matchClientId)) {
-                $googleClientId = $matchClientId[1];
-            }
-            if (preg_match("/define\('GOOGLE_CLIENT_SECRET',\s*'([^']*)'\)/", $configContent, $matchSecret)) {
-                $googleClientSecret = $matchSecret[1];
-            }
-            if (preg_match("/define\('GOOGLE_ALLOWED_DOMAIN',\s*'([^']*)'\)/", $configContent, $matchDomain)) {
-                $googleAllowedDomain = $matchDomain[1];
-            }
-        }
-
-        $this->data['menu_input_nilai_enabled'] = $inputNilaiEnabled;
-        $this->data['menu_pembayaran_enabled'] = $pembayaranEnabled;
-        $this->data['google_oauth_enabled'] = $googleOAuthEnabled;
-        $this->data['google_client_id'] = $googleClientId;
-        $this->data['google_client_secret'] = $googleClientSecret;
-        $this->data['google_allowed_domain'] = $googleAllowedDomain;
+        $this->data['menu_input_nilai_enabled'] = ($settings['menu_input_nilai_enabled'] ?? '1') == '1';
+        $this->data['menu_pembayaran_enabled'] = ($settings['menu_pembayaran_enabled'] ?? '1') == '1';
+        $this->data['google_oauth_enabled'] = ($settings['google_oauth_enabled'] ?? '0') == '1';
+        $this->data['google_client_id'] = $settings['google_client_id'] ?? '';
+        $this->data['google_client_secret'] = $settings['google_client_secret'] ?? '';
+        $this->data['google_allowed_domain'] = $settings['google_allowed_domain'] ?? '';
 
         // Google Drive connection status
         $googleDriveConnected = false;
@@ -4091,62 +4064,32 @@ class AdminController extends Controller
             exit;
         }
 
-        $inputNilaiEnabled = isset($_POST['menu_input_nilai']) ? 'true' : 'false';
-        $pembayaranEnabled = isset($_POST['menu_pembayaran']) ? 'true' : 'false';
-        $googleOAuthEnabled = isset($_POST['google_oauth_enabled']) ? 'true' : 'false';
-        $googleClientId = trim($_POST['google_client_id'] ?? '');
-        $googleClientSecret = trim($_POST['google_client_secret'] ?? '');
-        $googleAllowedDomain = trim($_POST['google_allowed_domain'] ?? 'sabilillah.id');
-
         try {
-            $configPath = __DIR__ . '/../../config/config.php';
-            if (!is_file($configPath)) {
-                throw new Exception('File konfigurasi tidak ditemukan.');
-            }
+            $pengaturanModel = $this->model('PengaturanSistem_model');
 
-            $configContent = file_get_contents($configPath);
-            if ($configContent === false) {
-                throw new Exception('Gagal membaca file konfigurasi.');
-            }
-
-            $patterns = [
-                "/define\('MENU_INPUT_NILAI_ENABLED',\s*(true|false)\);/" => "define('MENU_INPUT_NILAI_ENABLED', {$inputNilaiEnabled});",
-                "/define\('MENU_PEMBAYARAN_ENABLED',\s*(true|false)\);/" => "define('MENU_PEMBAYARAN_ENABLED', {$pembayaranEnabled});",
-                "/define\('MENU_RAPOR_ENABLED',\s*(true|false)\);/" => "define('MENU_RAPOR_ENABLED', {$inputNilaiEnabled});",
-                "/define\('GOOGLE_OAUTH_ENABLED',\s*(true|false)\);/" => "define('GOOGLE_OAUTH_ENABLED', {$googleOAuthEnabled});",
-                "/define\('GOOGLE_CLIENT_ID',\s*'[^']*'\);/" => "define('GOOGLE_CLIENT_ID', '{$googleClientId}');",
-                "/define\('GOOGLE_CLIENT_SECRET',\s*'[^']*'\);/" => "define('GOOGLE_CLIENT_SECRET', '{$googleClientSecret}');",
-                "/define\('GOOGLE_ALLOWED_DOMAIN',\s*'[^']*'\);/" => "define('GOOGLE_ALLOWED_DOMAIN', '{$googleAllowedDomain}');"
+            $settings = [
+                'menu_input_nilai_enabled' => isset($_POST['menu_input_nilai']) ? '1' : '0',
+                'menu_pembayaran_enabled' => isset($_POST['menu_pembayaran']) ? '1' : '0',
+                'menu_rapor_enabled' => isset($_POST['menu_input_nilai']) ? '1' : '0',
+                'google_oauth_enabled' => isset($_POST['google_oauth_enabled']) ? '1' : '0',
+                'google_client_id' => trim($_POST['google_client_id'] ?? ''),
+                'google_client_secret' => trim($_POST['google_client_secret'] ?? ''),
+                'google_allowed_domain' => trim($_POST['google_allowed_domain'] ?? ''),
             ];
 
-            foreach ($patterns as $pattern => $replacement) {
-                if (preg_match($pattern, $configContent)) {
-                    $updated = preg_replace($pattern, $replacement, $configContent, 1);
-                    if ($updated === null) {
-                        throw new Exception('Gagal memperbarui konfigurasi.');
-                    }
-                    $configContent = $updated;
-                }
-            }
+            $pengaturanModel->updateMultiple($settings);
 
-            if (file_put_contents($configPath, $configContent) === false) {
-                throw new Exception('Gagal menulis file konfigurasi.');
-            }
-
-            if (function_exists('opcache_reset')) {
-                @opcache_reset();
-            }
-
-            // Simpan Google Drive Folder ID ke database
+            // Simpan Google Drive Folder ID ke tabel pengaturan_aplikasi jika ada
             $googleDriveFolderId = trim($_POST['google_drive_folder_id'] ?? '');
-            try {
-                $db = new Database();
-                $db->query("UPDATE pengaturan_aplikasi SET google_drive_folder_id = :folder_id");
-                $db->bind(':folder_id', $googleDriveFolderId);
-                $db->execute();
-            } catch (Exception $dbError) {
-                // Kolom mungkin belum ada, log saja
-                error_log('GoogleDrive folder save: ' . $dbError->getMessage());
+            if (!empty($googleDriveFolderId)) {
+                try {
+                    $db = new Database();
+                    $db->query("UPDATE pengaturan_aplikasi SET google_drive_folder_id = :folder_id");
+                    $db->bind(':folder_id', $googleDriveFolderId);
+                    $db->execute();
+                } catch (Exception $dbError) {
+                    error_log('GoogleDrive folder save: ' . $dbError->getMessage());
+                }
             }
 
             Flasher::setFlash('Pengaturan berhasil disimpan.', 'success');
@@ -5907,6 +5850,51 @@ Waktu: ' . date('d/m/Y H:i:s');
 
         Flasher::setFlash('Pesan berhasil dihapus!', 'success');
         header('Location: ' . BASEURL . '/admin/pesan');
+        exit;
+    }
+
+    public function pengaturanSistem()
+    {
+        $pengaturanModel = $this->model('PengaturanSistem_model');
+        $settings = $pengaturanModel->getAll();
+
+        $data = [
+            'title' => 'Pengaturan Sistem',
+            'sidebar' => 'templates/sidebar_admin',
+            'settings' => $settings
+        ];
+
+        $this->view('templates/header', $data);
+        $this->view('templates/sidebar_admin', $data);
+        $this->view('admin/pengaturan_sistem', $data);
+        $this->view('templates/footer');
+    }
+
+    public function updatePengaturanSistem()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/pengaturanSistem');
+            exit;
+        }
+
+        $pengaturanModel = $this->model('PengaturanSistem_model');
+
+        $settings = [
+            'secret_key' => $_POST['secret_key'] ?? '',
+            'qr_enabled' => isset($_POST['qr_enabled']) ? '1' : '0',
+            'google_oauth_enabled' => isset($_POST['google_oauth_enabled']) ? '1' : '0',
+            'google_client_id' => $_POST['google_client_id'] ?? '',
+            'google_client_secret' => $_POST['google_client_secret'] ?? '',
+            'google_allowed_domain' => $_POST['google_allowed_domain'] ?? '',
+            'menu_input_nilai_enabled' => isset($_POST['menu_input_nilai_enabled']) ? '1' : '0',
+            'menu_pembayaran_enabled' => isset($_POST['menu_pembayaran_enabled']) ? '1' : '0',
+            'menu_rapor_enabled' => isset($_POST['menu_rapor_enabled']) ? '1' : '0',
+        ];
+
+        $pengaturanModel->updateMultiple($settings);
+
+        Flasher::setFlash('Pengaturan berhasil disimpan!', 'success');
+        header('Location: ' . BASEURL . '/admin/pengaturanSistem');
         exit;
     }
 }

@@ -257,7 +257,8 @@
                                     <div class="flex-1">
                                         <p class="text-sm font-semibold text-green-800">Akun Terhubung</p>
                                         <?php if (!empty($data['google_drive_email'])): ?>
-                                            <p class="text-sm text-green-700 font-medium"><?= htmlspecialchars($data['google_drive_email']); ?></p>
+                                            <p class="text-sm text-green-700 font-medium">
+                                                <?= htmlspecialchars($data['google_drive_email']); ?></p>
                                         <?php else: ?>
                                             <p class="text-xs text-green-600">Akun Google tersambung</p>
                                         <?php endif; ?>
@@ -273,11 +274,12 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-semibold text-green-800">Folder Dokumen Tersedia</p>
-                                        <p class="text-xs text-green-600">Dokumen akan disimpan ke folder yang dibuat otomatis di Google Drive</p>
+                                        <p class="text-xs text-green-600">Dokumen akan disimpan ke folder yang dibuat
+                                            otomatis di Google Drive</p>
                                         <?php if (!empty($data['google_drive_folder_id'])): ?>
-                                            <a href="https://drive.google.com/drive/folders/<?= htmlspecialchars($data['google_drive_folder_id']); ?>" 
-                                               target="_blank" 
-                                               class="text-xs text-green-700 hover:underline inline-flex items-center mt-1">
+                                            <a href="https://drive.google.com/drive/folders/<?= htmlspecialchars($data['google_drive_folder_id']); ?>"
+                                                target="_blank"
+                                                class="text-xs text-green-700 hover:underline inline-flex items-center mt-1">
                                                 <i data-lucide="external-link" class="w-3 h-3 mr-1"></i>
                                                 Buka folder di Google Drive
                                             </a>
@@ -308,7 +310,8 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-semibold text-gray-800">Folder Otomatis Dibuat</p>
-                                        <p class="text-xs text-gray-600">Saat Anda menghubungkan Drive, folder untuk dokumen siswa akan dibuat otomatis</p>
+                                        <p class="text-xs text-gray-600">Saat Anda menghubungkan Drive, folder untuk dokumen
+                                            siswa akan dibuat otomatis</p>
                                     </div>
                                 </div>
                             </div>
@@ -357,16 +360,15 @@
         </form>
     </div>
 
-    <!-- Warning Box -->
-    <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start">
-        <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0"></i>
-        <div class="text-sm text-yellow-800">
-            <p class="font-medium mb-1">Perhatian</p>
+    <!-- Info Box -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start">
+        <i data-lucide="info" class="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0"></i>
+        <div class="text-sm text-blue-800">
+            <p class="font-medium mb-1">Keterangan</p>
             <ul class="list-disc list-inside space-y-1">
-                <li>Perubahan pengaturan akan mengubah file <code
-                        class="bg-yellow-100 px-1 rounded">config/config.php</code></li>
-                <li>User yang sedang login perlu refresh halaman untuk melihat perubahan menu</li>
-                <li>Pastikan menu yang dinonaktifkan memang tidak diperlukan</li>
+                <li>Pengaturan disimpan di database, tidak perlu edit file config</li>
+                <li>User yang sedang login perlu refresh halaman untuk melihat perubahan</li>
+                <li>File config bisa dienkripsi IonCube tanpa kehilangan fungsionalitas</li>
             </ul>
         </div>
     </div>
