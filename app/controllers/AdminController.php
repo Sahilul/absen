@@ -1162,12 +1162,16 @@ class AdminController extends Controller
         $tablesToCascade = [
             'penugasan',
             'jurnal',
-            'absensi', // if guru is recorded as pengajar
+            'absensi',
         ];
 
         $deletedDetail = [];
 
         try {
+            // Disable foreign key checks
+            $db->query("SET FOREIGN_KEY_CHECKS = 0");
+            $db->execute();
+
             // Delete related data first
             foreach ($tablesToCascade as $t) {
                 try {
@@ -1194,7 +1198,18 @@ class AdminController extends Controller
             } else {
                 Flasher::setFlash('Gagal', 'Data guru tidak ditemukan atau gagal dihapus.', 'danger');
             }
+
+            // Re-enable foreign key checks
+            $db->query("SET FOREIGN_KEY_CHECKS = 1");
+            $db->execute();
         } catch (Exception $e) {
+            // Re-enable foreign key checks even on error
+            try {
+                $db->query("SET FOREIGN_KEY_CHECKS = 1");
+                $db->execute();
+            } catch (Exception $fkErr) {
+            }
+
             Flasher::setFlash('Error', 'Terjadi kesalahan: ' . $e->getMessage(), 'danger');
         }
 
@@ -1242,30 +1257,47 @@ class AdminController extends Controller
         $successCount = 0;
         $failedCount = 0;
 
-        foreach ($ids as $id) {
-            try {
-                // Delete related data first
-                foreach ($tablesToCascade as $t) {
-                    try {
-                        $db->query("DELETE FROM $t WHERE id_guru = :id");
-                        $db->bind('id', $id);
-                        $db->execute();
-                    } catch (Exception $childErr) {
-                        // Continue
+        try {
+            // Disable foreign key checks
+            $db->query("SET FOREIGN_KEY_CHECKS = 0");
+            $db->execute();
+
+            foreach ($ids as $id) {
+                try {
+                    // Delete related data first
+                    foreach ($tablesToCascade as $t) {
+                        try {
+                            $db->query("DELETE FROM $t WHERE id_guru = :id");
+                            $db->bind('id', $id);
+                            $db->execute();
+                        } catch (Exception $childErr) {
+                            // Continue
+                        }
                     }
-                }
 
-                // Delete user account
-                $this->model('User_model')->hapusAkun($id, 'guru');
+                    // Delete user account
+                    $this->model('User_model')->hapusAkun($id, 'guru');
 
-                // Delete guru
-                if ($this->model('Guru_model')->hapusDataGuru($id) > 0) {
-                    $successCount++;
-                } else {
+                    // Delete guru
+                    if ($this->model('Guru_model')->hapusDataGuru($id) > 0) {
+                        $successCount++;
+                    } else {
+                        $failedCount++;
+                    }
+                } catch (Exception $e) {
                     $failedCount++;
                 }
-            } catch (Exception $e) {
-                $failedCount++;
+            }
+
+            // Re-enable foreign key checks
+            $db->query("SET FOREIGN_KEY_CHECKS = 1");
+            $db->execute();
+        } catch (Exception $e) {
+            // Re-enable foreign key checks even on error
+            try {
+                $db->query("SET FOREIGN_KEY_CHECKS = 1");
+                $db->execute();
+            } catch (Exception $fkErr) {
             }
         }
 
