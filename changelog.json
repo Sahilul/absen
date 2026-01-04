@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.7.1",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan hapus guru - otomatis hapus penugasan terkait"
+                },
+                {
+                    "type": "feature",
+                    "description": "Fitur hapus banyak guru sekaligus dengan checkbox"
+                }
+            ]
+        },
+        {
             "version": "1.7.0",
             "date": "2026-01-04",
             "type": "feature",

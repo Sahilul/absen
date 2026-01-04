@@ -1152,18 +1152,137 @@ class AdminController extends Controller
     }
     public function hapusGuru($id)
     {
-        if ($this->model('Guru_model')->cekKeterkaitanData($id) > 0) {
-            Flasher::setFlash('Gagal menghapus! Guru ini masih memiliki data penugasan mengajar.', 'danger');
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $db = new Database();
+
+        // Tables that reference id_guru
+        $tablesToCascade = [
+            'penugasan',
+            'jurnal',
+            'absensi', // if guru is recorded as pengajar
+        ];
+
+        $deletedDetail = [];
+
+        try {
+            // Delete related data first
+            foreach ($tablesToCascade as $t) {
+                try {
+                    $db->query("DELETE FROM $t WHERE id_guru = :id");
+                    $db->bind('id', $id);
+                    $db->execute();
+                    $cnt = $db->rowCount();
+                    if ($cnt > 0) {
+                        $deletedDetail[] = "$t:$cnt";
+                    }
+                } catch (Exception $childErr) {
+                    // Table might not exist or different column name
+                }
+            }
+
+            // Delete user account
+            $this->model('User_model')->hapusAkun($id, 'guru');
+
+            // Delete guru
+            if ($this->model('Guru_model')->hapusDataGuru($id) > 0) {
+                $this->clearDashboardCache();
+                $extra = empty($deletedDetail) ? '' : ' (menghapus: ' . implode(', ', $deletedDetail) . ')';
+                Flasher::setFlash('Berhasil', 'Data guru berhasil dihapus' . $extra . '.', 'success');
+            } else {
+                Flasher::setFlash('Gagal', 'Data guru tidak ditemukan atau gagal dihapus.', 'danger');
+            }
+        } catch (Exception $e) {
+            Flasher::setFlash('Error', 'Terjadi kesalahan: ' . $e->getMessage(), 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/guru');
+        exit;
+    }
+
+    /**
+     * Bulk delete multiple teachers
+     */
+    public function bulkHapusGuru()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            Flasher::setFlash('Error', 'Invalid request method.', 'danger');
             header('Location: ' . BASEURL . '/admin/guru');
             exit;
         }
-        $this->model('User_model')->hapusAkun($id, 'guru');
-        if ($this->model('Guru_model')->hapusDataGuru($id) > 0) {
-            $this->clearDashboardCache(); // Clear cache setelah hapus
-            Flasher::setFlash('Data guru berhasil dihapus.', 'success');
+
+        $ids = $_POST['ids'] ?? [];
+
+        if (empty($ids) || !is_array($ids)) {
+            Flasher::setFlash('Gagal', 'Tidak ada guru yang dipilih untuk dihapus.', 'warning');
             header('Location: ' . BASEURL . '/admin/guru');
             exit;
         }
+
+        $ids = array_map('intval', $ids);
+        $ids = array_filter($ids, function ($id) {
+            return $id > 0;
+        });
+
+        if (empty($ids)) {
+            Flasher::setFlash('Gagal', 'ID guru tidak valid.', 'danger');
+            header('Location: ' . BASEURL . '/admin/guru');
+            exit;
+        }
+
+        $db = new Database();
+        $tablesToCascade = ['penugasan', 'jurnal', 'absensi'];
+
+        $successCount = 0;
+        $failedCount = 0;
+
+        foreach ($ids as $id) {
+            try {
+                // Delete related data first
+                foreach ($tablesToCascade as $t) {
+                    try {
+                        $db->query("DELETE FROM $t WHERE id_guru = :id");
+                        $db->bind('id', $id);
+                        $db->execute();
+                    } catch (Exception $childErr) {
+                        // Continue
+                    }
+                }
+
+                // Delete user account
+                $this->model('User_model')->hapusAkun($id, 'guru');
+
+                // Delete guru
+                if ($this->model('Guru_model')->hapusDataGuru($id) > 0) {
+                    $successCount++;
+                } else {
+                    $failedCount++;
+                }
+            } catch (Exception $e) {
+                $failedCount++;
+            }
+        }
+
+        if ($successCount > 0) {
+            $this->clearDashboardCache();
+        }
+
+        if ($successCount > 0 && $failedCount === 0) {
+            Flasher::setFlash('Berhasil', "$successCount guru berhasil dihapus.", 'success');
+        } elseif ($successCount > 0 && $failedCount > 0) {
+            Flasher::setFlash('Sebagian Berhasil', "$successCount guru dihapus, $failedCount gagal.", 'warning');
+        } else {
+            Flasher::setFlash('Gagal', 'Tidak ada guru yang berhasil dihapus.', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/guru');
+        exit;
     }
 
     /**

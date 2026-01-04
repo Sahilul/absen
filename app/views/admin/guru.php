@@ -69,8 +69,15 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
                     class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     oninput="filterGuru()">
             </div>
-            <div class="text-sm text-gray-500 flex items-center">
-                <span id="countDisplay"><?= $totalGuru ?></span> guru
+            <div class="flex items-center gap-3">
+                <div class="text-sm text-gray-500">
+                    <span id="countDisplay"><?= $totalGuru ?></span> guru
+                </div>
+                <button id="bulkDeleteBtn" onclick="openBulkDeleteModal()"
+                    class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors items-center gap-1">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    Hapus (<span id="selectedCount">0</span>)
+                </button>
             </div>
         </div>
     </div>
@@ -81,9 +88,13 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
         <!-- Desktop Table View -->
         <div class="hidden md:block bg-white rounded-xl shadow-sm border overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full" id="guruTable">
                     <thead class="bg-gray-50 border-b">
                         <tr>
+                            <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase w-12">
+                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"
+                                    class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            </th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">NIK</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Nama Guru</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">No. WA</th>
@@ -94,8 +105,16 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
                     </thead>
                     <tbody class="divide-y divide-gray-100" id="guruTableBody">
                         <?php foreach ($guruList as $i => $guru): ?>
-                            <tr class="hover:bg-gray-50 guru-row" data-nama="<?= strtolower($guru['nama_guru']) ?>"
+                            <tr class="hover:bg-gray-50 guru-row" 
+                                data-id="<?= (int) $guru['id_guru'] ?>"
+                                data-nama="<?= strtolower($guru['nama_guru']) ?>"
                                 data-nik="<?= $guru['nik'] ?>">
+                                <td class="px-3 py-3 text-center">
+                                    <input type="checkbox" class="guru-checkbox w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        value="<?= (int) $guru['id_guru'] ?>"
+                                        data-nama="<?= htmlspecialchars($guru['nama_guru']) ?>"
+                                        onchange="updateBulkDeleteButton()">
+                                </td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-2">
                                         <span
@@ -118,7 +137,8 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
                                 </td>
                                 <td class="px-4 py-3">
                                     <?php if (!empty($guru['password_plain'])): ?>
-                                        <code class="px-2 py-1 bg-gray-100 rounded text-xs font-mono text-gray-800"><?= htmlspecialchars($guru['password_plain']) ?></code>
+                                        <code
+                                            class="px-2 py-1 bg-gray-100 rounded text-xs font-mono text-gray-800"><?= htmlspecialchars($guru['password_plain']) ?></code>
                                     <?php else: ?>
                                         <span class="text-xs text-gray-400 italic">Belum diset</span>
                                     <?php endif; ?>
@@ -195,7 +215,8 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
                         <div class="flex items-center gap-2 text-gray-600">
                             <i data-lucide="key" class="w-4 h-4 text-gray-400"></i>
                             <?php if (!empty($guru['password_plain'])): ?>
-                                <code class="px-1.5 py-0.5 bg-gray-100 rounded text-xs font-mono"><?= htmlspecialchars($guru['password_plain']) ?></code>
+                                <code
+                                    class="px-1.5 py-0.5 bg-gray-100 rounded text-xs font-mono"><?= htmlspecialchars($guru['password_plain']) ?></code>
                             <?php else: ?>
                                 <span class="text-xs italic text-gray-400">Belum diset</span>
                             <?php endif; ?>
@@ -381,4 +402,153 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
     });
+
+    // ==========================================
+    // BULK DELETE FUNCTIONS
+    // ==========================================
+
+    function toggleSelectAll(masterCheckbox) {
+        const checkboxes = document.querySelectorAll('.guru-checkbox');
+        checkboxes.forEach(cb => {
+            const row = cb.closest('tr');
+            if (row && row.style.display !== 'none') {
+                cb.checked = masterCheckbox.checked;
+            }
+        });
+        updateBulkDeleteButton();
+    }
+
+    function updateBulkDeleteButton() {
+        const checkboxes = document.querySelectorAll('.guru-checkbox:checked');
+        const count = checkboxes.length;
+        const btn = document.getElementById('bulkDeleteBtn');
+        const countSpan = document.getElementById('selectedCount');
+        
+        if (count > 0) {
+            btn.classList.remove('hidden');
+            btn.classList.add('flex');
+            countSpan.textContent = count;
+        } else {
+            btn.classList.add('hidden');
+            btn.classList.remove('flex');
+        }
+
+        const allCheckboxes = document.querySelectorAll('.guru-checkbox');
+        const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => {
+            const row = cb.closest('tr');
+            return row && row.style.display !== 'none';
+        });
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        if (visibleCheckboxes.length > 0 && visibleCheckboxes.every(cb => cb.checked)) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else if (count > 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        }
+
+        if (typeof lucide !== 'undefined') {
+            setTimeout(() => lucide.createIcons(), 50);
+        }
+    }
+
+    function openBulkDeleteModal() {
+        const checkboxes = document.querySelectorAll('.guru-checkbox:checked');
+        const count = checkboxes.length;
+        
+        if (count === 0) {
+            alert('Pilih minimal 1 guru untuk dihapus.');
+            return;
+        }
+
+        let listHtml = '<ul class="list-disc list-inside space-y-1">';
+        checkboxes.forEach(cb => {
+            const nama = cb.getAttribute('data-nama') || 'Unknown';
+            listHtml += `<li>${nama}</li>`;
+        });
+        listHtml += '</ul>';
+
+        document.getElementById('bulkDeleteCount').textContent = count;
+        document.getElementById('bulkDeleteList').innerHTML = listHtml;
+
+        const modal = document.getElementById('bulkDeleteModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        if (typeof lucide !== 'undefined') {
+            setTimeout(() => lucide.createIcons(), 50);
+        }
+    }
+
+    function closeBulkDeleteModal() {
+        const modal = document.getElementById('bulkDeleteModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function confirmBulkDelete() {
+        const checkboxes = document.querySelectorAll('.guru-checkbox:checked');
+        const ids = Array.from(checkboxes).map(cb => cb.value);
+
+        if (ids.length === 0) {
+            alert('Tidak ada guru yang dipilih.');
+            return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = BASEURL + '/admin/bulkHapusGuru';
+
+        ids.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = id;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    document.addEventListener('click', function (e) {
+        const modal = document.getElementById('bulkDeleteModal');
+        if (!modal || modal.classList.contains('hidden')) return;
+        if (e.target === modal) {
+            closeBulkDeleteModal();
+        }
+    });
 </script>
+
+<!-- Bulk Delete Modal -->
+<div id="bulkDeleteModal"
+    class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg border border-gray-200">
+        <div class="px-6 py-4 border-b flex items-center">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500 mr-2"></i>
+            <h4 class="text-lg font-semibold text-gray-800">Hapus Beberapa Guru</h4>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-600 leading-relaxed">
+                Anda akan menghapus <span class="font-bold text-red-600" id="bulkDeleteCount">0</span> guru:
+            </p>
+            <div id="bulkDeleteList" class="max-h-40 overflow-y-auto bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
+                <strong>Peringatan:</strong> Semua data terkait (penugasan, jurnal, absensi) akan dihapus permanen.
+            </div>
+            <p class="text-xs text-gray-500">Tindakan ini tidak dapat dibatalkan.</p>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3 rounded-b-xl">
+            <button onclick="closeBulkDeleteModal()"
+                class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">Batal</button>
+            <button onclick="confirmBulkDelete()"
+                class="px-4 py-2 text-sm font-medium rounded-md bg-red-600 hover:bg-red-700 text-white flex items-center">
+                <i data-lucide="trash-2" class="w-4 h-4 mr-1"></i> Hapus Semua
+            </button>
+        </div>
+    </div>
+</div>
