@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.7.0",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur hapus banyak siswa sekaligus dengan checkbox"
+                }
+            ]
+        },
+        {
             "version": "1.6.9",
             "date": "2026-01-04",
             "type": "feature",

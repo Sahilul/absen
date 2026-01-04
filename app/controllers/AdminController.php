@@ -542,6 +542,105 @@ class AdminController extends Controller
         header('Location: ' . BASEURL . '/admin/siswa');
         exit;
     }
+
+    /**
+     * Bulk delete multiple students
+     */
+    public function bulkHapusSiswa()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Only accept POST requests
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            Flasher::setFlash('Error', 'Invalid request method.', 'danger');
+            header('Location: ' . BASEURL . '/admin/siswa');
+            exit;
+        }
+
+        $ids = $_POST['ids'] ?? [];
+
+        if (empty($ids) || !is_array($ids)) {
+            Flasher::setFlash('Gagal', 'Tidak ada siswa yang dipilih untuk dihapus.', 'warning');
+            header('Location: ' . BASEURL . '/admin/siswa');
+            exit;
+        }
+
+        // Sanitize IDs
+        $ids = array_map('intval', $ids);
+        $ids = array_filter($ids, function ($id) {
+            return $id > 0;
+        });
+
+        if (empty($ids)) {
+            Flasher::setFlash('Gagal', 'ID siswa tidak valid.', 'danger');
+            header('Location: ' . BASEURL . '/admin/siswa');
+            exit;
+        }
+
+        $db = new Database();
+        $tablesToCascade = [
+            'absensi',
+            'nilai_siswa',
+            'jurnal',
+            'performa_siswa',
+            'keanggotaan_kelas',
+            'pembayaran_tagihan_siswa'
+        ];
+
+        $successCount = 0;
+        $failedCount = 0;
+        $errors = [];
+
+        foreach ($ids as $id) {
+            try {
+                // Delete related data first
+                foreach ($tablesToCascade as $t) {
+                    try {
+                        $db->query("DELETE FROM $t WHERE id_siswa = :id");
+                        $db->bind('id', $id);
+                        $db->execute();
+                    } catch (Exception $childErr) {
+                        // Continue even if child table doesn't exist
+                    }
+                }
+
+                // Delete user account
+                $this->model('User_model')->hapusAkun($id, 'siswa');
+
+                // Delete student
+                if ($this->model('Siswa_model')->hapusDataSiswa($id) > 0) {
+                    $successCount++;
+                } else {
+                    $failedCount++;
+                    $errors[] = "ID $id tidak ditemukan";
+                }
+            } catch (Exception $e) {
+                $failedCount++;
+                $errors[] = "ID $id: " . $e->getMessage();
+            }
+        }
+
+        // Clear dashboard cache
+        if ($successCount > 0) {
+            $this->clearDashboardCache();
+        }
+
+        // Set flash message
+        if ($successCount > 0 && $failedCount === 0) {
+            Flasher::setFlash('Berhasil', "$successCount siswa berhasil dihapus.", 'success');
+        } elseif ($successCount > 0 && $failedCount > 0) {
+            Flasher::setFlash('Sebagian Berhasil', "$successCount siswa dihapus, $failedCount gagal.", 'warning');
+        } else {
+            $errorDetail = !empty($errors) ? ' (' . implode(', ', array_slice($errors, 0, 3)) . ')' : '';
+            Flasher::setFlash('Gagal', "Tidak ada siswa yang berhasil dihapus.$errorDetail", 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/siswa');
+        exit;
+    }
+
     // =================================================================
     // DOKUMEN SISWA
     // =================================================================

@@ -110,6 +110,11 @@
                                     <i data-lucide="id-card" class="w-4 h-4 mr-1"></i>
                                     Cetak Kartu Login
                                 </button>
+                                <button id="bulkDeleteBtn" onclick="openBulkDeleteModal()"
+                                    class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center">
+                                    <i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>
+                                    Hapus Terpilih (<span id="selectedCount">0</span>)
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -174,6 +179,11 @@
                     <table class="w-full divide-y divide-gray-200" id="siswa-table">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th
+                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"
+                                        class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     NISN
                                 </th>
@@ -197,10 +207,18 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <?php foreach ($data['siswa'] as $index => $siswa): ?>
-                                <tr class="hover:bg-gray-50 transition-colors duration-150"
+                                <tr class="hover:bg-gray-50 transition-colors duration-150 siswa-row"
+                                    data-id="<?= (int) $siswa['id_siswa']; ?>"
                                     data-nisn="<?= htmlspecialchars(strtolower($siswa['nisn'])); ?>"
                                     data-nama="<?= htmlspecialchars(strtolower($siswa['nama_siswa'])); ?>"
                                     data-kelas="<?= htmlspecialchars(strtolower($siswa['nama_kelas'] ?? '-')); ?>">
+                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                        <input type="checkbox"
+                                            class="siswa-checkbox w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                            value="<?= (int) $siswa['id_siswa']; ?>"
+                                            data-nama="<?= htmlspecialchars($siswa['nama_siswa']); ?>"
+                                            onchange="updateBulkDeleteButton()">
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div
@@ -631,6 +649,134 @@
                 closeDeleteModal();
             }
         });
+
+        // ==========================================
+        // BULK DELETE FUNCTIONS
+        // ==========================================
+
+        // Toggle select all checkboxes
+        function toggleSelectAll(masterCheckbox) {
+            const checkboxes = document.querySelectorAll('.siswa-checkbox');
+            checkboxes.forEach(cb => {
+                // Only toggle visible checkboxes
+                const row = cb.closest('tr');
+                if (row && row.style.display !== 'none') {
+                    cb.checked = masterCheckbox.checked;
+                }
+            });
+            updateBulkDeleteButton();
+        }
+
+        // Update bulk delete button visibility and count
+        function updateBulkDeleteButton() {
+            const checkboxes = document.querySelectorAll('.siswa-checkbox:checked');
+            const count = checkboxes.length;
+            const btn = document.getElementById('bulkDeleteBtn');
+            const countSpan = document.getElementById('selectedCount');
+            
+            if (count > 0) {
+                btn.classList.remove('hidden');
+                btn.classList.add('flex');
+                countSpan.textContent = count;
+            } else {
+                btn.classList.add('hidden');
+                btn.classList.remove('flex');
+            }
+
+            // Update select all checkbox state
+            const allCheckboxes = document.querySelectorAll('.siswa-checkbox');
+            const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => {
+                const row = cb.closest('tr');
+                return row && row.style.display !== 'none';
+            });
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            if (visibleCheckboxes.length > 0 && visibleCheckboxes.every(cb => cb.checked)) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else if (count > 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+
+            // Re-render icons
+            if (typeof lucide !== 'undefined') {
+                setTimeout(() => lucide.createIcons(), 50);
+            }
+        }
+
+        // Open bulk delete modal
+        function openBulkDeleteModal() {
+            const checkboxes = document.querySelectorAll('.siswa-checkbox:checked');
+            const count = checkboxes.length;
+            
+            if (count === 0) {
+                alert('Pilih minimal 1 siswa untuk dihapus.');
+                return;
+            }
+
+            // Build list of names
+            let listHtml = '<ul class="list-disc list-inside space-y-1">';
+            checkboxes.forEach(cb => {
+                const nama = cb.getAttribute('data-nama') || 'Unknown';
+                listHtml += `<li>${nama}</li>`;
+            });
+            listHtml += '</ul>';
+
+            document.getElementById('bulkDeleteCount').textContent = count;
+            document.getElementById('bulkDeleteList').innerHTML = listHtml;
+
+            const modal = document.getElementById('bulkDeleteModal');
+            modal.classList.remove('hidden');
+
+            if (typeof lucide !== 'undefined') {
+                setTimeout(() => lucide.createIcons(), 50);
+            }
+        }
+
+        // Close bulk delete modal
+        function closeBulkDeleteModal() {
+            const modal = document.getElementById('bulkDeleteModal');
+            modal.classList.add('hidden');
+        }
+
+        // Confirm bulk delete - submit form via POST
+        function confirmBulkDelete() {
+            const checkboxes = document.querySelectorAll('.siswa-checkbox:checked');
+            const ids = Array.from(checkboxes).map(cb => cb.value);
+
+            if (ids.length === 0) {
+                alert('Tidak ada siswa yang dipilih.');
+                return;
+            }
+
+            // Create and submit form
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '<?= BASEURL; ?>/admin/bulkHapusSiswa';
+
+            ids.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ids[]';
+                input.value = id;
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Close bulk modal on click outside
+        document.addEventListener('click', function (e) {
+            const modal = document.getElementById('bulkDeleteModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            if (e.target === modal) {
+                closeBulkDeleteModal();
+            }
+        });
     </script>
 
     <!-- Delete Confirmation Modal -->
@@ -656,6 +802,37 @@
                 <button onclick="confirmDeleteSiswa()"
                     class="px-4 py-2 text-sm font-medium rounded-md bg-red-600 hover:bg-red-700 text-white flex items-center">
                     <i data-lucide="trash-2" class="w-4 h-4 mr-1"></i> Lanjutkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Delete Confirmation Modal -->
+    <div id="bulkDeleteModal"
+        class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-lg border border-gray-200">
+            <div class="px-6 py-4 border-b flex items-center">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500 mr-2"></i>
+                <h4 class="text-lg font-semibold text-gray-800">Hapus Beberapa Siswa</h4>
+            </div>
+            <div class="px-6 py-5 space-y-4">
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Anda akan menghapus <span class="font-bold text-red-600" id="bulkDeleteCount">0</span> siswa:
+                </p>
+                <div id="bulkDeleteList" class="max-h-40 overflow-y-auto bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
+                    <!-- List akan diisi via JavaScript -->
+                </div>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
+                    <strong>Peringatan:</strong> Semua data terkait (absensi, jurnal, nilai, performa) akan dihapus permanen bersama siswa.
+                </div>
+                <p class="text-xs text-gray-500">Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                <button onclick="closeBulkDeleteModal()"
+                    class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">Batal</button>
+                <button onclick="confirmBulkDelete()" id="confirmBulkDeleteBtn"
+                    class="px-4 py-2 text-sm font-medium rounded-md bg-red-600 hover:bg-red-700 text-white flex items-center">
+                    <i data-lucide="trash-2" class="w-4 h-4 mr-1"></i> Hapus Semua
                 </button>
             </div>
         </div>
