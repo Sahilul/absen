@@ -1,0 +1,9 @@
+-- Migration: 1.8.2.sql
+-- Menambahkan kolom popup untuk PSB
+
+ALTER TABLE psb_pengaturan 
+ADD COLUMN IF NOT EXISTS popup_aktif TINYINT(1) DEFAULT 0,
+ADD COLUMN IF NOT EXISTS popup_gambar VARCHAR(255) DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS popup_judul VARCHAR(200) DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS popup_link VARCHAR(500) DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS popup_frequency VARCHAR(20) DEFAULT 'once_session';

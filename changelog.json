@@ -1,0 +1,202 @@
+{
+    "versions": [
+        {
+            "version": "1.7.1",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan hapus guru - otomatis hapus penugasan terkait"
+                },
+                {
+                    "type": "feature",
+                    "description": "Fitur hapus banyak guru sekaligus dengan checkbox"
+                }
+            ]
+        },
+        {
+            "version": "1.7.0",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur hapus banyak siswa sekaligus dengan checkbox"
+                }
+            ]
+        },
+        {
+            "version": "1.6.9",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Integrasi WA Gateway OneSender 2.0 dengan custom URL"
+                }
+            ]
+        },
+        {
+            "version": "1.6.8",
+            "date": "2026-01-04",
+            "type": "improvement",
+            "changes": [
+                {
+                    "type": "improvement",
+                    "description": "Memindahkan menu Pesan ke dalam folder Aplikasi Lain di sidebar admin"
+                }
+            ]
+        },
+        {
+            "version": "1.6.7",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Menampilkan password guru (plain text) pada tabel data guru"
+                }
+            ]
+        },
+        {
+            "version": "1.6.6",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix halaman blank saat simpan data guru (method POST)"
+                }
+            ]
+        },
+        {
+            "version": "1.6.5",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix popup update muncul terus di halaman update"
+                }
+            ]
+        },
+        {
+            "version": "1.6.4",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan notifikasi flash message saat tambah/edit guru"
+                },
+                {
+                    "type": "fix",
+                    "description": "Perbaikan update password guru pada form edit"
+                }
+            ]
+        },
+        {
+            "version": "1.6.3",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Changelog sekarang diambil dari GitHub, bukan lokal"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Popup update menampilkan detail perubahan dari GitHub"
+                }
+            ]
+        },
+        {
+            "version": "1.6.2",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Menu Keuangan siswa dikontrol oleh MENU_PEMBAYARAN_ENABLED"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Access control pada halaman pembayaran siswa"
+                }
+            ]
+        },
+        {
+            "version": "1.6.1",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Popup notifikasi update otomatis di halaman admin"
+                },
+                {
+                    "type": "feature",
+                    "description": "Changelog ditampilkan saat ada update baru"
+                }
+            ]
+        },
+        {
+            "version": "1.6.0",
+            "date": "2026-01-04",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Pengaturan sistem disimpan di database (bisa diubah via web admin)"
+                },
+                {
+                    "type": "feature",
+                    "description": "File config.php bisa dienkripsi IonCube tanpa kehilangan fungsionalitas"
+                },
+                {
+                    "type": "feature",
+                    "description": "Tombol WhatsApp di halaman lisensi blokir"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Pengaturan Menu baca/simpan langsung ke database"
+                }
+            ]
+        },
+        {
+            "version": "1.5.2",
+            "date": "2026-01-01",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan bug upload dokumen siswa"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Optimasi performa dashboard"
+                }
+            ]
+        },
+        {
+            "version": "1.5.0",
+            "date": "2025-12-28",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Sistem PSB (Penerimaan Siswa Baru)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Integrasi Google Drive untuk dokumen"
+                },
+                {
+                    "type": "feature",
+                    "description": "Google OAuth Single Sign-On"
+                }
+            ]
+        }
+    ]
+}

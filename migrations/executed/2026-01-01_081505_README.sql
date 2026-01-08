@@ -1,0 +1,4 @@
+-- MIGRATIONS FOLDER
+-- Taruh file SQL migrasi di sini
+-- Contoh nama: 1.0.1.sql, 1.0.2.sql
+-- File akan dieksekusi otomatis saat update
