@@ -19,8 +19,8 @@ class HomeController extends Controller
         $data['sliders'] = $model->getActiveSliders();
         $data['popups'] = $model->getActivePopups();
         $data['menus'] = $model->getActiveMenuTree();
-        // Get Published Posts (News)
-        $data['posts'] = $model->getPublishedPosts('news', 6);
+        // Get Published Posts (News & Announcements)
+        $data['posts'] = $model->getPublishedPostsMultiType(['news', 'announcement'], 6);
         // Get Active Institutions with Student Count
         $data['institutions'] = $model->getActiveInstitutionsWithCount();
 

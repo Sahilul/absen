@@ -1,6 +1,6 @@
 {
-    "version": "1.8.16",
-    "build": 1816,
-    "release_date": "2026-01-08",
-    "app_name": "School App"
+    "version": "1.8.17",
+    "build": 1817,
+    "release_date": "2026-01-10",
+    "description": "Added CMS post preview, fixed image permissions, added parent phone status in student list"
 }

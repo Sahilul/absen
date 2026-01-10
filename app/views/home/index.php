@@ -63,7 +63,6 @@
 </head>
 
 <body class="bg-slate-50 text-slate-800 antialiased" x-data="{ mobileMenuOpen: false }">
-
     <!-- Navbar -->
     <nav class="fixed w-full z-50 transition-all duration-300 glass-nav border-b border-white/20 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -434,6 +433,13 @@
                                 <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow">
                                     <span
                                         class="text-xs font-bold text-primary-600"><?= date('d M Y', strtotime($post['published_at'])) ?></span>
+                                </div>
+
+                                <!-- Type Badge -->
+                                <div
+                                    class="absolute top-4 right-4 px-2 py-1 rounded-full shadow text-xs font-bold
+                                    <?= $post['type'] == 'news' ? 'bg-blue-500 text-white' : 'bg-orange-500 text-white' ?>">
+                                    <?= $post['type'] == 'news' ? 'Berita' : 'Pengumuman' ?>
                                 </div>
                             </a>
 

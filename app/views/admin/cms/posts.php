@@ -107,6 +107,11 @@
                             </a>
 
                             <div class="flex items-center gap-2">
+                                <a href="<?= BASEURL ?>/news/detail/<?= $post['slug'] ?>" target="_blank"
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 text-purple-500 hover:bg-purple-100 border border-purple-200 transition-colors"
+                                    title="Preview">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
                                 <a href="<?= BASEURL ?>/cms/editPost/<?= $post['id'] ?>"
                                     class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100 border border-blue-200 transition-colors"
                                     title="Edit">

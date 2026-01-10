@@ -433,6 +433,39 @@ class Cms_model
         return $this->db->resultSet();
     }
 
+    /**
+     * Get published posts of multiple types (for homepage Berita & Pengumuman section)
+     * @param array $types Array of types to include, e.g. ['news', 'announcement']
+     * @param int $limit Max number of posts to return
+     * @return array
+     */
+    public function getPublishedPostsMultiType($types = ['news', 'announcement'], $limit = 10)
+    {
+        if (empty($types)) {
+            return [];
+        }
+
+        // Build IN clause safely
+        $placeholders = [];
+        foreach ($types as $i => $type) {
+            $placeholders[] = ":type{$i}";
+        }
+        $inClause = implode(',', $placeholders);
+
+        $this->db->query("SELECT * FROM cms_posts 
+                          WHERE type IN ({$inClause}) AND is_published = 1 
+                          ORDER BY published_at DESC 
+                          LIMIT :limit");
+
+        // Bind each type
+        foreach ($types as $i => $type) {
+            $this->db->bind(":type{$i}", $type);
+        }
+        $this->db->bind(':limit', (int) $limit);
+
+        return $this->db->resultSet();
+    }
+
     public function addPost($data)
     {
         $this->db->query("INSERT INTO cms_posts (title, slug, content, type, image, author_id, is_published, published_at) 

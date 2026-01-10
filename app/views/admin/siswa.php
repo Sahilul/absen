@@ -201,6 +201,10 @@
                                 </th>
                                 <th
                                     class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Kontak Ortu
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Aksi
                                 </th>
                             </tr>
@@ -295,6 +299,44 @@
                                         <?php endif; ?>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <!-- Ayah -->
+                                            <div class="flex flex-col items-center group relative cursor-help">
+                                                <span class="text-[10px] text-gray-500 mb-0.5">Ayah</span>
+                                                <?php if (!empty($siswa['ayah_no_hp'])): ?>
+                                                    <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                                    </div>
+                                                    <!-- Tooltip -->
+                                                    <div class="absolute bottom-full mb-2 hidden group-hover:block z-10 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg">
+                                                        <?= htmlspecialchars($siswa['ayah_no_hp']); ?>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <div class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                                                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                            <!-- Ibu -->
+                                            <div class="flex flex-col items-center group relative cursor-help">
+                                                <span class="text-[10px] text-gray-500 mb-0.5">Ibu</span>
+                                                <?php if (!empty($siswa['ibu_no_hp'])): ?>
+                                                    <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                                    </div>
+                                                    <!-- Tooltip -->
+                                                    <div class="absolute bottom-full mb-2 hidden group-hover:block z-10 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg">
+                                                        <?= htmlspecialchars($siswa['ibu_no_hp']); ?>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <div class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                                                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
                                         <div class="flex items-center justify-center space-x-2">
                                             <button onclick="showDetailSiswa(<?= htmlspecialchars(json_encode($siswa)); ?>)"
                                                 class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg transition-colors"
@@ -377,6 +419,27 @@
                                     <span
                                         class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-600 font-mono">
                                         <?= htmlspecialchars($siswa['password_plain']); ?>
+                                    </span>
+                                <?php endif; ?>
+
+                                <!-- Status HP Ortu -->
+                                <?php if (!empty($siswa['ayah_no_hp'])): ?>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-green-50 text-green-700 border border-green-200">
+                                        <i data-lucide="phone" class="w-3 h-3 mr-1"></i>Ayah
+                                    </span>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-red-50 text-red-700 border border-red-200 opacity-60">
+                                        <i data-lucide="phone-off" class="w-3 h-3 mr-1"></i>Ayah
+                                    </span>
+                                <?php endif; ?>
+
+                                <?php if (!empty($siswa['ibu_no_hp'])): ?>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-green-50 text-green-700 border border-green-200">
+                                        <i data-lucide="phone" class="w-3 h-3 mr-1"></i>Ibu
+                                    </span>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-red-50 text-red-700 border border-red-200 opacity-60">
+                                        <i data-lucide="phone-off" class="w-3 h-3 mr-1"></i>Ibu
                                     </span>
                                 <?php endif; ?>
                             </div>
@@ -673,7 +736,7 @@
             const count = checkboxes.length;
             const btn = document.getElementById('bulkDeleteBtn');
             const countSpan = document.getElementById('selectedCount');
-            
+
             if (count > 0) {
                 btn.classList.remove('hidden');
                 btn.classList.add('flex');
@@ -711,7 +774,7 @@
         function openBulkDeleteModal() {
             const checkboxes = document.querySelectorAll('.siswa-checkbox:checked');
             const count = checkboxes.length;
-            
+
             if (count === 0) {
                 alert('Pilih minimal 1 siswa untuk dihapus.');
                 return;
@@ -819,11 +882,13 @@
                 <p class="text-sm text-gray-600 leading-relaxed">
                     Anda akan menghapus <span class="font-bold text-red-600" id="bulkDeleteCount">0</span> siswa:
                 </p>
-                <div id="bulkDeleteList" class="max-h-40 overflow-y-auto bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
+                <div id="bulkDeleteList"
+                    class="max-h-40 overflow-y-auto bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
                     <!-- List akan diisi via JavaScript -->
                 </div>
                 <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
-                    <strong>Peringatan:</strong> Semua data terkait (absensi, jurnal, nilai, performa) akan dihapus permanen bersama siswa.
+                    <strong>Peringatan:</strong> Semua data terkait (absensi, jurnal, nilai, performa) akan dihapus
+                    permanen bersama siswa.
                 </div>
                 <p class="text-xs text-gray-500">Tindakan ini tidak dapat dibatalkan.</p>
             </div>
