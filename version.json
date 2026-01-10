@@ -1,6 +1,6 @@
 {
-    "version": "1.8.17",
-    "build": 1817,
+    "version": "1.8.18",
+    "build": 1818,
     "release_date": "2026-01-10",
-    "description": "Added CMS post preview, fixed image permissions, added parent phone status in student list"
+    "description": "Added parent phone status indicator to Wali Kelas student list view"
 }

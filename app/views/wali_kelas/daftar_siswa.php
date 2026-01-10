@@ -144,6 +144,9 @@
                             Status</th>
                         <th
                             class="px-6 py-3 text-center text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                            Kontak Ortu</th>
+                        <th
+                            class="px-6 py-3 text-center text-xs font-medium text-secondary-500 uppercase tracking-wider">
                             Aksi</th>
                     </tr>
                 </thead>
@@ -190,6 +193,42 @@
                                             <?= ucfirst($siswa['status_siswa']); ?>
                                         </span>
                                     <?php endif; ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <!-- Ayah -->
+                                        <div class="flex flex-col items-center group relative cursor-help">
+                                            <span class="text-[10px] text-gray-500 mb-0.5">Ayah</span>
+                                            <?php if (!empty($siswa['ayah_no_hp'])): ?>
+                                                <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                                </div>
+                                                <div class="absolute bottom-full mb-2 hidden group-hover:block z-10 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg">
+                                                    <?= htmlspecialchars($siswa['ayah_no_hp']); ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <!-- Ibu -->
+                                        <div class="flex flex-col items-center group relative cursor-help">
+                                            <span class="text-[10px] text-gray-500 mb-0.5">Ibu</span>
+                                            <?php if (!empty($siswa['ibu_no_hp'])): ?>
+                                                <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                                </div>
+                                                <div class="absolute bottom-full mb-2 hidden group-hover:block z-10 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg">
+                                                    <?= htmlspecialchars($siswa['ibu_no_hp']); ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex gap-2 justify-center">
@@ -262,6 +301,31 @@
                                     <?php else: ?>
                                         <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                                             <?= ucfirst($siswa['status_siswa']); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <!-- Status HP Ortu -->
+                                    <?php if (!empty($siswa['ayah_no_hp'])): ?>
+                                        <span
+                                            class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
+                                            <i data-lucide="phone" class="w-3 h-3 inline mr-0.5"></i> Ayah
+                                        </span>
+                                    <?php else: ?>
+                                        <span
+                                            class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200 opacity-60">
+                                            <i data-lucide="phone-off" class="w-3 h-3 inline mr-0.5"></i> Ayah
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($siswa['ibu_no_hp'])): ?>
+                                        <span
+                                            class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
+                                            <i data-lucide="phone" class="w-3 h-3 inline mr-0.5"></i> Ibu
+                                        </span>
+                                    <?php else: ?>
+                                        <span
+                                            class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200 opacity-60">
+                                            <i data-lucide="phone-off" class="w-3 h-3 inline mr-0.5"></i> Ibu
                                         </span>
                                     <?php endif; ?>
                                 </div>
@@ -679,7 +743,7 @@
         // Kontak
         document.getElementById('detailNoWa').textContent = siswa.no_wa || '-';
         document.getElementById('detailEmail').textContent = siswa.email || '-';
-        
+
         // Alamat Lengkap
         document.getElementById('detailAlamat').textContent = siswa.alamat || '-';
         const rtRw = (siswa.rt || siswa.rw) ? `${siswa.rt || '-'} / ${siswa.rw || '-'}` : '-';
@@ -696,8 +760,8 @@
         document.getElementById('detailAyahNik').textContent = siswa.ayah_nik || '-';
         let ayahTtl = '-';
         if (siswa.ayah_tempat_lahir || siswa.ayah_tanggal_lahir) {
-            const tgl = siswa.ayah_tanggal_lahir && siswa.ayah_tanggal_lahir !== '0000-00-00' 
-                ? new Date(siswa.ayah_tanggal_lahir).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) 
+            const tgl = siswa.ayah_tanggal_lahir && siswa.ayah_tanggal_lahir !== '0000-00-00'
+                ? new Date(siswa.ayah_tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
                 : '';
             ayahTtl = `${siswa.ayah_tempat_lahir || '-'}${tgl ? ', ' + tgl : ''}`;
         }
@@ -714,7 +778,7 @@
         let ibuTtl = '-';
         if (siswa.ibu_tempat_lahir || siswa.ibu_tanggal_lahir) {
             const tgl = siswa.ibu_tanggal_lahir && siswa.ibu_tanggal_lahir !== '0000-00-00'
-                ? new Date(siswa.ibu_tanggal_lahir).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})
+                ? new Date(siswa.ibu_tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
                 : '';
             ibuTtl = `${siswa.ibu_tempat_lahir || '-'}${tgl ? ', ' + tgl : ''}`;
         }
