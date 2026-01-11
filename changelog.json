@@ -1,6 +1,29 @@
 {
     "versions": [
         {
+            "version": "1.9.0",
+            "date": "2026-01-11",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Full PWA Support: Website now installable as Native App (Android/iOS)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Dynamic Manifest: App Icon & Name follows Database Settings"
+                },
+                {
+                    "type": "feature",
+                    "description": "Offline Mode: Custom 'No Internet' page instead of browser error"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Service Worker caching for faster page loads"
+                }
+            ]
+        },
+        {
             "version": "1.8.21",
             "date": "2026-01-11",
             "type": "patch",

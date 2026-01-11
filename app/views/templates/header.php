@@ -19,6 +19,28 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $data['judul'] ?? $namaAplikasi; ?> - <?= $namaAplikasi; ?></title>
 
+    <!-- PWA Settings -->
+    <link rel="manifest" href="<?= BASEURL ?>/manifest">
+    <meta name="theme-color" content="#16a34a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Smart Absensi">
+    <link rel="apple-touch-icon" href="<?= BASEURL ?>/public/img/app/logo_1767425774.png">
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('<?= BASEURL ?>/public/service-worker.js')
+                    .then(function (registration) {
+                        console.log('SW registered: ', registration.scope);
+                    }, function (err) {
+                        console.log('SW registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+
     <?php
     // --- SEO & SOCIAL MEDIA META TAGS (OPEN GRAPH) ---
     // Default values
