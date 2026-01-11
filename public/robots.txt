@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /siswa/
+Disallow: /guru/
+Disallow: /waliKelas/
+Disallow: /app/
+Disallow: /public/img/cms/
+Disallow: /uploads/
+
+Sitemap: /sitemap

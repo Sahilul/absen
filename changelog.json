@@ -1,6 +1,25 @@
 {
     "versions": [
         {
+            "version": "1.8.21",
+            "date": "2026-01-11",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "SEO Optimization: Add JSON-LD Schema (Organization) for Google Search Logo"
+                },
+                {
+                    "type": "feature",
+                    "description": "SEO Optimization: Create Robots.txt and Dynamic XML Sitemap (/sitemap)"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix WhatsApp Link Preview: Use post image instead of default logo if available"
+                }
+            ]
+        },
+        {
             "version": "1.8.20",
             "date": "2026-01-11",
             "type": "patch",

@@ -40,7 +40,10 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
         $ogDescription = mb_substr($cleanContent, 0, 160) . (mb_strlen($cleanContent) > 160 ? '...' : '');
 
         if (!empty($data['post']['image'])) {
-            $ogImage = BASEURL . '/public/img/cms/' . $data['post']['image'];
+            $postImgPath = $baseDir . '/public/img/cms/' . $data['post']['image'];
+            if (file_exists($postImgPath)) {
+                $ogImage = BASEURL . '/public/img/cms/' . $data['post']['image'];
+            }
         }
     }
 
@@ -58,6 +61,17 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
     $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
     $ogImageSecure = str_replace('http://', 'https://', $ogImage);
     ?>
+
+    <!-- JSON-LD Schema for Google Search Logo -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "<?= $namaAplikasi; ?>",
+      "url": "<?= BASEURL; ?>",
+      "logo": "<?= $logoExists ? BASEURL . '/public/img/app/' . $logoApp : BASEURL . '/public/img/logo_placeholder.png'; ?>"
+    }
+    </script>
 
     <!-- Primary Meta Tags -->
     <meta name="title" content="<?= $ogTitle; ?>">
