@@ -582,11 +582,14 @@ class Fonnte
     /**
      * Kirim notifikasi pembayaran ke orang tua
      */
-    public function sendNotifikasiPembayaran($noWa, $namaOrtu, $namaSiswa, $namaTagihan, $jumlahBayar, $tanggal, $penerima, $sisaTagihan = 0, $keterangan = '', $namaSekolah = '')
+    /**
+     * Kirim notifikasi pembayaran ke orang tua
+     */
+    public function sendNotifikasiPembayaran($noWa, $namaOrtu, $namaSiswa, $namaTagihan, $jumlahBayar, $diskon, $tanggal, $penerima, $sisaTagihan = 0, $keterangan = '', $namaSekolah = '')
     {
         // Format Rupiah
-        // Format Rupiah (Safe replacement for NumberFormatter)
         $jumlahFmt = 'Rp ' . number_format((int) $jumlahBayar, 0, ',', '.');
+        $diskonFmt = 'Rp ' . number_format((int) $diskon, 0, ',', '.');
         $sisaFmt = 'Rp ' . number_format((int) $sisaTagihan, 0, ',', '.');
 
         $message = "💰 *BUKTI PEMBAYARAN SISWA*\n\n";
@@ -594,7 +597,12 @@ class Fonnte
         $message .= "Kami informasikan bahwa telah diterima pembayaran:\n\n";
         $message .= "👤 Nama Siswa: *{$namaSiswa}*\n";
         $message .= "🧾 Pembayaran: *{$namaTagihan}*\n";
-        $message .= "💵 Nominal: *{$jumlahFmt}*\n";
+        $message .= "💵 Nominal Bayar: *{$jumlahFmt}*\n";
+
+        if ($diskon > 0) {
+            $message .= "✂️ Diskon: *{$diskonFmt}*\n";
+        }
+
         $message .= "📅 Tanggal: *{$tanggal}*\n";
         $message .= "🧑‍💼 Penerima: *{$penerima}*\n";
 
@@ -617,6 +625,41 @@ class Fonnte
         $message .= "✅ *Mohon balas YA jika sudah membaca pesan ini.*\n";
         $message .= "━━━━━━━━━━━━━━━━━━━━━\n\n";
 
+        $message .= "_Pesan ini dikirim otomatis oleh sistem._";
+
+        return $this->send($noWa, $message);
+    }
+
+    /**
+     * Kirim notifikasi update diskon ke orang tua
+     */
+    public function sendNotifikasiDiskon($noWa, $namaOrtu, $namaSiswa, $namaTagihan, $diskon, $sisaTagihan, $namaSekolah = '')
+    {
+        $diskonFmt = 'Rp ' . number_format((int) $diskon, 0, ',', '.');
+        $sisaFmt = 'Rp ' . number_format((int) $sisaTagihan, 0, ',', '.');
+
+        $message = "🏷️ *UPDATE DISKON TAGIHAN*\n\n";
+        $message .= "Kepada Yth. Bapak/Ibu *{$namaOrtu}*,\n\n";
+        $message .= "Kami informasikan bahwa siswa:\n";
+        $message .= "👤 Nama: *{$namaSiswa}*\n";
+        $message .= "📚 Tagihan: *{$namaTagihan}*\n\n";
+        $message .= "Telah mendapatkan potongan/diskon sebesar:\n";
+        $message .= "✂️ *{$diskonFmt}*\n\n";
+
+        if ($sisaTagihan <= 0) {
+            $message .= "✅ Status Tagihan: *LUNAS*\n";
+        } else {
+            $message .= "Sehingga sisa tagihan menjadi: *{$sisaFmt}*\n";
+        }
+
+        if (!empty($namaSekolah)) {
+            $message .= "\nTerima kasih,\n";
+            $message .= "*{$namaSekolah}*";
+        }
+
+        $message .= "\n\n━━━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "✅ *Mohon balas YA jika sudah membaca pesan ini.*\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━━━\n\n";
         $message .= "_Pesan ini dikirim otomatis oleh sistem._";
 
         return $this->send($noWa, $message);

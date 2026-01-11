@@ -72,6 +72,68 @@ class SiswaController extends Controller
         $this->data['tagihan_belum_lunas'] = [];
         if ($id_kelas > 0) {
             $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+
+            // Hitung statistik pembayaran untuk Dashboard (termasuk diskon)
+            $db->query("
+                SELECT 
+                    pt.nominal_default as nominal,
+                    COALESCE(pts.diskon, 0) as diskon,
+                    COALESCE(
+                        (SELECT SUM(jumlah) 
+                         FROM pembayaran_transaksi 
+                         WHERE tagihan_id = pt.id 
+                         AND id_siswa = :id_siswa), 
+                        0
+                    ) as total_terbayar,
+                    pts.status as status_db
+                FROM pembayaran_tagihan pt
+                LEFT JOIN pembayaran_tagihan_siswa pts ON pt.id = pts.tagihan_id AND pts.id_siswa = :id_siswa2
+                WHERE pt.id_kelas = :id_kelas 
+                AND pt.id_tp = :id_tp
+                AND (pt.id_semester = :id_semester OR pt.id_semester IS NULL)
+            ");
+            $db->bind('id_siswa', $id_siswa);
+            $db->bind('id_siswa2', $id_siswa);
+            $db->bind('id_kelas', $id_kelas);
+            $db->bind('id_tp', $id_tp_aktif);
+            $db->bind('id_semester', $id_semester_aktif);
+            $all_tagihan = $db->resultSet();
+
+            $total_tagihan = 0;
+            $total_terbayar = 0;
+            $total_belum_bayar = 0;
+            $jumlah_lunas = 0;
+            $jumlah_belum_lunas = 0;
+
+            // Array untuk popup tagihan belum lunas
+            $list_belum_lunas = [];
+
+            foreach ($all_tagihan as $tagihan) {
+                $nominal = (int) $tagihan['nominal'];
+                $diskon = (int) $tagihan['diskon'];
+                $terbayar = (int) $tagihan['total_terbayar'];
+
+                $harus_bayar = max(0, $nominal - $diskon);
+                $total_tagihan += $harus_bayar;
+                $total_terbayar += $terbayar;
+
+                $status_db = $tagihan['status_db'] ?? 'belum';
+                $is_lunas = ($status_db === 'lunas') || ($terbayar >= $harus_bayar && $harus_bayar > 0) || ($harus_bayar == 0);
+
+                if ($is_lunas) {
+                    $jumlah_lunas++;
+                } else {
+                    $jumlah_belum_lunas++;
+                    $total_belum_bayar += ($harus_bayar - $terbayar);
+
+                    // Add to popup list
+                    // We need 'nama' which wasn't in the stats query, let's fetch it properly or adjust query
+                    // For now, let's just re-use the query structure but include 'nama'
+                    // Actually, let's just fetch everything in one go above
+                }
+            }
+
+            // Re-query for specific display data (need 'nama' etc)
             $db->query("
                 SELECT 
                     pt.id,
@@ -84,13 +146,13 @@ class SiswaController extends Controller
                          WHERE tagihan_id = pt.id 
                          AND id_siswa = :id_siswa), 
                         0
-                    ) as total_terbayar
+                    ) as total_terbayar,
+                    pts.status as status_db
                 FROM pembayaran_tagihan pt
                 LEFT JOIN pembayaran_tagihan_siswa pts ON pt.id = pts.tagihan_id AND pts.id_siswa = :id_siswa2
                 WHERE pt.id_kelas = :id_kelas 
                 AND pt.id_tp = :id_tp
                 AND (pt.id_semester = :id_semester OR pt.id_semester IS NULL)
-                HAVING (nominal - diskon) > total_terbayar
                 ORDER BY pt.created_at DESC
             ");
             $db->bind('id_siswa', $id_siswa);
@@ -98,7 +160,36 @@ class SiswaController extends Controller
             $db->bind('id_kelas', $id_kelas);
             $db->bind('id_tp', $id_tp_aktif);
             $db->bind('id_semester', $id_semester_aktif);
-            $this->data['tagihan_belum_lunas'] = $db->resultSet();
+            $raw_tagihan = $db->resultSet();
+
+            $this->data['tagihan_belum_lunas'] = [];
+            foreach ($raw_tagihan as $rt) {
+                $n = (int) $rt['nominal'];
+                $d = (int) $rt['diskon'];
+                $t = (int) $rt['total_terbayar'];
+                $hb = max(0, $n - $d);
+                $is_l = ($rt['status_db'] === 'lunas') || ($t >= $hb && $hb > 0) || ($hb == 0);
+                if (!$is_l) {
+                    $this->data['tagihan_belum_lunas'][] = $rt;
+                }
+            }
+
+            $this->data['total_tagihan'] = $total_tagihan;
+            $this->data['total_terbayar'] = $total_terbayar;
+            $this->data['total_belum_bayar'] = $total_belum_bayar;
+            $this->data['jumlah_tagihan'] = count($all_tagihan);
+            $this->data['jumlah_lunas'] = $jumlah_lunas;
+            $this->data['jumlah_belum_lunas'] = $jumlah_belum_lunas;
+
+        } else {
+            // Default 0 if no class
+            $this->data['tagihan_belum_lunas'] = [];
+            $this->data['total_tagihan'] = 0;
+            $this->data['total_terbayar'] = 0;
+            $this->data['total_belum_bayar'] = 0;
+            $this->data['jumlah_tagihan'] = 0;
+            $this->data['jumlah_lunas'] = 0;
+            $this->data['jumlah_belum_lunas'] = 0;
         }
 
         // Render views

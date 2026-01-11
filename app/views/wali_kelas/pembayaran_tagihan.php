@@ -275,6 +275,18 @@ $idKelas = $data['wali_kelas_info']['id_kelas'] ?? '';
                   Cetak
                 </button>
               <?php endif; ?>
+
+              <button type="button"
+                onclick="openDiskonModal(<?= (int) ($data['tagihan']['id'] ?? 0) ?>, <?= (int) $s['id_siswa'] ?>, <?= htmlspecialchars(json_encode($s['nama_siswa'])) ?>, <?= (int) $nominal ?>, <?= (int) $diskon ?>)"
+                class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white rounded-lg text-sm font-medium shadow-sm transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="5" x2="5" y2="19"></line>
+                  <circle cx="6.5" cy="6.5" r="2.5"></circle>
+                  <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                </svg>
+                Diskon
+              </button>
             </div>
           </div>
         <?php endforeach; ?>
@@ -413,6 +425,18 @@ $idKelas = $data['wali_kelas_info']['id_kelas'] ?? '';
                         Cetak
                       </button>
                     <?php endif; ?>
+
+                    <button type="button"
+                      onclick="openDiskonModal(<?= (int) ($data['tagihan']['id'] ?? 0) ?>, <?= (int) $s['id_siswa'] ?>, <?= htmlspecialchars(json_encode($s['nama_siswa'])) ?>, <?= (int) $nominal ?>, <?= (int) $diskon ?>)"
+                      class="inline-flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-all">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="5" x2="5" y2="19"></line>
+                        <circle cx="6.5" cy="6.5" r="2.5"></circle>
+                        <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                      </svg>
+                      Diskon
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -612,6 +636,89 @@ $idKelas = $data['wali_kelas_info']['id_kelas'] ?? '';
           </svg>
           Simpan
         </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Set Diskon -->
+<div id="modalDiskon" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden">
+    <div class="bg-gradient-to-r from-pink-600 to-pink-700 p-5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="5" x2="5" y2="19"></line>
+            <circle cx="6.5" cy="6.5" r="2.5"></circle>
+            <circle cx="17.5" cy="17.5" r="2.5"></circle>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-white">Set Diskon</h3>
+          <p id="diskonNamaSiswa" class="text-sm text-pink-100"></p>
+        </div>
+      </div>
+      <button type="button" onclick="closeDiskonModal()"
+        class="text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" x2="6" y1="6" y2="18" />
+          <line x1="6" x2="18" y1="6" y2="18" />
+        </svg>
+      </button>
+    </div>
+    <form action="<?= $urlPrefix ?>/updateDiskon" method="POST" class="p-5 space-y-4">
+      <input type="hidden" name="tagihan_id" id="diskonTagihanId" />
+      <input type="hidden" name="id_siswa" id="diskonSiswaId" />
+
+      <div class="bg-pink-50 border border-pink-200 rounded-lg p-3">
+        <div class="text-pink-600 font-medium text-xs">Total Tagihan Awal</div>
+        <div id="diskonInfoNominal" class="text-lg font-bold text-pink-700">Rp 0</div>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Mode Switch -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Model Diskon</label>
+          <div class="flex bg-gray-200 p-1 rounded-lg gap-1">
+            <button type="button" onclick="setDiskonMode('nominal')" id="btnModeNominal"
+              class="flex-1 py-2 text-sm font-bold rounded-md transition-all shadow-sm bg-pink-600 text-white">
+              Nominal (Rp)
+            </button>
+            <button type="button" onclick="setDiskonMode('persen')" id="btnModePersen"
+              class="flex-1 py-2 text-sm font-medium rounded-md transition-all hover:bg-white/50 text-gray-600">
+              Persen (%)
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5" id="labelDiskonInput">Nominal Diskon</label>
+          <div class="relative">
+            <span id="prefixDiskon"
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium">Rp</span>
+            <input name="diskon" type="hidden" id="inputDiskonHidden" required />
+            <input id="inputDiskonDisplay" type="text" inputmode="numeric"
+              class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+              placeholder="0" required />
+            <span id="suffixDiskon"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium hidden">%</span>
+          </div>
+          <!-- Preview Calculation for Percent Mode -->
+          <div id="previewDiskon"
+            class="hidden mt-2 p-2 bg-pink-50 rounded border border-pink-100 text-sm text-pink-700">
+            Total Potongan: <strong>Rp <span id="valPreviewDiskon">0</span></strong>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">Masukkan 0 untuk menghapus diskon.</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closeDiskonModal()"
+          class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all">Batal</button>
+        <button type="submit"
+          class="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white rounded-lg font-medium shadow-md transition-all">Simpan</button>
       </div>
     </form>
   </div>
@@ -1348,6 +1455,111 @@ Invoice sah tanpa tanda tangan
     });
   }
 
+  // --- DISKON MODAL LOGIC ---
+  let currentDiskonMode = 'nominal';
+  let nominalTagihanRef = 0; // Store for calculation
+
+  function openDiskonModal(tagihanId, siswaId, namaSiswa, nominalAsli, currentDiskon) {
+    document.getElementById('diskonTagihanId').value = tagihanId;
+    document.getElementById('diskonSiswaId').value = siswaId;
+    document.getElementById('diskonNamaSiswa').textContent = namaSiswa;
+    nominalTagihanRef = nominalAsli;
+
+    // Format display
+    document.getElementById('diskonInfoNominal').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(nominalAsli);
+
+    // Default mode: Nominal
+    setDiskonMode('nominal');
+
+    // Set initial values
+    document.getElementById('inputDiskonHidden').value = currentDiskon;
+    document.getElementById('inputDiskonDisplay').value = new Intl.NumberFormat('id-ID').format(currentDiskon);
+
+    document.getElementById('modalDiskon').classList.remove('hidden');
+  }
+
+  function closeDiskonModal() {
+    document.getElementById('modalDiskon').classList.add('hidden');
+  }
+
+  function setDiskonMode(mode) {
+    currentDiskonMode = mode;
+    const btnNominal = document.getElementById('btnModeNominal');
+    const btnPersen = document.getElementById('btnModePersen');
+    const prefix = document.getElementById('prefixDiskon');
+    const suffix = document.getElementById('suffixDiskon');
+    const label = document.getElementById('labelDiskonInput');
+    const inputDisplay = document.getElementById('inputDiskonDisplay');
+    const preview = document.getElementById('previewDiskon');
+
+    // Reset input
+    inputDisplay.value = '';
+    document.getElementById('inputDiskonHidden').value = 0;
+    document.getElementById('valPreviewDiskon').textContent = '0';
+
+    if (mode === 'nominal') {
+      // UI Active State
+      btnNominal.className = 'flex-1 py-2 text-sm font-bold rounded-md transition-all shadow-sm bg-pink-600 text-white';
+      btnPersen.className = 'flex-1 py-2 text-sm font-medium rounded-md transition-all hover:bg-white/50 text-gray-600';
+
+      prefix.classList.remove('hidden');
+      suffix.classList.add('hidden');
+      label.textContent = 'Nominal Diskon (Rp)';
+      inputDisplay.placeholder = '0';
+      preview.classList.add('hidden');
+
+      // Remove maxlength if any
+      inputDisplay.removeAttribute('maxlength');
+      inputDisplay.removeAttribute('max');
+
+    } else {
+      // UI Active State
+      btnPersen.className = 'flex-1 py-2 text-sm font-bold rounded-md transition-all shadow-sm bg-pink-600 text-white';
+      btnNominal.className = 'flex-1 py-2 text-sm font-medium rounded-md transition-all hover:bg-white/50 text-gray-600';
+
+      prefix.classList.add('hidden');
+      suffix.classList.remove('hidden');
+      label.textContent = 'Persentase Diskon (%)';
+      inputDisplay.placeholder = '0 - 100';
+      preview.classList.remove('hidden');
+
+      inputDisplay.setAttribute('maxlength', '3'); // Max 100
+    }
+  }
+
+  // Handle Input Format for Diskon
+  const diskonDisplay = document.getElementById('inputDiskonDisplay');
+  const diskonHidden = document.getElementById('inputDiskonHidden');
+
+  if (diskonDisplay && diskonHidden) {
+    diskonDisplay.addEventListener('input', function (e) {
+      let val = this.value.replace(/\D/g, ''); // Number only
+
+      if (currentDiskonMode === 'persen') {
+        // Cap at 100
+        if (parseInt(val) > 100) val = '100';
+
+        // Display simply as number
+        this.value = val;
+
+        // Calculate nominal
+        if (val === '') val = '0';
+        const percent = parseInt(val);
+        const nominalDiskon = Math.floor((percent / 100) * nominalTagihanRef);
+
+        diskonHidden.value = nominalDiskon;
+        document.getElementById('valPreviewDiskon').textContent = new Intl.NumberFormat('id-ID').format(nominalDiskon);
+
+      } else {
+        // Nominal Mode
+        if (val === '') val = '0';
+        diskonHidden.value = val;
+        this.value = new Intl.NumberFormat('id-ID').format(parseInt(val));
+      }
+    });
+  }
+  // --------------------------
+
   // ===== Modal Input Pembayaran Logic =====
   const modalInput = document.getElementById('modalInput');
   const formInput = document.getElementById('formInputPembayaran');
@@ -1455,17 +1667,17 @@ Invoice sah tanpa tanda tangan
         location.reload();
       } else {
         alert('Gagal melunasi: ' + (result.error || 'Unknown error'));
-        if (btnElement) { 
-            btnElement.disabled = false; 
-            btnElement.innerHTML = originalHtml;
+        if (btnElement) {
+          btnElement.disabled = false;
+          btnElement.innerHTML = originalHtml;
         }
       }
     } catch (err) {
       console.error('bayarLunas error:', err);
       alert('Terjadi kesalahan saat melunasi.');
-      if (btnElement) { 
-          btnElement.disabled = false; 
-          btnElement.innerHTML = originalHtml;
+      if (btnElement) {
+        btnElement.disabled = false;
+        btnElement.innerHTML = originalHtml;
       }
     }
   }

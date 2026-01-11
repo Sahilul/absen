@@ -200,12 +200,42 @@ class Pembayaran_model
 
     public function updateDiskonSiswa($tagihan_id, $id_siswa, $diskon)
     {
+        // 1. Update Diskon
         $this->db->query("UPDATE pembayaran_tagihan_siswa SET diskon = :diskon WHERE tagihan_id = :tid AND id_siswa = :sid");
         $this->db->bind('diskon', $diskon);
         $this->db->bind('tid', $tagihan_id);
         $this->db->bind('sid', $id_siswa);
         $this->db->execute();
-        return $this->db->rowCount();
+        $updated = $this->db->rowCount();
+
+        // 2. Recalculate Status
+        $this->db->query("SELECT id, nominal, diskon, total_terbayar FROM pembayaran_tagihan_siswa WHERE tagihan_id = :tid AND id_siswa = :sid");
+        $this->db->bind('tid', $tagihan_id);
+        $this->db->bind('sid', $id_siswa);
+        $st = $this->db->single();
+
+        if ($st) {
+            $target = max(0, ((int) $st['nominal']) - ((int) $st['diskon']));
+            $status = 'belum';
+
+            if ($target == 0) {
+                // Jika target 0 (diskon penuh), maka Lunas
+                $status = 'lunas';
+            } else if ((int) $st['total_terbayar'] <= 0) {
+                $status = 'belum';
+            } else if ((int) $st['total_terbayar'] < $target) {
+                $status = 'sebagian';
+            } else {
+                $status = 'lunas';
+            }
+
+            $this->db->query("UPDATE pembayaran_tagihan_siswa SET status = :status WHERE id = :id");
+            $this->db->bind('status', $status);
+            $this->db->bind('id', $st['id']);
+            $this->db->execute();
+        }
+
+        return $updated;
     }
 
     /**
@@ -265,7 +295,9 @@ class Pembayaran_model
         $st = $this->db->single();
         $target = max(0, ((int) $st['nominal']) - ((int) $st['diskon']));
         $status = 'belum';
-        if ((int) $st['total_terbayar'] <= 0) {
+        if ($target == 0) {
+            $status = 'lunas';
+        } else if ((int) $st['total_terbayar'] <= 0) {
             $status = 'belum';
         } else if ((int) $st['total_terbayar'] < $target) {
             $status = 'sebagian';
@@ -385,7 +417,9 @@ class Pembayaran_model
         if ($st) {
             $target = max(0, ((int) $st['nominal']) - ((int) $st['diskon']));
             $status = 'belum';
-            if ((int) $st['total_terbayar'] <= 0) {
+            if ($target == 0) {
+                $status = 'lunas';
+            } else if ((int) $st['total_terbayar'] <= 0) {
                 $status = 'belum';
             } else if ((int) $st['total_terbayar'] < $target) {
                 $status = 'sebagian';

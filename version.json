@@ -1,6 +1,6 @@
 {
-    "version": "1.8.18",
-    "build": 1818,
-    "release_date": "2026-01-10",
-    "description": "Added parent phone status indicator to Wali Kelas student list view"
+    "version": "1.8.19",
+    "build": 1819,
+    "release_date": "2026-01-11",
+    "description": "Integrate Payment Discount Feature: WhatsApp Notifications (Wali & Bendahara), Student Dashboard Updates, and Changelog Improvements"
 }

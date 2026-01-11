@@ -3170,6 +3170,7 @@ class WaliKelasController extends Controller
                     $siswa['nama_siswa'],
                     $namaTagihan,
                     $trx['jumlah'],
+                    $diskon,
                     date('d-m-Y H:i', strtotime($trx['tanggal'])),
                     $penerima,
                     $sisa,
@@ -3181,6 +3182,64 @@ class WaliKelasController extends Controller
         } catch (Throwable $e) {
             error_log("[DEBUG] sendPembayaranNotification FATAL ERROR: " . $e->getMessage());
             error_log("[DEBUG] Stack trace: " . $e->getTraceAsString());
+        }
+    }
+
+    /**
+     * Helper: Kirim notifikasi update diskon
+     */
+    private function sendDiskonNotification($tagihan_id, $id_siswa, $diskon)
+    {
+        try {
+            $siswa = $this->model('Siswa_model')->getSiswaById($id_siswa);
+            if (!$siswa)
+                return;
+
+            $tagihan = $this->model('Pembayaran_model')->getTagihanById($tagihan_id);
+            if (!$tagihan)
+                return;
+
+            $tagihanSiswa = $this->model('Pembayaran_model')->getTagihanSiswa($tagihan_id, $id_siswa);
+            $nominal = (int) ($tagihan['nominal_default'] ?? 0);
+            $terbayar = (int) ($tagihanSiswa['total_terbayar'] ?? 0);
+            $sisa = max(0, $nominal - $diskon - $terbayar);
+
+            $pengaturan = $this->model('PengaturanAplikasi_model')->getPengaturan();
+            $namaSekolah = $pengaturan['nama_sekolah'] ?? '';
+
+            require_once APPROOT . '/app/core/Fonnte.php';
+            $fonnte = new \Fonnte();
+
+            $cleanNumber = function ($num) {
+                $n = preg_replace('/[^0-9]/', '', $num);
+                return (strlen($n) > 7) ? $n : '';
+            };
+
+            $ayahNo = $cleanNumber($siswa['ayah_no_hp'] ?? '');
+            $ibuNo = $cleanNumber($siswa['ibu_no_hp'] ?? '');
+            $waliNo = $cleanNumber($siswa['wali_no_hp'] ?? '');
+
+            $targets = [];
+            if ($ayahNo)
+                $targets[] = ['no' => $ayahNo, 'nama' => $siswa['ayah_kandung'] ?? 'Bapak'];
+            if ($ibuNo)
+                $targets[] = ['no' => $ibuNo, 'nama' => $siswa['ibu_kandung'] ?? 'Ibu'];
+            if ($waliNo)
+                $targets[] = ['no' => $waliNo, 'nama' => $siswa['wali_nama'] ?? 'Wali'];
+
+            foreach ($targets as $t) {
+                $fonnte->sendNotifikasiDiskon(
+                    $t['no'],
+                    $t['nama'],
+                    $siswa['nama_siswa'],
+                    $tagihan['nama'],
+                    $diskon,
+                    $sisa,
+                    $namaSekolah
+                );
+            }
+        } catch (Throwable $e) {
+            error_log("sendDiskonNotification error: " . $e->getMessage());
         }
     }
 
@@ -4192,6 +4251,92 @@ class WaliKelasController extends Controller
 
         // Output PDF
         echo $dompdf->output();
+        exit;
+    }
+
+    /**
+     * Update Diskon Pembayaran Siswa
+     */
+    public function updateDiskon()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/waliKelas/pembayaran');
+            exit;
+        }
+
+        if (!$this->canAccessPayments()) {
+            Flasher::setFlash('Akses ditolak', 'Anda tidak memiliki akses.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/pembayaran');
+            exit;
+        }
+
+        $tagihan_id = $_POST['tagihan_id'] ?? 0;
+        $id_siswa = $_POST['id_siswa'] ?? 0;
+        $diskon = (int) ($_POST['diskon'] ?? 0);
+
+        // Basic validation
+        if (!$tagihan_id || !$id_siswa) {
+            Flasher::setFlash('Error', 'Data tidak lengkap.', 'danger');
+            $this->redirectBackToTagihan($tagihan_id);
+            exit;
+        }
+
+        // Get Tagihan & Validation
+        $tagihan = $this->model('Pembayaran_model')->getTagihanById($tagihan_id);
+        if (!$tagihan) {
+            Flasher::setFlash('Error', 'Tagihan tidak ditemukan.', 'danger');
+            $this->redirectBackToTagihan($tagihan_id);
+            exit;
+        }
+
+        // Validate max diskon (cannot exceed nominal)
+        $nominal = (int) $tagihan['nominal_default'];
+        if ($diskon > $nominal) {
+            Flasher::setFlash('Gagal', 'Nominal diskon tidak boleh melebihi jumlah tagihan (Rp ' . number_format($nominal, 0, ',', '.') . ').', 'warning');
+            $this->redirectBackToTagihan($tagihan_id);
+            exit;
+        }
+
+        // Also check if (Nominal - Diskon) < Total Terbayar currently?
+        // Ideally we should check this to avoid negative debt, but let's just warn or block
+        $currentPay = $this->model('Pembayaran_model')->getPembayaranSiswa($tagihan_id, $id_siswa);
+        $terbayar = $currentPay ? (int) $currentPay['total_terbayar'] : 0;
+
+        if (($nominal - $diskon) < $terbayar) {
+            Flasher::setFlash('Gagal', 'Diskon terlalu besar. Siswa sudah membayar Rp ' . number_format($terbayar, 0, ',', '.') . '.', 'warning');
+            $this->redirectBackToTagihan($tagihan_id);
+            exit;
+        }
+
+        // Ensure record exists before update
+        $this->model('Pembayaran_model')->ensureTagihanSiswa($tagihan_id, $id_siswa, $nominal, $tagihan['jatuh_tempo']);
+
+        // Update Diskon
+        if ($this->model('Pembayaran_model')->updateDiskonSiswa($tagihan_id, $id_siswa, $diskon)) {
+            // Recalculate status just in case (optional but good practice)
+            // But since model doesn't auto-calc status on diskon update, let's rely on view logic or next transaction
+            // Or we can manually trigger status update logic here if needed. 
+            // For now assume view handles "Sisa" calculation dynamically.
+
+            // Kirim notifikasi diskon
+            $this->sendDiskonNotification($tagihan_id, $id_siswa, $diskon);
+
+            Flasher::setFlash('Berhasil', 'Diskon berhasil diperbarui dan notifikasi dikirim.', 'success');
+        } else {
+            Flasher::setFlash('Info', 'Tidak ada perubahan data diskon.', 'info');
+        }
+
+        $this->redirectBackToTagihan($tagihan_id);
+    }
+
+    private function redirectBackToTagihan($tagihan_id)
+    {
+        $isBendahara = $this->isBendaharaUser();
+        if ($isBendahara) {
+            header('Location: ' . BASEURL . '/bendahara/pembayaranTagihan/' . $tagihan_id);
+        } else {
+            header('Location: ' . BASEURL . '/waliKelas/pembayaranTagihan/' . $tagihan_id);
+        }
         exit;
     }
 }

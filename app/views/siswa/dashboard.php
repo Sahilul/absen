@@ -5,7 +5,7 @@ $rekap = ['H' => 0, 'I' => 0, 'S' => 0, 'A' => 0];
 if (isset($data['rekap_absensi']) && is_array($data['rekap_absensi'])) {
     foreach ($data['rekap_absensi'] as $row) {
         if (isset($row['status_kehadiran']) && isset($row['total'])) {
-            $rekap[$row['status_kehadiran']] = (int)$row['total'];
+            $rekap[$row['status_kehadiran']] = (int) $row['total'];
         }
     }
 }
@@ -25,7 +25,7 @@ if ($persentase_hadir >= 90) {
 ?>
 
 <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-gray-50 to-blue-50 p-4 sm:p-6">
-    
+
     <!-- Welcome Section -->
     <div class="mb-6">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -39,7 +39,8 @@ if ($persentase_hadir >= 90) {
                     </p>
                 </div>
                 <div class="hidden sm:block">
-                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
                         <i data-lucide="sparkles" class="w-8 h-8 text-white"></i>
                     </div>
                 </div>
@@ -49,7 +50,7 @@ if ($persentase_hadir >= 90) {
 
     <!-- Main Grid: 3 Cards -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        
+
         <!-- Card 1: Kehadiran -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-5">
@@ -80,7 +81,7 @@ if ($persentase_hadir >= 90) {
                     </div>
                 </div>
             </div>
-            
+
             <div class="p-5">
                 <div class="grid grid-cols-4 gap-3 mb-4">
                     <div class="text-center">
@@ -112,13 +113,15 @@ if ($persentase_hadir >= 90) {
                         <div class="text-xs text-gray-500">Alpha</div>
                     </div>
                 </div>
-                
+
                 <div class="space-y-2">
-                    <a href="<?= BASEURL; ?>/siswa/absensiHarian" class="block w-full px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 text-blue-700 rounded-xl text-sm font-medium transition-all text-center">
+                    <a href="<?= BASEURL; ?>/siswa/absensiHarian"
+                        class="block w-full px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 text-blue-700 rounded-xl text-sm font-medium transition-all text-center">
                         <i data-lucide="list" class="w-4 h-4 inline mr-2"></i>
                         Lihat Detail Harian
                     </a>
-                    <a href="<?= BASEURL; ?>/siswa/rekapAbsensi" class="block w-full px-4 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all text-center">
+                    <a href="<?= BASEURL; ?>/siswa/rekapAbsensi"
+                        class="block w-full px-4 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all text-center">
                         <i data-lucide="bar-chart-3" class="w-4 h-4 inline mr-2"></i>
                         Rekap Per Mapel
                     </a>
@@ -141,14 +144,15 @@ if ($persentase_hadir >= 90) {
                     </div>
                 </div>
                 <div class="text-center py-4">
-                    <div class="text-5xl font-bold text-white mb-2"><?= number_format($data['rata_rata_nilai'] ?? 0, 1) ?></div>
+                    <div class="text-5xl font-bold text-white mb-2">
+                        <?= number_format($data['rata_rata_nilai'] ?? 0, 1) ?></div>
                     <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-1.5 rounded-full">
                         <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
                         <span class="text-white text-sm font-medium">Rata-rata Nilai</span>
                     </div>
                 </div>
             </div>
-            
+
             <div class="p-5">
                 <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-4">
                     <div class="flex items-center justify-between mb-2">
@@ -170,13 +174,15 @@ if ($persentase_hadir >= 90) {
                         </span>
                     </div>
                 </div>
-                
+
                 <div class="space-y-2">
-                    <a href="<?= BASEURL; ?>/performaSiswa/index" class="block w-full px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-200 text-green-700 rounded-xl text-sm font-medium transition-all text-center">
+                    <a href="<?= BASEURL; ?>/performaSiswa/index"
+                        class="block w-full px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-200 text-green-700 rounded-xl text-sm font-medium transition-all text-center">
                         <i data-lucide="file-text" class="w-4 h-4 inline mr-2"></i>
                         Lihat Semua Nilai
                     </a>
-                    <a href="<?= BASEURL; ?>/performaSiswa/rapor" class="block w-full px-4 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all text-center">
+                    <a href="<?= BASEURL; ?>/performaSiswa/rapor"
+                        class="block w-full px-4 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all text-center">
                         <i data-lucide="award" class="w-4 h-4 inline mr-2"></i>
                         Rapor Semester
                     </a>
@@ -199,27 +205,31 @@ if ($persentase_hadir >= 90) {
                     </div>
                 </div>
                 <div class="text-center py-4">
-                    <div class="text-xl font-bold text-white mb-1">Rp <?= number_format($data['total_belum_bayar'] ?? 0, 0, ',', '.') ?></div>
+                    <div class="text-xl font-bold text-white mb-1">Rp
+                        <?= number_format($data['total_belum_bayar'] ?? 0, 0, ',', '.') ?></div>
                     <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-1.5 rounded-full">
                         <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
                         <span class="text-white text-sm font-medium">Sisa Pembayaran</span>
                     </div>
                 </div>
             </div>
-            
+
             <div class="p-5">
                 <div class="space-y-3 mb-4">
                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                         <span class="text-sm text-gray-600">Total Tagihan</span>
-                        <span class="text-sm font-bold text-gray-900">Rp <?= number_format($data['total_tagihan'] ?? 0, 0, ',', '.') ?></span>
+                        <span class="text-sm font-bold text-gray-900">Rp
+                            <?= number_format($data['total_tagihan'] ?? 0, 0, ',', '.') ?></span>
                     </div>
                     <div class="flex items-center justify-between p-3 bg-green-50 rounded-xl">
                         <span class="text-sm text-green-700">Terbayar</span>
-                        <span class="text-sm font-bold text-green-600">Rp <?= number_format($data['total_terbayar'] ?? 0, 0, ',', '.') ?></span>
+                        <span class="text-sm font-bold text-green-600">Rp
+                            <?= number_format($data['total_terbayar'] ?? 0, 0, ',', '.') ?></span>
                     </div>
                     <?php if (($data['jumlah_belum_lunas'] ?? 0) > 0): ?>
                         <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
-                            <div class="text-red-700 text-sm font-semibold">⚠️ <?= $data['jumlah_belum_lunas'] ?> Tagihan Belum Lunas</div>
+                            <div class="text-red-700 text-sm font-semibold">⚠️ <?= $data['jumlah_belum_lunas'] ?> Tagihan
+                                Belum Lunas</div>
                         </div>
                     <?php else: ?>
                         <div class="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
@@ -227,13 +237,15 @@ if ($persentase_hadir >= 90) {
                         </div>
                     <?php endif; ?>
                 </div>
-                
+
                 <div class="space-y-2">
-                    <a href="<?= BASEURL; ?>/siswa/pembayaran" class="block w-full px-4 py-2.5 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 border border-orange-200 text-orange-700 rounded-xl text-sm font-medium transition-all text-center">
+                    <a href="<?= BASEURL; ?>/siswa/pembayaran"
+                        class="block w-full px-4 py-2.5 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 border border-orange-200 text-orange-700 rounded-xl text-sm font-medium transition-all text-center">
                         <i data-lucide="receipt" class="w-4 h-4 inline mr-2"></i>
                         Lihat Tagihan
                     </a>
-                    <a href="<?= BASEURL; ?>/siswa/riwayatPembayaran" class="block w-full px-4 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all text-center">
+                    <a href="<?= BASEURL; ?>/siswa/riwayatPembayaran"
+                        class="block w-full px-4 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all text-center">
                         <i data-lucide="history" class="w-4 h-4 inline mr-2"></i>
                         Riwayat Pembayaran
                     </a>
@@ -256,7 +268,7 @@ if ($persentase_hadir >= 90) {
                 </div>
             </div>
         </div>
-        
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -268,7 +280,7 @@ if ($persentase_hadir >= 90) {
                 </div>
             </div>
         </div>
-        
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -280,7 +292,7 @@ if ($persentase_hadir >= 90) {
                 </div>
             </div>
         </div>
-        
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -321,25 +333,33 @@ if ($persentase_hadir >= 90) {
 
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-});
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
 </script>
 
 <style>
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-.animate-pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Data untuk Chart.js dengan safety check
         const rekapData = {
             hadir: parseInt(<?= $rekap['H']; ?>) || 0,
@@ -355,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (ctxPie && typeof Chart !== 'undefined') {
             // Check if there's any data to show
             const totalData = rekapData.hadir + rekapData.izin + rekapData.sakit + rekapData.alfa;
-            
+
             if (totalData === 0) {
                 // Show empty state for chart
                 ctxPie.parentElement.innerHTML = `
@@ -422,7 +442,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 cornerRadius: 8,
                                 displayColors: true,
                                 callbacks: {
-                                    label: function(context) {
+                                    label: function (context) {
                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                         const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
                                         return context.label + ': ' + context.raw + ' (' + percentage + '%)';
@@ -450,15 +470,15 @@ document.addEventListener('DOMContentLoaded', function() {
             counters.forEach(counter => {
                 const targetText = counter.textContent.trim();
                 const target = parseInt(targetText) || 0;
-                
+
                 // Skip jika target 0 atau tidak valid
                 if (target === 0 || isNaN(target)) {
                     return;
                 }
-                
+
                 // Simpan nilai original
                 counter.setAttribute('data-original', target);
-                
+
                 let current = 0;
                 const increment = Math.ceil(target / 15); // Lebih smooth
                 const timer = setInterval(() => {
@@ -483,9 +503,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Popup Notifikasi Tagihan
         <?php if (!empty($data['tagihan_belum_lunas'])): ?>
-        setTimeout(function() {
-            document.getElementById('tagihanModal').classList.remove('hidden');
-        }, 1000);
+            setTimeout(function () {
+                document.getElementById('tagihanModal').classList.remove('hidden');
+            }, 1000);
         <?php endif; ?>
     });
 
@@ -496,65 +516,85 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Modal Notifikasi Tagihan -->
 <?php if (!empty($data['tagihan_belum_lunas'])): ?>
-<div id="tagihanModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-fade-in">
-        <div class="bg-gradient-to-r from-orange-500 to-red-600 p-6 rounded-t-2xl">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                        <i data-lucide="alert-circle" class="w-6 h-6 text-white"></i>
+    <div id="tagihanModal"
+        class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-fade-in">
+            <div class="bg-gradient-to-r from-orange-500 to-red-600 p-6 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                            <i data-lucide="alert-circle" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Pemberitahuan Tagihan</h3>
+                            <p class="text-white/80 text-sm">Anda memiliki tagihan yang belum lunas</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-white">Pemberitahuan Tagihan</h3>
-                        <p class="text-white/80 text-sm">Anda memiliki tagihan yang belum lunas</p>
-                    </div>
+                    <button onclick="closeTagihanModal()" class="text-white/80 hover:text-white transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
                 </div>
-                <button onclick="closeTagihanModal()" class="text-white/80 hover:text-white transition-colors">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
             </div>
-        </div>
-        <div class="p-6">
-            <p class="text-gray-600 mb-4">Berikut adalah daftar tagihan yang perlu segera dibayar:</p>
-            <div class="space-y-3 max-h-64 overflow-y-auto">
-                <?php foreach ($data['tagihan_belum_lunas'] as $tagihan): ?>
-                    <?php
-                        $nominal = isset($tagihan['nominal']) ? (int)$tagihan['nominal'] : 0;
-                        $diskon = isset($tagihan['diskon']) ? (int)$tagihan['diskon'] : 0;
-                        $terbayar = isset($tagihan['total_terbayar']) ? (int)$tagihan['total_terbayar'] : 0;
+            <div class="p-6">
+                <p class="text-gray-600 mb-4">Berikut adalah daftar tagihan yang perlu segera dibayar:</p>
+                <div class="space-y-3 max-h-64 overflow-y-auto">
+                    <?php foreach ($data['tagihan_belum_lunas'] as $tagihan): ?>
+                        <?php
+                        $nominal = isset($tagihan['nominal']) ? (int) $tagihan['nominal'] : 0;
+                        $diskon = isset($tagihan['diskon']) ? (int) $tagihan['diskon'] : 0;
+                        $terbayar = isset($tagihan['total_terbayar']) ? (int) $tagihan['total_terbayar'] : 0;
                         $total_harus_bayar = $nominal - $diskon;
                         $sisa = $total_harus_bayar - $terbayar;
-                    ?>
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <div class="flex-1">
-                            <p class="font-semibold text-gray-800"><?= htmlspecialchars($tagihan['nama']); ?></p>
-                            <p class="text-sm text-gray-500">Sisa: Rp<?= number_format($sisa, 0, ',', '.'); ?></p>
+                        ?>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-800"><?= htmlspecialchars($tagihan['nama']); ?></p>
+                                <div class="text-xs text-gray-500">
+                                    Nom: Rp<?= number_format($nominal, 0, ',', '.'); ?>
+                                    <?php if ($diskon > 0): ?>
+                                        <span class="text-green-600 ml-1"> (Disc:
+                                            Rp<?= number_format($diskon, 0, ',', '.'); ?>)</span>
+                                    <?php endif; ?>
+                                </div>
+                                <p class="text-sm font-medium text-red-600 mt-1">Sisa:
+                                    Rp<?= number_format($sisa, 0, ',', '.'); ?></p>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Belum
+                                    Lunas</span>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Belum Lunas</span>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            <div class="mt-6 flex gap-3">
-                <button onclick="closeTagihanModal()" class="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors">
-                    Tutup
-                </button>
-                <a href="<?= BASEURL; ?>/siswa/pembayaran" class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-semibold text-center transition-colors">
-                    Lihat Detail
-                </a>
+                    <?php endforeach; ?>
+                </div>
+                <div class="mt-6 flex gap-3">
+                    <button onclick="closeTagihanModal()"
+                        class="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors">
+                        Tutup
+                    </button>
+                    <a href="<?= BASEURL; ?>/siswa/pembayaran"
+                        class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-semibold text-center transition-colors">
+                        Lihat Detail
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<style>
-@keyframes fade-in {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-}
-.animate-fade-in {
-    animation: fade-in 0.3s ease-out;
-}
-</style>
+    <style>
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.3s ease-out;
+        }
+    </style>
 <?php endif; ?>

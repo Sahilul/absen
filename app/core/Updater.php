@@ -87,6 +87,18 @@ class Updater
                     }
 
                     if (empty($result['changelog'])) {
+                        // Fallback: Fetch latest commit message
+                        $latestCommitResponse = $this->httpGet("https://api.github.com/repos/{$this->githubUser}/{$this->githubRepo}/commits/{$this->githubBranch}");
+                        if ($latestCommitResponse) {
+                            $commitData = json_decode($latestCommitResponse, true);
+                            $message = $commitData['commit']['message'] ?? '';
+                            // Clean up message
+                            $message = preg_replace('/^v\d+\.\d+\.\d+:\s*/', '', $message);
+                            $result['changelog'] = $message;
+                        }
+                    }
+
+                    if (empty($result['changelog'])) {
                         $result['changelog'] = 'Update ke versi ' . $result['latest'];
                     }
 
