@@ -13,31 +13,37 @@ Lokasi: `c:\laragon\www\absen\version.json`
 - Fitur baru: increment minor (1.0.x → 1.1.0)
 - Update juga build number dan tanggal
 
-### 2. BUAT FILE MIGRASI DATABASE (jika ada perubahan struktur DB)
+### 2. UPDATE CHANGELOG.JSON (WAJIB)
+Lokasi: `changelog.json`
+- Tambahkan entry baru di paling atas array `versions`
+- Format tanggal: YYYY-MM-DD
+- Tulis deskripsi fitur/fix secara detail agar user paham apa yang berubah
+
+### 3. BUAT FILE MIGRASI DATABASE (jika ada perubahan struktur DB)
 Lokasi: `c:\laragon\www\absen\migrations\{versi}.sql`
 - Contoh nama: `1.0.1.sql`
 - Gunakan IF NOT EXISTS / IF EXISTS
 
-### 3. GIT ADD
+### 4. GIT ADD
 // turbo
 ```bash
 git add .
 ```
 
-### 4. GIT COMMIT
+### 5. GIT COMMIT
 // turbo
 ```bash
 git commit -m "v{VERSI}: {DESKRIPSI SINGKAT}"
 ```
 Contoh: `git commit -m "v1.0.1: Fix upload limit dan tambah fitur auto-update"`
 
-### 5. GIT PUSH
+### 6. GIT PUSH
 // turbo
 ```bash
 git push origin main
 ```
 
-### 6. LIST FILE UNTUK UPLOAD MANUAL (jika tidak pakai auto-update)
+### 7. LIST FILE UNTUK UPLOAD MANUAL (jika tidak pakai auto-update)
 Beri tahu user file apa saja yang berubah dan perlu diupload ke hosting.
 
 ---

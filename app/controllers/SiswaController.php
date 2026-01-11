@@ -518,10 +518,24 @@ class SiswaController extends Controller
             exit;
         }
 
+        // Check for AJAX request
+        $isAjax = false;
+        if (
+            (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') ||
+            (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)
+        ) {
+            $isAjax = true;
+        }
+
         $id_siswa = $_SESSION['id_ref'];
         $jenis = $_POST['jenis_dokumen'] ?? '';
 
         if (empty($_FILES['file_dokumen']['name'])) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Pilih file untuk diupload.']);
+                exit;
+            }
             Flasher::setFlash('Gagal', 'Pilih file untuk diupload.', 'danger');
             header('Location: ' . BASEURL . '/siswa/dokumen');
             exit;
@@ -532,6 +546,11 @@ class SiswaController extends Controller
         $allowed = ['pdf', 'jpg', 'jpeg', 'png'];
 
         if (!in_array($ext, $allowed)) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Format file tidak diizinkan. Gunakan PDF, JPG, atau PNG.']);
+                exit;
+            }
             Flasher::setFlash('Gagal', 'Format file tidak diizinkan. Gunakan PDF, JPG, atau PNG.', 'danger');
             header('Location: ' . BASEURL . '/siswa/dokumen');
             exit;
@@ -541,6 +560,11 @@ class SiswaController extends Controller
 
         // STRICT: Wajib Google Drive, tidak ada fallback lokal
         if (!file_exists(APPROOT . '/app/core/GoogleDrive.php')) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Modul Google Drive tidak tersedia di server.']);
+                exit;
+            }
             Flasher::setFlash('Gagal', 'Modul Google Drive tidak tersedia di server.', 'danger');
             header('Location: ' . BASEURL . '/siswa/dokumen');
             exit;
@@ -551,6 +575,11 @@ class SiswaController extends Controller
             $drive = new GoogleDrive();
 
             if (!$drive->isConnected()) {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Google Drive belum terhubung. Silakan hubungi Admin.']);
+                    exit;
+                }
                 Flasher::setFlash('Gagal', 'Google Drive belum terhubung. Silakan hubungi Admin untuk menghubungkan akun Google Drive.', 'danger');
                 header('Location: ' . BASEURL . '/siswa/dokumen');
                 exit;
@@ -578,12 +607,28 @@ class SiswaController extends Controller
                     'drive_url' => $driveUrl
                 ];
                 $this->model('Siswa_model')->saveDokumenSiswa($id_siswa, $data);
+
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true, 'message' => 'Dokumen berhasil diupload ke Google Drive.']);
+                    exit;
+                }
                 Flasher::setFlash('Berhasil', 'Dokumen berhasil diupload ke Google Drive.', 'success');
             } else {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Gagal mendapatkan ID file dari Google Drive.']);
+                    exit;
+                }
                 Flasher::setFlash('Gagal', 'Google Drive: Gagal mendapatkan ID file setelah upload.', 'danger');
             }
         } catch (Exception $e) {
             error_log("Google Drive upload error: " . $e->getMessage());
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+                exit;
+            }
             Flasher::setFlash('Gagal', 'Google Drive Error: ' . $e->getMessage(), 'danger');
         }
 

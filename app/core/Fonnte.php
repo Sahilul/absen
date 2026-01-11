@@ -500,8 +500,46 @@ class Fonnte
      * @param string $mataPelajaran Nama mata pelajaran (opsional)
      * @param string $namaSekolah Nama sekolah
      */
+    /**
+     * Cek apakah notifikasi diaktifkan (via Pengaturan Menu)
+     */
+    private function isNotificationEnabled($key)
+    {
+        // Default true jika setting tidak ditemukan
+        try {
+            // Assuming 'Database' class is available and handles DB connection
+            // and query execution. This is a placeholder for actual DB interaction.
+            // If this class is part of a framework, you might use its DB facade/helper.
+            // For a standalone class, you'd need to define 'Database' or pass a connection.
+            // For this example, we'll assume a simple Database class exists.
+            // If not, this part would need to be adapted to the actual DB access method.
+            if (!class_exists('Database')) {
+                // Fallback if Database class is not defined, or handle error
+                // For a real application, you'd inject a DB dependency or use a global connection.
+                return true;
+            }
+            $db = new Database();
+            $db->query("SELECT value FROM pengaturan_sistem WHERE key_name = :key");
+            $db->bind(':key', $key);
+            $result = $db->single();
+
+            if ($result) {
+                return ($result['value'] == '1');
+            }
+        } catch (Exception $e) {
+            // Ignore error, default to true
+            error_log("Error checking notification setting '{$key}': " . $e->getMessage());
+        }
+        return true;
+    }
+
     public function sendNotifikasiAbsensi($noWa, $namaOrtu, $namaSiswa, $kelas, $status, $tanggal, $mataPelajaran = '', $namaSekolah = '')
     {
+        // Cek setting wa_notif_absensi_enabled
+        if (!$this->isNotificationEnabled('wa_notif_absensi_enabled')) {
+            return ['status' => false, 'reason' => 'Absence notification disabled by setting']; // Silently skip
+        }
+
         $statusText = [
             'A' => 'ALPHA (Tanpa Keterangan)',
             'I' => 'IZIN',
@@ -587,6 +625,11 @@ class Fonnte
      */
     public function sendNotifikasiPembayaran($noWa, $namaOrtu, $namaSiswa, $namaTagihan, $jumlahBayar, $diskon, $tanggal, $penerima, $sisaTagihan = 0, $keterangan = '', $namaSekolah = '')
     {
+        // Cek setting wa_notif_pembayaran_enabled
+        if (!$this->isNotificationEnabled('wa_notif_pembayaran_enabled')) {
+            return ['status' => false, 'reason' => 'Payment notification disabled by setting']; // Silently skip
+        }
+
         // Format Rupiah
         $jumlahFmt = 'Rp ' . number_format((int) $jumlahBayar, 0, ',', '.');
         $diskonFmt = 'Rp ' . number_format((int) $diskon, 0, ',', '.');
@@ -635,6 +678,11 @@ class Fonnte
      */
     public function sendNotifikasiDiskon($noWa, $namaOrtu, $namaSiswa, $namaTagihan, $diskon, $sisaTagihan, $namaSekolah = '')
     {
+        // Cek setting wa_notif_pembayaran_enabled
+        if (!$this->isNotificationEnabled('wa_notif_pembayaran_enabled')) {
+            return ['status' => false, 'reason' => 'Discount notification disabled by setting']; // Silently skip
+        }
+
         $diskonFmt = 'Rp ' . number_format((int) $diskon, 0, ',', '.');
         $sisaFmt = 'Rp ' . number_format((int) $sisaTagihan, 0, ',', '.');
 

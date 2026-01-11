@@ -1,6 +1,6 @@
 {
-    "version": "1.8.19",
-    "build": 1819,
+    "version": "1.8.20",
+    "build": 20260111,
     "release_date": "2026-01-11",
-    "description": "Integrate Payment Discount Feature: WhatsApp Notifications (Wali & Bendahara), Student Dashboard Updates, and Changelog Improvements"
+    "description": "Toggle WA Notifications & Fix Upload Siswa"
 }

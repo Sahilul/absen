@@ -4392,6 +4392,11 @@ class AdminController extends Controller
 
         $this->data['menu_input_nilai_enabled'] = ($settings['menu_input_nilai_enabled'] ?? '1') == '1';
         $this->data['menu_pembayaran_enabled'] = ($settings['menu_pembayaran_enabled'] ?? '1') == '1';
+
+        // Notifikasi WA Settings
+        $this->data['wa_notif_absensi_enabled'] = ($settings['wa_notif_absensi_enabled'] ?? '1') == '1';
+        $this->data['wa_notif_pembayaran_enabled'] = ($settings['wa_notif_pembayaran_enabled'] ?? '1') == '1';
+
         $this->data['google_oauth_enabled'] = ($settings['google_oauth_enabled'] ?? '0') == '1';
         $this->data['google_client_id'] = $settings['google_client_id'] ?? '';
         $this->data['google_client_secret'] = $settings['google_client_secret'] ?? '';
@@ -4437,6 +4442,11 @@ class AdminController extends Controller
                 'menu_input_nilai_enabled' => isset($_POST['menu_input_nilai']) ? '1' : '0',
                 'menu_pembayaran_enabled' => isset($_POST['menu_pembayaran']) ? '1' : '0',
                 'menu_rapor_enabled' => isset($_POST['menu_input_nilai']) ? '1' : '0',
+
+                // WA Notification Settings
+                'wa_notif_absensi_enabled' => isset($_POST['wa_notif_absensi_enabled']) ? '1' : '0',
+                'wa_notif_pembayaran_enabled' => isset($_POST['wa_notif_pembayaran_enabled']) ? '1' : '0',
+
                 'google_oauth_enabled' => isset($_POST['google_oauth_enabled']) ? '1' : '0',
                 'google_client_id' => trim($_POST['google_client_id'] ?? ''),
                 'google_client_secret' => trim($_POST['google_client_secret'] ?? ''),

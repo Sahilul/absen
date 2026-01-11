@@ -102,6 +102,51 @@
                     </div>
                 </div>
 
+                <!-- Pengaturan Notifikasi WhatsApp -->
+                <div class="border-2 border-green-300 rounded-lg p-6 bg-gradient-to-br from-green-50 to-emerald-50">
+                    <div class="flex items-center mb-4">
+                        <i data-lucide="message-circle" class="w-6 h-6 text-green-600 mr-2"></i>
+                        <h3 class="text-lg font-semibold text-secondary-800">Pengaturan Notifikasi WhatsApp Otomatis
+                        </h3>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Notifikasi Absensi -->
+                        <div class="flex items-center justify-between bg-white p-4 rounded-lg border border-green-100">
+                            <div>
+                                <h4 class="font-medium text-secondary-800">Notifikasi Absensi</h4>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="wa_notif_absensi_enabled" value="1"
+                                    <?= $data['wa_notif_absensi_enabled'] ? 'checked' : ''; ?> class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600">
+                                </div>
+                                <span class="ml-3 text-sm font-medium text-secondary-700">
+                                    <?= $data['wa_notif_absensi_enabled'] ? 'On' : 'Off'; ?>
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Notifikasi Pembayaran -->
+                        <div class="flex items-center justify-between bg-white p-4 rounded-lg border border-green-100">
+                            <div>
+                                <h4 class="font-medium text-secondary-800">Notifikasi Pembayaran</h4>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="wa_notif_pembayaran_enabled" value="1"
+                                    <?= $data['wa_notif_pembayaran_enabled'] ? 'checked' : ''; ?> class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600">
+                                </div>
+                                <span class="ml-3 text-sm font-medium text-secondary-700">
+                                    <?= $data['wa_notif_pembayaran_enabled'] ? 'On' : 'Off'; ?>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Google OAuth Configuration -->
                 <div class="border-2 border-blue-300 rounded-lg p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
                     <div class="flex items-start justify-between mb-4">
