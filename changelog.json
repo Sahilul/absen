@@ -1,6 +1,29 @@
 {
     "versions": [
         {
+            "version": "1.8.19",
+            "date": "2026-01-11",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur Diskon Pembayaran: Tombol diskon & popup nominal pada halaman tagihan"
+                },
+                {
+                    "type": "feature",
+                    "description": "Notifikasi WhatsApp otomatis ke orang tua saat diskon diupdate"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Dashboard Siswa: Statistik pembayaran memperhitungkan diskon & popup tagihan lebih detail"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Perbaikan logika status 'Lunas' otomatis jika tagihan 0 karena diskon"
+                }
+            ]
+        },
+        {
             "version": "1.7.1",
             "date": "2026-01-04",
             "type": "feature",
