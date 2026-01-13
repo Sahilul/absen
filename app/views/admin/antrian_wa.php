@@ -271,16 +271,15 @@ $filter_status = $data['filter_status'] ?? 'all';
                                 Command
                             </h3>
                             <p class="text-sm text-green-700 mb-2">Paste command berikut:</p>
-                            <div class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto">
-                                wget -q -O /dev/null
-                                "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"
+                            <div id="cpanelWget"
+                                class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto">wget
+                                -q -O /dev/null "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"
                             </div>
                             <p class="text-xs text-green-600 mt-2">Atau gunakan curl:</p>
-                            <div
+                            <div id="cpanelCurl"
                                 class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto mt-1">
                                 curl -s "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026" >
-                                /dev/null 2>&1
-                            </div>
+                                /dev/null 2>&1</div>
                         </div>
                     </div>
 
@@ -316,10 +315,10 @@ $filter_status = $data['filter_status'] ?? 'all';
                                 Script Content
                             </h3>
                             <p class="text-sm text-purple-700 mb-2">Paste script berikut:</p>
-                            <div class="bg-gray-900 text-purple-400 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+                            <div id="aapanelScript"
+                                class="bg-gray-900 text-purple-400 p-3 rounded-lg text-xs font-mono overflow-x-auto">
                                 wget -q -O /dev/null
-                                "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"
-                            </div>
+                                "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"</div>
                         </div>
 
                         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
@@ -425,9 +424,22 @@ $filter_status = $data['filter_status'] ?? 'all';
                 result += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             const token = 'wa_queue_' + result;
+            const baseUrl = '<?= BASEURL ?>/public/cron_wa_processor.php?token=' + token;
 
+            // Update input token
             document.getElementById('generatedToken').value = token;
             document.getElementById('tokenResult').classList.remove('hidden');
+
+            // Update URL Cron input (top)
+            document.getElementById('cronUrl').value = baseUrl;
+
+            // Update commands
+            const wgetCmd = 'wget -q -O /dev/null "' + baseUrl + '"';
+            const curlCmd = 'curl -s "' + baseUrl + '" > /dev/null 2>&1';
+
+            document.getElementById('cpanelWget').textContent = wgetCmd;
+            document.getElementById('cpanelCurl').textContent = curlCmd;
+            document.getElementById('aapanelScript').textContent = wgetCmd;
         }
 
         function copyToken() {
