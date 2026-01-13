@@ -1,6 +1,29 @@
 {
     "versions": [
         {
+            "version": "1.11.1",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Cron Guide Modal: Panduan interaktif setup cron job di cPanel & aaPanel"
+                },
+                {
+                    "type": "feature",
+                    "description": "Token Generator: Alat bantu generate token aman & auto-update command"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Modal Z-Index: Modal panduan kini tampil di atas sidebar"
+                },
+                {
+                    "type": "chore",
+                    "description": "Exclude `public/index.php` dari git untuk enkripsi file"
+                }
+            ]
+        },
+        {
             "version": "1.11.0",
             "date": "2026-01-13",
             "type": "minor",
