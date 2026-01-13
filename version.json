@@ -1,6 +1,6 @@
 {
-    "version": "1.11.7",
+    "version": "1.11.9",
     "build": 20260113,
     "release_date": "2026-01-13",
-    "description": "Fix APPROOT path definition in cron processor"
+    "description": "Fix Unauthorized Error in Token Generation"
 }

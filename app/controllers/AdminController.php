@@ -6721,7 +6721,7 @@ Waktu: ' . date('d/m/Y H:i:s');
         }
 
         // Check if admin
-        if ($_SESSION['role_user'] !== 'admin') {
+        if ($_SESSION['role'] !== 'admin') {
             http_response_code(403);
             echo json_encode(['success' => false, 'message' => 'Unauthorized']);
             exit;

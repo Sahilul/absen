@@ -441,19 +441,38 @@ $filter_status = $data['filter_status'] ?? 'all';
             document.getElementById('cpanelCurl').textContent = curlCmd;
             document.getElementById('aapanelScript').textContent = wgetCmd;
 
-            // Auto-save to DB
+            // Auto-save to DB with Feedback
+            const saveBtn = document.querySelector('button[onclick="generateToken()"]');
+            const originalText = saveBtn.innerHTML; // Use innerHTML to keep icon
+            saveBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Menyimpan...';
+            saveBtn.disabled = true;
+
+            // Use relative path to avoid Mixed Content issues if BASEURL is http but site is https
             fetch('<?= BASEURL ?>/admin/updateCronToken', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: token })
             })
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.success) {
-                        alert('Gagal menyimpan token ke database: ' + (data.message || 'Unknown error'));
-                    }
-                })
-                .catch(err => console.error('Error saving token:', err));
+            .then(res => res.json())
+            .then(data => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+                
+                if(data.success) {
+                    alert('✅ Token berhasil digenerate dan DISIMPAN ke database! Silakan copy URL cron baru.');
+                    // Update text instruksi
+                    document.querySelector('#tokenResult p').innerHTML = '✅ Token tersimpan otomatis! Anda TIDAK PERLU mengedit file php secara manual. Cukup copy URL di atas ke panel cron.';
+                    document.querySelector('#tokenResult p').className = 'text-xs text-green-600 mt-2 font-bold';
+                } else {
+                    alert('⚠️ Token ter-generate tapi GAGAL disimpan ke database: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+                console.error('Error saving token:', err);
+                alert('❌ Error Koneksi: Gagal menyimpan token. Cek Console browser. Kemungkinan Mixed Content (HTTP vs HTTPS) atau masalah jaringan.');
+            });
         }
 
         function copyToken() {
