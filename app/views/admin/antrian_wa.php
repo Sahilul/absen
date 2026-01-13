@@ -147,13 +147,14 @@ $filter_status = $data['filter_status'] ?? 'all';
                     <p class="text-sm text-indigo-700 mt-1">
                         Pesan masuk antrian → Cron job kirim 5 pesan/menit dengan jeda 10 detik → Mencegah blokir WA
                     </p>
-                    <p class="text-xs text-indigo-600 mt-3 font-mono bg-white/50 px-3 py-2 rounded-lg inline-block break-all">
+                    <p
+                        class="text-xs text-indigo-600 mt-3 font-mono bg-white/50 px-3 py-2 rounded-lg inline-block break-all">
                         <?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026
                     </p>
                 </div>
             </div>
             <div class="flex-shrink-0">
-                <button onclick="openCronGuide()" 
+                <button onclick="openCronGuide()"
                     class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-all">
                     <i data-lucide="book-open" class="w-4 h-4"></i>
                     Panduan Setup Cron
@@ -163,7 +164,8 @@ $filter_status = $data['filter_status'] ?? 'all';
     </div>
 
     <!-- Modal Panduan Cron -->
-    <div id="cronGuideModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="cronGuideModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
             <!-- Modal Header -->
             <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
@@ -182,17 +184,18 @@ $filter_status = $data['filter_status'] ?? 'all';
                     </button>
                 </div>
             </div>
-            
+
             <!-- Modal Body -->
             <div class="p-6 overflow-y-auto max-h-[60vh]">
                 <!-- URL Cron -->
                 <div class="bg-gray-50 rounded-xl p-4 mb-6">
                     <p class="text-sm font-semibold text-gray-700 mb-2">🔗 URL Cron Anda:</p>
                     <div class="flex gap-2">
-                        <input type="text" id="cronUrl" readonly 
+                        <input type="text" id="cronUrl" readonly
                             value="<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"
                             class="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-mono text-gray-700">
-                        <button onclick="copyCronUrl()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition flex items-center gap-1">
+                        <button onclick="copyCronUrl()"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition flex items-center gap-1">
                             <i data-lucide="copy" class="w-4 h-4"></i>
                             Copy
                         </button>
@@ -202,13 +205,14 @@ $filter_status = $data['filter_status'] ?? 'all';
                 <!-- Tabs -->
                 <div x-data="{ tab: 'cpanel' }" class="space-y-4">
                     <div class="flex gap-2 border-b border-gray-200">
-                        <button @click="tab = 'cpanel'" 
+                        <button @click="tab = 'cpanel'"
                             :class="tab === 'cpanel' ? 'border-indigo-600 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500'"
                             class="px-4 py-3 text-sm font-medium border-b-2 transition flex items-center gap-2">
-                            <img src="https://cpanel.net/favicon.ico" class="w-4 h-4" onerror="this.style.display='none'">
+                            <img src="https://cpanel.net/favicon.ico" class="w-4 h-4"
+                                onerror="this.style.display='none'">
                             cPanel
                         </button>
-                        <button @click="tab = 'aapanel'" 
+                        <button @click="tab = 'aapanel'"
                             :class="tab === 'aapanel' ? 'border-indigo-600 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500'"
                             class="px-4 py-3 text-sm font-medium border-b-2 transition flex items-center gap-2">
                             <span class="text-green-600 font-bold">aa</span>
@@ -220,39 +224,61 @@ $filter_status = $data['filter_status'] ?? 'all';
                     <div x-show="tab === 'cpanel'" class="space-y-4">
                         <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
                             <h3 class="font-bold text-orange-800 flex items-center gap-2 mb-3">
-                                <span class="bg-orange-200 text-orange-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                                <span
+                                    class="bg-orange-200 text-orange-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
                                 Login ke cPanel
                             </h3>
-                            <p class="text-sm text-orange-700">Masuk ke cPanel hosting Anda, lalu cari menu <strong>"Cron Jobs"</strong> di bagian Advanced.</p>
+                            <p class="text-sm text-orange-700">Masuk ke cPanel hosting Anda, lalu cari menu
+                                <strong>"Cron Jobs"</strong> di bagian Advanced.</p>
                         </div>
-                        
+
                         <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
                             <h3 class="font-bold text-blue-800 flex items-center gap-2 mb-3">
-                                <span class="bg-blue-200 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                                <span
+                                    class="bg-blue-200 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
                                 Add New Cron Job
                             </h3>
                             <p class="text-sm text-blue-700 mb-3">Setting interval: <strong>Every Minute</strong></p>
                             <div class="grid grid-cols-5 gap-2 text-center text-xs mb-3">
-                                <div class="bg-white p-2 rounded border"><p class="font-bold">*</p><p class="text-gray-500">Minute</p></div>
-                                <div class="bg-white p-2 rounded border"><p class="font-bold">*</p><p class="text-gray-500">Hour</p></div>
-                                <div class="bg-white p-2 rounded border"><p class="font-bold">*</p><p class="text-gray-500">Day</p></div>
-                                <div class="bg-white p-2 rounded border"><p class="font-bold">*</p><p class="text-gray-500">Month</p></div>
-                                <div class="bg-white p-2 rounded border"><p class="font-bold">*</p><p class="text-gray-500">Weekday</p></div>
+                                <div class="bg-white p-2 rounded border">
+                                    <p class="font-bold">*</p>
+                                    <p class="text-gray-500">Minute</p>
+                                </div>
+                                <div class="bg-white p-2 rounded border">
+                                    <p class="font-bold">*</p>
+                                    <p class="text-gray-500">Hour</p>
+                                </div>
+                                <div class="bg-white p-2 rounded border">
+                                    <p class="font-bold">*</p>
+                                    <p class="text-gray-500">Day</p>
+                                </div>
+                                <div class="bg-white p-2 rounded border">
+                                    <p class="font-bold">*</p>
+                                    <p class="text-gray-500">Month</p>
+                                </div>
+                                <div class="bg-white p-2 rounded border">
+                                    <p class="font-bold">*</p>
+                                    <p class="text-gray-500">Weekday</p>
+                                </div>
                             </div>
                         </div>
-                        
+
                         <div class="bg-green-50 border border-green-200 rounded-xl p-4">
                             <h3 class="font-bold text-green-800 flex items-center gap-2 mb-3">
-                                <span class="bg-green-200 text-green-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                                <span
+                                    class="bg-green-200 text-green-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
                                 Command
                             </h3>
                             <p class="text-sm text-green-700 mb-2">Paste command berikut:</p>
                             <div class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto">
-                                wget -q -O /dev/null "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"
+                                wget -q -O /dev/null
+                                "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"
                             </div>
                             <p class="text-xs text-green-600 mt-2">Atau gunakan curl:</p>
-                            <div class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto mt-1">
-                                curl -s "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026" > /dev/null 2>&1
+                            <div
+                                class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto mt-1">
+                                curl -s "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026" >
+                                /dev/null 2>&1
                             </div>
                         </div>
                     </div>
@@ -261,15 +287,18 @@ $filter_status = $data['filter_status'] ?? 'all';
                     <div x-show="tab === 'aapanel'" class="space-y-4">
                         <div class="bg-green-50 border border-green-200 rounded-xl p-4">
                             <h3 class="font-bold text-green-800 flex items-center gap-2 mb-3">
-                                <span class="bg-green-200 text-green-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                                <span
+                                    class="bg-green-200 text-green-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
                                 Login ke aaPanel
                             </h3>
-                            <p class="text-sm text-green-700">Masuk ke aaPanel, lalu klik menu <strong>"Cron"</strong> di sidebar kiri.</p>
+                            <p class="text-sm text-green-700">Masuk ke aaPanel, lalu klik menu <strong>"Cron"</strong>
+                                di sidebar kiri.</p>
                         </div>
-                        
+
                         <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
                             <h3 class="font-bold text-blue-800 flex items-center gap-2 mb-3">
-                                <span class="bg-blue-200 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                                <span
+                                    class="bg-blue-200 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
                                 Add Task
                             </h3>
                             <div class="space-y-2 text-sm text-blue-700">
@@ -278,24 +307,28 @@ $filter_status = $data['filter_status'] ?? 'all';
                                 <p><strong>Period:</strong> Per Minute (N Minutes = 1)</p>
                             </div>
                         </div>
-                        
+
                         <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
                             <h3 class="font-bold text-purple-800 flex items-center gap-2 mb-3">
-                                <span class="bg-purple-200 text-purple-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                                <span
+                                    class="bg-purple-200 text-purple-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
                                 Script Content
                             </h3>
                             <p class="text-sm text-purple-700 mb-2">Paste script berikut:</p>
                             <div class="bg-gray-900 text-purple-400 p-3 rounded-lg text-xs font-mono overflow-x-auto">
-                                wget -q -O /dev/null "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"
+                                wget -q -O /dev/null
+                                "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"
                             </div>
                         </div>
-                        
+
                         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
                             <h3 class="font-bold text-yellow-800 flex items-center gap-2 mb-3">
-                                <span class="bg-yellow-200 text-yellow-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                                <span
+                                    class="bg-yellow-200 text-yellow-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">4</span>
                                 Save & Test
                             </h3>
-                            <p class="text-sm text-yellow-700">Klik <strong>Add Task</strong>, lalu klik tombol <strong>Execute</strong> (icon play) untuk test manual.</p>
+                            <p class="text-sm text-yellow-700">Klik <strong>Add Task</strong>, lalu klik tombol
+                                <strong>Execute</strong> (icon play) untuk test manual.</p>
                         </div>
                     </div>
                 </div>
@@ -307,18 +340,56 @@ $filter_status = $data['filter_status'] ?? 'all';
                         <div class="text-sm text-red-700">
                             <p class="font-bold">⚠️ Penting!</p>
                             <ul class="mt-1 list-disc list-inside space-y-1">
-                                <li>Ganti <code class="bg-red-100 px-1 rounded">wa_queue_secret_2026</code> dengan token rahasia Anda sendiri</li>
-                                <li>Edit token di file: <code class="bg-red-100 px-1 rounded">public/cron_wa_processor.php</code> baris 15</li>
+                                <li>Ganti <code class="bg-red-100 px-1 rounded">wa_queue_secret_2026</code> dengan token
+                                    rahasia Anda sendiri</li>
+                                <li>Edit token di file: <code
+                                        class="bg-red-100 px-1 rounded">public/cron_wa_processor.php</code> baris 15
+                                </li>
                                 <li>Jangan share URL cron ini kepada siapapun</li>
                             </ul>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Token Generator -->
+                <div class="mt-4 bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="flex-1">
+                            <p class="font-bold text-indigo-800 text-sm flex items-center gap-2">
+                                <i data-lucide="key" class="w-4 h-4"></i>
+                                Generate Token Baru
+                            </p>
+                            <p class="text-xs text-indigo-600 mt-1">Klik generate, lalu paste ke file
+                                cron_wa_processor.php baris 15</p>
+                        </div>
+                        <button onclick="generateToken()"
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition whitespace-nowrap">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            Generate Token
+                        </button>
+                    </div>
+                    <div id="tokenResult" class="hidden mt-3">
+                        <div class="flex gap-2">
+                            <input type="text" id="generatedToken" readonly
+                                class="flex-1 px-3 py-2 bg-white border border-indigo-300 rounded-lg text-sm font-mono text-indigo-800 font-bold">
+                            <button onclick="copyToken()"
+                                class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-indigo-500 mt-2">
+                            📋 Copy token di atas, lalu edit file <code
+                                class="bg-indigo-100 px-1 rounded">public/cron_wa_processor.php</code> dan ganti nilai
+                            <code class="bg-indigo-100 px-1 rounded">$secretToken</code> dengan token baru.
+                        </p>
                     </div>
                 </div>
             </div>
 
             <!-- Modal Footer -->
             <div class="p-4 border-t border-gray-200 bg-gray-50 flex justify-end">
-                <button onclick="closeCronGuide()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-sm font-medium transition">
+                <button onclick="closeCronGuide()"
+                    class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-sm font-medium transition">
                     Tutup
                 </button>
             </div>
@@ -343,6 +414,25 @@ $filter_status = $data['filter_status'] ?? 'all';
         url.select();
         document.execCommand('copy');
         alert('URL berhasil disalin!');
+    }
+
+    function generateToken() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < 32; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        const token = 'wa_queue_' + result;
+        
+        document.getElementById('generatedToken').value = token;
+        document.getElementById('tokenResult').classList.remove('hidden');
+    }
+
+    function copyToken() {
+        const tokenInput = document.getElementById('generatedToken');
+        tokenInput.select();
+        document.execCommand('copy');
+        alert('Token berhasil disalin! Jangan lupa simpan di file cron_wa_processor.php');
     }
     
     // Close modal on escape key
