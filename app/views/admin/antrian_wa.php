@@ -165,8 +165,8 @@ $filter_status = $data['filter_status'] ?? 'all';
 
     <!-- Modal Panduan Cron -->
     <div id="cronGuideModal"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden relative">
             <!-- Modal Header -->
             <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
                 <div class="flex items-center justify-between">
@@ -229,7 +229,8 @@ $filter_status = $data['filter_status'] ?? 'all';
                                 Login ke cPanel
                             </h3>
                             <p class="text-sm text-orange-700">Masuk ke cPanel hosting Anda, lalu cari menu
-                                <strong>"Cron Jobs"</strong> di bagian Advanced.</p>
+                                <strong>"Cron Jobs"</strong> di bagian Advanced.
+                            </p>
                         </div>
 
                         <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
@@ -328,7 +329,8 @@ $filter_status = $data['filter_status'] ?? 'all';
                                 Save & Test
                             </h3>
                             <p class="text-sm text-yellow-700">Klik <strong>Add Task</strong>, lalu klik tombol
-                                <strong>Execute</strong> (icon play) untuk test manual.</p>
+                                <strong>Execute</strong> (icon play) untuk test manual.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -397,53 +399,53 @@ $filter_status = $data['filter_status'] ?? 'all';
     </div>
 
     <script>
-    function openCronGuide() {
-        document.getElementById('cronGuideModal').classList.remove('hidden');
-        document.getElementById('cronGuideModal').classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-    
-    function closeCronGuide() {
-        document.getElementById('cronGuideModal').classList.add('hidden');
-        document.getElementById('cronGuideModal').classList.remove('flex');
-        document.body.style.overflow = 'auto';
-    }
-    
-    function copyCronUrl() {
-        const url = document.getElementById('cronUrl');
-        url.select();
-        document.execCommand('copy');
-        alert('URL berhasil disalin!');
-    }
-
-    function generateToken() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < 32; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        function openCronGuide() {
+            document.getElementById('cronGuideModal').classList.remove('hidden');
+            document.getElementById('cronGuideModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
         }
-        const token = 'wa_queue_' + result;
-        
-        document.getElementById('generatedToken').value = token;
-        document.getElementById('tokenResult').classList.remove('hidden');
-    }
 
-    function copyToken() {
-        const tokenInput = document.getElementById('generatedToken');
-        tokenInput.select();
-        document.execCommand('copy');
-        alert('Token berhasil disalin! Jangan lupa simpan di file cron_wa_processor.php');
-    }
-    
-    // Close modal on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeCronGuide();
-    });
-    
-    // Close modal on backdrop click
-    document.getElementById('cronGuideModal')?.addEventListener('click', function(e) {
-        if (e.target === this) closeCronGuide();
-    });
+        function closeCronGuide() {
+            document.getElementById('cronGuideModal').classList.add('hidden');
+            document.getElementById('cronGuideModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function copyCronUrl() {
+            const url = document.getElementById('cronUrl');
+            url.select();
+            document.execCommand('copy');
+            alert('URL berhasil disalin!');
+        }
+
+        function generateToken() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 32; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            const token = 'wa_queue_' + result;
+
+            document.getElementById('generatedToken').value = token;
+            document.getElementById('tokenResult').classList.remove('hidden');
+        }
+
+        function copyToken() {
+            const tokenInput = document.getElementById('generatedToken');
+            tokenInput.select();
+            document.execCommand('copy');
+            alert('Token berhasil disalin! Jangan lupa simpan di file cron_wa_processor.php');
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeCronGuide();
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('cronGuideModal')?.addEventListener('click', function (e) {
+            if (e.target === this) closeCronGuide();
+        });
     </script>
 
     <!-- Filter Tabs -->
