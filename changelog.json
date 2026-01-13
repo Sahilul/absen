@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.11.3",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Critical Fix: Mengatasi error 'Unknown column nama' saat kirim pesan massal"
+                },
+                {
+                    "type": "fix",
+                    "description": "Perbaikan query SQL pada AdminController untuk menggunakan alias kolom yang benar"
+                }
+            ]
+        },
+        {
             "version": "1.11.2",
             "date": "2026-01-13",
             "type": "patch",

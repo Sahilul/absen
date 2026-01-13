@@ -6226,7 +6226,7 @@ Waktu: ' . date('d/m/Y H:i:s');
 
         switch ($target_type) {
             case 'semua_guru':
-                $db->query("SELECT no_wa, nama FROM guru WHERE no_wa IS NOT NULL AND no_wa != ''");
+                $db->query("SELECT no_wa, nama_guru AS nama FROM guru WHERE no_wa IS NOT NULL AND no_wa != ''");
                 $results = $db->resultSet();
                 foreach ($results as $r) {
                     $numbers[] = ['no_wa' => $r['no_wa'], 'nama' => $r['nama']];
@@ -6234,7 +6234,7 @@ Waktu: ' . date('d/m/Y H:i:s');
                 break;
 
             case 'semua_siswa':
-                $db->query("SELECT no_wa, nama FROM siswa WHERE no_wa IS NOT NULL AND no_wa != ''");
+                $db->query("SELECT no_wa, nama_siswa AS nama FROM siswa WHERE no_wa IS NOT NULL AND no_wa != ''");
                 $results = $db->resultSet();
                 foreach ($results as $r) {
                     $numbers[] = ['no_wa' => $r['no_wa'], 'nama' => $r['nama']];
@@ -6242,7 +6242,7 @@ Waktu: ' . date('d/m/Y H:i:s');
                 break;
 
             case 'semua_ortu':
-                $db->query("SELECT id_siswa, nama, ayah_no_hp, ibu_no_hp FROM siswa WHERE (ayah_no_hp IS NOT NULL AND ayah_no_hp != '') OR (ibu_no_hp IS NOT NULL AND ibu_no_hp != '')");
+                $db->query("SELECT id_siswa, nama_siswa AS nama, ayah_no_hp, ibu_no_hp FROM siswa WHERE (ayah_no_hp IS NOT NULL AND ayah_no_hp != '') OR (ibu_no_hp IS NOT NULL AND ibu_no_hp != '')");
                 $results = $db->resultSet();
                 foreach ($results as $r) {
                     if (!empty($r['ayah_no_hp'])) {
@@ -6256,7 +6256,7 @@ Waktu: ' . date('d/m/Y H:i:s');
 
             case 'kelas_siswa':
                 if (!empty($id_kelas)) {
-                    $db->query("SELECT s.no_wa, s.nama FROM siswa s
+                    $db->query("SELECT s.no_wa, s.nama_siswa AS nama FROM siswa s
                         INNER JOIN anggota_kelas ak ON s.id_siswa = ak.id_siswa
                         WHERE ak.id_kelas = :id_kelas AND ak.id_tp = :id_tp
                         AND s.no_wa IS NOT NULL AND s.no_wa != ''");
@@ -6271,7 +6271,7 @@ Waktu: ' . date('d/m/Y H:i:s');
 
             case 'kelas_ortu':
                 if (!empty($id_kelas)) {
-                    $db->query("SELECT s.id_siswa, s.nama, s.ayah_no_hp, s.ibu_no_hp FROM siswa s
+                    $db->query("SELECT s.id_siswa, s.nama_siswa AS nama, s.ayah_no_hp, s.ibu_no_hp FROM siswa s
                         INNER JOIN anggota_kelas ak ON s.id_siswa = ak.id_siswa
                         WHERE ak.id_kelas = :id_kelas AND ak.id_tp = :id_tp
                         AND ((s.ayah_no_hp IS NOT NULL AND s.ayah_no_hp != '') OR (s.ibu_no_hp IS NOT NULL AND s.ibu_no_hp != ''))");
