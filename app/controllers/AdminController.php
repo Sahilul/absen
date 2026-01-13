@@ -6709,6 +6709,43 @@ Waktu: ' . date('d/m/Y H:i:s');
         header('Location: ' . BASEURL . '/admin/antrianWa');
         exit;
     }
+    /**
+     * AJAX: Update Cron Token
+     */
+    public function updateCronToken()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+            exit;
+        }
+
+        // Check if admin
+        if ($_SESSION['role_user'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $token = $input['token'] ?? '';
+
+        if (empty($token)) {
+            echo json_encode(['success' => false, 'message' => 'Token cannot be empty']);
+            exit;
+        }
+
+        // Save to DB
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $success = $pengaturanModel->updateCronSecret($token);
+
+        if ($success) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to save token']);
+        }
+        exit;
+    }
 }
 
 

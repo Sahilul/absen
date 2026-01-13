@@ -73,6 +73,13 @@ class PengaturanAplikasi_model
                 $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `wa_gateway_password` varchar(100) DEFAULT '' AFTER `wa_gateway_username`");
                 $this->db->execute();
             }
+
+            // Add cron_secret column if missing
+            $this->db->query("SHOW COLUMNS FROM `{$this->table}` LIKE 'cron_secret'");
+            if (!$this->db->single()) {
+                $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `cron_secret` varchar(100) DEFAULT 'wa_queue_secret_2026' AFTER `wa_gateway_password`");
+                $this->db->execute();
+            }
         } catch (Exception $e) {
             // Ignore error
         }
@@ -100,6 +107,7 @@ class PengaturanAplikasi_model
                     'wa_gateway_token' => '',
                     'wa_gateway_username' => '',
                     'wa_gateway_password' => '',
+                    'cron_secret' => 'wa_queue_secret_2026',
                     'created_at' => date('Y-m-d H:i:s'),
                     'updated_at' => date('Y-m-d H:i:s')
                 ];
@@ -118,6 +126,7 @@ class PengaturanAplikasi_model
                 'wa_gateway_token' => '',
                 'wa_gateway_username' => '',
                 'wa_gateway_password' => '',
+                'cron_secret' => 'wa_queue_secret_2026',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
@@ -130,8 +139,8 @@ class PengaturanAplikasi_model
     private function insertDefault()
     {
         try {
-            $this->db->query("INSERT INTO {$this->table} (id, nama_aplikasi, url_web, logo) 
-                              VALUES (1, 'Smart Absensi', 'http://localhost/absen', '')
+            $this->db->query("INSERT INTO {$this->table} (id, nama_aplikasi, url_web, logo, cron_secret) 
+                              VALUES (1, 'Smart Absensi', 'http://localhost/absen', '', 'wa_queue_secret_2026')
                               ON DUPLICATE KEY UPDATE id = id");
             $this->db->execute();
         } catch (Exception $e) {
@@ -147,7 +156,7 @@ class PengaturanAplikasi_model
         // Cek apakah sudah ada data
         $existing = $this->getPengaturan();
 
-        if ($existing && isset($existing['id']) && $this->cekDataExists()) {
+        if ($existing && isset($existing['id'])) {
             return $this->update($data);
         } else {
             return $this->insert($data);
@@ -168,11 +177,21 @@ class PengaturanAplikasi_model
         }
     }
 
+    /**
+     * Update cron secret saja
+     */
+    public function updateCronSecret($secret)
+    {
+        $this->db->query("UPDATE {$this->table} SET cron_secret = :secret WHERE id = 1");
+        $this->db->bind(':secret', $secret);
+        return $this->db->execute();
+    }
+
     private function insert($data)
     {
         $this->db->query("INSERT INTO {$this->table} 
-            (id, nama_aplikasi, url_web, logo, wa_gateway_provider, wa_gateway_url, wa_gateway_token, wa_gateway_username, wa_gateway_password, created_at, updated_at) 
-            VALUES (1, :nama_aplikasi, :url_web, :logo, :wa_provider, :wa_url, :wa_token, :wa_username, :wa_password, NOW(), NOW())");
+            (id, nama_aplikasi, url_web, logo, wa_gateway_provider, wa_gateway_url, wa_gateway_token, wa_gateway_username, wa_gateway_password, cron_secret, created_at, updated_at) 
+            VALUES (1, :nama_aplikasi, :url_web, :logo, :wa_provider, :wa_url, :wa_token, :wa_username, :wa_password, :cron_secret, NOW(), NOW())");
 
         $this->db->bind(':nama_aplikasi', $data['nama_aplikasi']);
         $this->db->bind(':url_web', $data['url_web'] ?? 'http://localhost/absen');
@@ -182,6 +201,7 @@ class PengaturanAplikasi_model
         $this->db->bind(':wa_token', $data['wa_gateway_token'] ?? '');
         $this->db->bind(':wa_username', $data['wa_gateway_username'] ?? '');
         $this->db->bind(':wa_password', $data['wa_gateway_password'] ?? '');
+        $this->db->bind(':cron_secret', $data['cron_secret'] ?? 'wa_queue_secret_2026');
 
         return $this->db->execute();
     }
@@ -208,6 +228,7 @@ class PengaturanAplikasi_model
         $this->db->bind(':wa_token', $data['wa_gateway_token'] ?? '');
         $this->db->bind(':wa_username', $data['wa_gateway_username'] ?? '');
         $this->db->bind(':wa_password', $data['wa_gateway_password'] ?? '');
+        // Note: cron_secret not updated here via general settings, only explicitly via updateCronSecret or initial insert
 
         return $this->db->execute();
     }

@@ -440,13 +440,27 @@ $filter_status = $data['filter_status'] ?? 'all';
             document.getElementById('cpanelWget').textContent = wgetCmd;
             document.getElementById('cpanelCurl').textContent = curlCmd;
             document.getElementById('aapanelScript').textContent = wgetCmd;
+
+            // Auto-save to DB
+            fetch('<?= BASEURL ?>/admin/updateCronToken', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert('Gagal menyimpan token ke database: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(err => console.error('Error saving token:', err));
         }
 
         function copyToken() {
             const tokenInput = document.getElementById('generatedToken');
             tokenInput.select();
             document.execCommand('copy');
-            alert('Token berhasil disalin! Jangan lupa simpan di file cron_wa_processor.php');
+            alert('Token berhasil disalin! Token juga sudah otomatis tersimpan di database.');
         }
 
         // Close modal on escape key

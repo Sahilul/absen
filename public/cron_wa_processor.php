@@ -11,35 +11,44 @@
  */
 
 // Security: Cek token atau CLI mode
-$isCliMode = (php_sapi_name() === 'cli');
-$secretToken = 'wa_queue_secret_2026'; // Ganti dengan token rahasia
-
-if (!$isCliMode) {
-    // Web mode - cek token
-    $providedToken = $_GET['token'] ?? '';
-    if ($providedToken !== $secretToken) {
-        http_response_code(403);
-        die('Forbidden');
-    }
-}
-
 // Load config
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../app/core/Database.php';
 require_once __DIR__ . '/../app/core/Fonnte.php';
 require_once __DIR__ . '/../app/models/WaQueue_model.php';
+require_once __DIR__ . '/../app/models/PengaturanAplikasi_model.php';
+
+// Initialize
+$queueModel = new WaQueue_model();
+$pengaturanModel = new PengaturanAplikasi_model();
+$fonnte = new Fonnte();
+
+// Get settings from DB
+$pengaturan = $pengaturanModel->getPengaturan();
+$secretToken = $pengaturan['cron_secret'] ?? 'wa_queue_secret_2026';
+
+// Security: Cek token atau CLI mode
+$isCliMode = (php_sapi_name() === 'cli');
+
+if (!$isCliMode) {
+    // Web mode - cek token
+    $providedToken = $_GET['token'] ?? '';
+    // Allow both the new DB token AND the old hardcoded fallback for transition
+    if ($providedToken !== $secretToken && $providedToken !== 'wa_queue_secret_2026') {
+        http_response_code(403);
+        die('Forbidden');
+    }
+}
 
 // Settings
 $maxMessagesPerRun = 5;      // Maksimal pesan per eksekusi
 $delayBetweenMessages = 10;  // Detik jeda antar pesan
 
-// Initialize
-$queueModel = new WaQueue_model();
-$fonnte = new Fonnte();
-
 $processed = 0;
 $results = [];
+
+
 
 echo "[" . date('Y-m-d H:i:s') . "] WA Queue Processor started\n";
 

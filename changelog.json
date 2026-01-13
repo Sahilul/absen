@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.11.4",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix error 'Forbidden' pada Cron Job: Token sekarang disimpan di database & otomatis sync saat generate"
+                },
+                {
+                    "type": "feature",
+                    "description": "Menambahkan kolom cron_secret di tabel pengaturan_aplikasi"
+                }
+            ]
+        },
+        {
             "version": "1.11.3",
             "date": "2026-01-13",
             "type": "patch",
