@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.11.5",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Critical Fix: Error 'Undefined constant APPROOT' pada config.php"
+                },
+                {
+                    "type": "fix",
+                    "description": "Menambahkan definisi APPROOT secara global di config.php agar script external (cron) berjalan lancar"
+                }
+            ]
+        },
+        {
             "version": "1.11.4",
             "date": "2026-01-13",
             "type": "patch",

@@ -1,6 +1,6 @@
 {
-    "version": "1.11.4",
+    "version": "1.11.5",
     "build": 20260113,
     "release_date": "2026-01-13",
-    "description": "Fix Cron Job Forbidden Error by implementing DB Token Persistence"
+    "description": "Critical Fix: Define APPROOT in config.php"
 }
