@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.11.7",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix path 'app/app' ganda pada cron_wa_processor.php"
+                },
+                {
+                    "type": "fix",
+                    "description": "Koreksi definisi APPROOT menjadi Project Root agar sesuai dengan struktur config yang ada"
+                }
+            ]
+        },
+        {
             "version": "1.11.6",
             "date": "2026-01-13",
             "type": "patch",

@@ -38,7 +38,7 @@ git commit -m "v{VERSI}: {DESKRIPSI SINGKAT}"
 Contoh: `git commit -m "v1.0.1: Fix upload limit dan tambah fitur auto-update"`
 
 ### 6. GIT PUSH
-// turbo
+**[TUNGGU PERSETUJUAN USER SEBELUM PUSH]**
 ```bash
 git push origin main
 ```

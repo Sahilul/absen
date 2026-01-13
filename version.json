@@ -1,6 +1,6 @@
 {
-    "version": "1.11.6",
+    "version": "1.11.7",
     "build": 20260113,
     "release_date": "2026-01-13",
-    "description": "Fix constant APPROOT by defining it locally in cron processor (Safe for Encrypted Config)"
+    "description": "Fix APPROOT path definition in cron processor"
 }
