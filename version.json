@@ -1,6 +1,6 @@
 {
-    "version": "1.11.1",
+    "version": "1.11.2",
     "build": 20260113,
     "release_date": "2026-01-13",
-    "description": "Cron Guide Modal & Token Generator"
+    "description": "Fix WA Gateway Settings UI Regression"
 }

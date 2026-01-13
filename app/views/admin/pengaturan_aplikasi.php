@@ -141,7 +141,7 @@ $logoExists = !empty($logoFile) && file_exists($logoPath);
                 <div class="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Provider Gateway</label>
-                        <select name="wa_gateway_provider" id="wa_provider" onchange="toggleAuthFields()"
+                        <select name="wa_gateway_provider" id="wa_provider" onchange="toggleAuthFields(); updateUrlFromProvider()"
                             class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-400 bg-white">
                             <?php foreach ($providers as $key => $prov): ?>
                                 <option value="<?= $key ?>" <?= $currentProvider === $key ? 'selected' : '' ?>
@@ -426,11 +426,9 @@ $logoExists = !empty($logoFile) && file_exists($logoPath);
         const provider = document.getElementById('wa_provider');
         const selectedOption = provider.options[provider.selectedIndex];
         const authType = selectedOption.dataset.auth;
-        const defaultUrl = selectedOption.dataset.url;
 
         const tokenFields = document.getElementById('token_auth_fields');
         const basicFields = document.getElementById('basic_auth_fields');
-        const urlField = document.getElementById('wa_url');
 
         if (authType === 'basic') {
             tokenFields.classList.add('hidden');
@@ -439,11 +437,16 @@ $logoExists = !empty($logoFile) && file_exists($logoPath);
             tokenFields.classList.remove('hidden');
             basicFields.classList.add('hidden');
         }
+    }
 
-        // Auto-fill URL if empty or default
-        if (urlField.value === '' || urlField.value.includes('api.fonnte.com') || urlField.value.includes('localhost:3000')) {
-            urlField.value = defaultUrl;
-        }
+    // Update URL when provider changes
+    function updateUrlFromProvider() {
+        const provider = document.getElementById('wa_provider');
+        const selectedOption = provider.options[provider.selectedIndex];
+        const defaultUrl = selectedOption.dataset.url;
+        const urlField = document.getElementById('wa_url');
+        
+        urlField.value = defaultUrl;
     }
 
     // Run on page load

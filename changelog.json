@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.11.2",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix bug URL WA Gateway tertimpa default provider saat halaman diload"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Pemisahan logika UI update URL dengan toggle visibility pada menu pengaturan"
+                }
+            ]
+        },
+        {
             "version": "1.11.1",
             "date": "2026-01-13",
             "type": "patch",
