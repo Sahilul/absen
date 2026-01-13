@@ -1,6 +1,33 @@
 {
     "versions": [
         {
+            "version": "1.11.0",
+            "date": "2026-01-13",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Sistem Antrian WA: Mencegah blokir WhatsApp dengan kirim pesan bertahap"
+                },
+                {
+                    "type": "feature",
+                    "description": "Bulk WA Sender: Kirim pesan massal ke guru, siswa, dan orang tua"
+                },
+                {
+                    "type": "feature",
+                    "description": "Dashboard Antrian WA: Monitor dan kelola antrian pesan WhatsApp"
+                },
+                {
+                    "type": "feature",
+                    "description": "10 Template Variasi Pesan: Absensi notifikasi acak untuk hindari spam"
+                },
+                {
+                    "type": "security",
+                    "description": "Fix keamanan upload file: Whitelist extension untuk mencegah shell upload"
+                }
+            ]
+        },
+        {
             "version": "1.10.0",
             "date": "2026-01-13",
             "type": "minor",

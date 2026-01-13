@@ -375,11 +375,17 @@ class PSBController extends Controller
                 mkdir($uploadDir, 0755, true);
             }
 
-            $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9.]/', '', $_FILES['foto']['name']);
-            $filePath = $uploadDir . $fileName;
+            // Security: Only allow image extensions
+            $allowedExt = ['jpg', 'jpeg', 'png'];
+            $ext = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
 
-            if (move_uploaded_file($_FILES['foto']['tmp_name'], $filePath)) {
-                $data['foto'] = $fileName;
+            if (in_array($ext, $allowedExt)) {
+                $fileName = time() . '_' . uniqid() . '.' . $ext;
+                $filePath = $uploadDir . $fileName;
+
+                if (move_uploaded_file($_FILES['foto']['tmp_name'], $filePath)) {
+                    $data['foto'] = $fileName;
+                }
             }
         }
 
@@ -1080,8 +1086,14 @@ class PSBController extends Controller
             if ($size > 2 * 1024 * 1024)
                 continue;
 
-            $ext = pathinfo($name, PATHINFO_EXTENSION);
-            $newName = $jenis . '_' . time() . '.' . $ext;
+            // Security: Only allow safe document/image extensions
+            $allowedExt = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+
+            if (!in_array($ext, $allowedExt))
+                continue;
+
+            $newName = $jenis . '_' . time() . '_' . uniqid() . '.' . $ext;
             $targetPath = $uploadDir . $newName;
 
             if (move_uploaded_file($tmpName, $targetPath)) {

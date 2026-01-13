@@ -348,7 +348,7 @@ class Fonnte
     /**
      * Format nomor HP ke format internasional
      */
-    private function formatNumber($number)
+    public function formatNumber($number)
     {
         $number = preg_replace('/[^0-9]/', '', $number);
         if (substr($number, 0, 1) === '0') {
@@ -537,7 +537,7 @@ class Fonnte
     {
         // Cek setting wa_notif_absensi_enabled
         if (!$this->isNotificationEnabled('wa_notif_absensi_enabled')) {
-            return ['status' => false, 'reason' => 'Absence notification disabled by setting']; // Silently skip
+            return ['status' => false, 'reason' => 'Absence notification disabled by setting'];
         }
 
         $statusText = [
@@ -547,52 +547,156 @@ class Fonnte
             'D' => 'DISPENSASI'
         ];
 
-        $statusEmoji = [
-            'A' => '🚨',
-            'I' => '📝',
-            'S' => '🏥',
-            'D' => '📋'
-        ];
-
         $statusLabel = $statusText[$status] ?? $status;
-        $emoji = $statusEmoji[$status] ?? '📢';
 
-        $message = "{$emoji} *NOTIFIKASI KEHADIRAN SISWA*\n\n";
-        $message .= "Kepada Yth. Bapak/Ibu *{$namaOrtu}*,\n\n";
-        $message .= "Dengan hormat,\n";
-        $message .= "Kami informasikan bahwa putra/putri Anda:\n\n";
-        $message .= "👤 Nama: *{$namaSiswa}*\n";
-        $message .= "📚 Kelas: *{$kelas}*\n";
-        $message .= "📅 Tanggal: *{$tanggal}*\n";
-        if (!empty($mataPelajaran)) {
-            $message .= "📖 Mapel: *{$mataPelajaran}*\n";
-        }
-        $message .= "\nTercatat dengan status: *{$statusLabel}*\n\n";
-
-        if ($status === 'A') {
-            $message .= "⚠️ Mohon konfirmasi kehadiran anak Anda kepada pihak sekolah.\n\n";
-        }
-
-        if (!empty($namaSekolah)) {
-            $message .= "Hormat kami,\n";
-            $message .= "*{$namaSekolah}*\n\n";
-        }
-
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "✅ *Mohon balas YA jika sudah membaca pesan ini.*\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━\n\n";
-
-        $message .= "_Pesan ini dikirim otomatis oleh sistem._";
+        // Build message using random template
+        $message = $this->getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $status);
 
         return $this->send($noWa, $message);
     }
 
     /**
+     * Get random absensi template (10 variasi)
+     */
+    private function getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode)
+    {
+        $templates = [
+            // Template 1 - Formal
+            function () use ($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode) {
+                $msg = "🔔 *PEMBERITAHUAN KEHADIRAN*\n\n";
+                $msg .= "Yth. Bapak/Ibu *{$namaOrtu}*,\n\n";
+                $msg .= "Kami informasikan bahwa putra/putri Anda:\n";
+                $msg .= "📌 *{$namaSiswa}* - Kelas *{$kelas}*\n";
+                $msg .= "📅 Tanggal: {$tanggal}\n\n";
+                $msg .= "Tercatat dengan status: *{$statusLabel}*\n\n";
+                if ($statusCode === 'A')
+                    $msg .= "⚠️ Mohon konfirmasi kepada pihak sekolah.\n\n";
+                $msg .= "Hormat kami,\n*{$namaSekolah}*";
+                return $msg;
+            },
+
+            // Template 2 - Singkat
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+                $msg = "📢 *Info Kehadiran*\n\n";
+                $msg .= "{$namaSiswa} ({$kelas})\n";
+                $msg .= "Status: *{$statusLabel}*\n";
+                $msg .= "Tanggal: {$tanggal}\n\n";
+                $msg .= "- {$namaSekolah}";
+                return $msg;
+            },
+
+            // Template 3 - Friendly
+            function () use ($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode) {
+                $msg = "Assalamualaikum Bapak/Ibu *{$namaOrtu}* 🙏\n\n";
+                $msg .= "Kami sampaikan info kehadiran anak Anda hari ini:\n\n";
+                $msg .= "👤 *{$namaSiswa}*\n";
+                $msg .= "📚 Kelas: {$kelas}\n";
+                $msg .= "📆 {$tanggal}\n";
+                $msg .= "📋 Status: *{$statusLabel}*\n\n";
+                if ($statusCode === 'A')
+                    $msg .= "Mohon dapat dikonfirmasi ya Pak/Bu 🙏\n\n";
+                $msg .= "Terima kasih atas perhatiannya.\nWassalam, *{$namaSekolah}*";
+                return $msg;
+            },
+
+            // Template 4 - Emoji Focus
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+                $msg = "📱 *UPDATE KEHADIRAN* 📱\n\n";
+                $msg .= "🧒 {$namaSiswa}\n";
+                $msg .= "🏫 {$kelas}\n";
+                $msg .= "📅 {$tanggal}\n";
+                $msg .= "✅ Status: *{$statusLabel}*\n\n";
+                $msg .= "Salam,\n{$namaSekolah} 🏫";
+                return $msg;
+            },
+
+            // Template 5 - Minimal
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+                $msg = "[INFO ABSENSI]\n\n";
+                $msg .= "{$namaSiswa} - {$kelas}\n";
+                $msg .= "{$tanggal}: *{$statusLabel}*\n\n";
+                $msg .= "{$namaSekolah}";
+                return $msg;
+            },
+
+            // Template 6 - Conversational
+            function () use ($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode) {
+                $msg = "Halo Pak/Bu *{$namaOrtu}*! 👋\n\n";
+                $msg .= "Sekadar info, anak Bapak/Ibu:\n";
+                $msg .= "• Nama: *{$namaSiswa}*\n";
+                $msg .= "• Kelas: {$kelas}\n\n";
+                $msg .= "Hari ini ({$tanggal}) tercatat *{$statusLabel}*.\n\n";
+                if ($statusCode === 'A')
+                    $msg .= "Boleh dikonfirmasi ya Pak/Bu? 🙏\n\n";
+                $msg .= "Salam hangat dari kami!\n*{$namaSekolah}*";
+                return $msg;
+            },
+
+            // Template 7 - Professional
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+                $msg = "━━━━━━━━━━━━━━━━━━━━\n";
+                $msg .= "📋 *LAPORAN KEHADIRAN SISWA*\n";
+                $msg .= "━━━━━━━━━━━━━━━━━━━━\n\n";
+                $msg .= "Nama: {$namaSiswa}\n";
+                $msg .= "Kelas: {$kelas}\n";
+                $msg .= "Tanggal: {$tanggal}\n";
+                $msg .= "Status: *{$statusLabel}*\n\n";
+                $msg .= "Demikian informasi ini kami sampaikan.\n\n";
+                $msg .= "*{$namaSekolah}*";
+                return $msg;
+            },
+
+            // Template 8 - Parent-Friendly
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode) {
+                $msg = "Bapak/Ibu Yth,\n\n";
+                $msg .= "Putra/putri tersayang *{$namaSiswa}* dari kelas *{$kelas}* pada tanggal {$tanggal} tercatat dengan status kehadiran:\n\n";
+                $msg .= "➡️ *{$statusLabel}*\n\n";
+                if ($statusCode === 'A')
+                    $msg .= "Mohon dapat berkoordinasi dengan wali kelas.\n\n";
+                $msg .= "Salam,\nTim *{$namaSekolah}*";
+                return $msg;
+            },
+
+            // Template 9 - Quick Alert
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+                $msg = "⚡ *NOTIFIKASI CEPAT*\n\n";
+                $msg .= "📛 {$namaSiswa}\n";
+                $msg .= "📖 {$kelas} | 📆 {$tanggal}\n";
+                $msg .= "📊 *{$statusLabel}*\n\n";
+                $msg .= "Balas OK jika sudah membaca.\n- {$namaSekolah}";
+                return $msg;
+            },
+
+            // Template 10 - Modern
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+                $msg = "Hey Bapak/Ibu! 🌟\n\n";
+                $msg .= "Update kehadiran untuk:\n";
+                $msg .= "┌─────────────────\n";
+                $msg .= "│ 👤 {$namaSiswa}\n";
+                $msg .= "│ 🎒 {$kelas}\n";
+                $msg .= "│ 📅 {$tanggal}\n";
+                $msg .= "│ 📝 *{$statusLabel}*\n";
+                $msg .= "└─────────────────\n\n";
+                $msg .= "Terima kasih! 💙\n*{$namaSekolah}*";
+                return $msg;
+            }
+        ];
+
+        // Pick random template
+        $randomIndex = rand(0, count($templates) - 1);
+        return $templates[$randomIndex]();
+    }
+
+    /**
      * Kirim notifikasi bulk absensi (untuk multiple siswa)
+     * Rate limited: 5-10 detik jeda antar pesan untuk hindari blokir WA
      */
     public function sendNotifikasiBulkAbsensi($dataAbsensi, $namaSekolah = '')
     {
         $results = [];
+        $count = 0;
+        $total = count($dataAbsensi);
+
         foreach ($dataAbsensi as $data) {
             if (empty($data['no_wa']))
                 continue;
@@ -613,6 +717,14 @@ class Fonnte
                 'status' => $result['status'] ?? false,
                 'message' => $result['reason'] ?? $result['message'] ?? 'Unknown'
             ];
+
+            $count++;
+
+            // Rate limiting: jeda 5-10 detik antar pesan (kecuali pesan terakhir)
+            if ($count < $total) {
+                $delay = rand(5, 10);
+                sleep($delay);
+            }
         }
         return $results;
     }
@@ -711,5 +823,136 @@ class Fonnte
         $message .= "_Pesan ini dikirim otomatis oleh sistem._";
 
         return $this->send($noWa, $message);
+    }
+
+    // =========================================================================
+    // QUEUE METHODS - Untuk sistem antrian pesan
+    // =========================================================================
+
+    /**
+     * Tambah pesan ke antrian (bukan kirim langsung)
+     */
+    public function queueMessage($noWa, $pesan, $jenis = 'general', $metadata = null)
+    {
+        require_once APPROOT . '/app/models/WaQueue_model.php';
+        $queueModel = new WaQueue_model();
+        return $queueModel->addToQueue($this->formatNumber($noWa), $pesan, $jenis, $metadata);
+    }
+
+    /**
+     * Queue notifikasi absensi (bukan kirim langsung)
+     */
+    public function queueNotifikasiAbsensi($noWa, $namaOrtu, $namaSiswa, $kelas, $status, $tanggal, $mataPelajaran = '', $namaSekolah = '')
+    {
+        // Cek setting wa_notif_absensi_enabled
+        if (!$this->isNotificationEnabled('wa_notif_absensi_enabled')) {
+            return false;
+        }
+
+        $statusText = [
+            'A' => 'ALPHA (Tanpa Keterangan)',
+            'I' => 'IZIN',
+            'S' => 'SAKIT',
+            'D' => 'DISPENSASI'
+        ];
+
+        $statusLabel = $statusText[$status] ?? $status;
+
+        // Build message using random template (same as sendNotifikasiAbsensi)
+        $message = $this->getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $status);
+
+        // Queue instead of send
+        $metadata = [
+            'nama_siswa' => $namaSiswa,
+            'kelas' => $kelas,
+            'status' => $status
+        ];
+
+        return $this->queueMessage($noWa, $message, 'absensi', $metadata);
+    }
+
+    /**
+     * Queue notifikasi bulk absensi
+     */
+    public function queueBulkAbsensi($dataAbsensi, $namaSekolah = '')
+    {
+        $queuedIds = [];
+        foreach ($dataAbsensi as $data) {
+            if (empty($data['no_wa']))
+                continue;
+
+            $id = $this->queueNotifikasiAbsensi(
+                $data['no_wa'],
+                $data['nama_ortu'] ?? 'Orang Tua/Wali',
+                $data['nama_siswa'],
+                $data['kelas'],
+                $data['status'],
+                $data['tanggal'],
+                $data['mata_pelajaran'] ?? '',
+                $namaSekolah
+            );
+
+            if ($id) {
+                $queuedIds[] = $id;
+            }
+        }
+        return $queuedIds;
+    }
+
+    /**
+     * Queue notifikasi pembayaran
+     */
+    public function queueNotifikasiPembayaran($noWa, $namaOrtu, $namaSiswa, $namaTagihan, $jumlahBayar, $diskon, $tanggal, $penerima, $sisaTagihan = 0, $keterangan = '', $namaSekolah = '')
+    {
+        if (!$this->isNotificationEnabled('wa_notif_pembayaran_enabled')) {
+            return false;
+        }
+
+        // Format Rupiah
+        $jumlahFmt = 'Rp ' . number_format((int) $jumlahBayar, 0, ',', '.');
+        $diskonFmt = 'Rp ' . number_format((int) $diskon, 0, ',', '.');
+        $sisaFmt = 'Rp ' . number_format((int) $sisaTagihan, 0, ',', '.');
+
+        $message = "💰 *BUKTI PEMBAYARAN SISWA*\n\n";
+        $message .= "Kepada Yth. Bapak/Ibu *{$namaOrtu}*,\n\n";
+        $message .= "Kami informasikan bahwa telah diterima pembayaran:\n\n";
+        $message .= "👤 Nama Siswa: *{$namaSiswa}*\n";
+        $message .= "🧾 Pembayaran: *{$namaTagihan}*\n";
+        $message .= "💵 Nominal Bayar: *{$jumlahFmt}*\n";
+
+        if ($diskon > 0) {
+            $message .= "✂️ Diskon: *{$diskonFmt}*\n";
+        }
+
+        $message .= "📅 Tanggal: *{$tanggal}*\n";
+        $message .= "🧑‍💼 Penerima: *{$penerima}*\n";
+
+        if ($sisaTagihan > 0) {
+            $message .= "⚠️ Sisa Tagihan: *{$sisaFmt}*\n";
+        } else {
+            $message .= "✅ Status: *LUNAS*\n";
+        }
+
+        if (!empty($keterangan)) {
+            $message .= "📝 Ket: {$keterangan}\n";
+        }
+
+        if (!empty($namaSekolah)) {
+            $message .= "\nTerima kasih,\n";
+            $message .= "*{$namaSekolah}*";
+        }
+
+        $message .= "\n\n━━━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "✅ *Mohon balas YA jika sudah membaca pesan ini.*\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━━━\n\n";
+        $message .= "_Pesan ini dikirim otomatis oleh sistem._";
+
+        $metadata = [
+            'nama_siswa' => $namaSiswa,
+            'tagihan' => $namaTagihan,
+            'jumlah' => $jumlahBayar
+        ];
+
+        return $this->queueMessage($noWa, $message, 'pembayaran', $metadata);
     }
 }

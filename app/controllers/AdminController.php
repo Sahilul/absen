@@ -6127,11 +6127,40 @@ Waktu: ' . date('d/m/Y H:i:s');
      */
     public function pesan()
     {
-        $this->data['judul'] = 'Pesan';
-        $pesanModel = $this->model('Pesan_model');
+        $this->data['judul'] = 'Kirim Pesan WhatsApp';
 
-        // Admin ID = 0 (system)
-        $this->data['pesan_terkirim'] = $pesanModel->getPesanTerkirim('admin', 0);
+        $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+
+        // Stats
+        $db = new Database();
+
+        // Total guru dengan no_wa
+        $db->query("SELECT COUNT(*) as total FROM guru WHERE no_wa IS NOT NULL AND no_wa != ''");
+        $this->data['total_guru'] = $db->single()['total'] ?? 0;
+
+        // Total siswa dengan no_wa
+        $db->query("SELECT COUNT(*) as total FROM siswa WHERE no_wa IS NOT NULL AND no_wa != ''");
+        $this->data['total_siswa'] = $db->single()['total'] ?? 0;
+        $this->data['total_siswa_wa'] = $this->data['total_siswa'];
+
+        // Total orang tua (ayah + ibu dengan nomor)
+        $db->query("SELECT 
+            COUNT(DISTINCT CASE WHEN ayah_no_hp IS NOT NULL AND ayah_no_hp != '' THEN id_siswa END) +
+            COUNT(DISTINCT CASE WHEN ibu_no_hp IS NOT NULL AND ibu_no_hp != '' THEN id_siswa END) as total 
+            FROM siswa");
+        $this->data['total_ortu'] = $db->single()['total'] ?? 0;
+
+        // Queue pending
+        require_once APPROOT . '/app/models/WaQueue_model.php';
+        $queueModel = new WaQueue_model();
+        $stats = $queueModel->getQueueStats();
+        $this->data['queue_pending'] = $stats['pending'] ?? 0;
+
+        // Recent queue
+        $this->data['recent_queue'] = $queueModel->getRecentMessages(10);
+
+        // Kelas list
+        $this->data['kelas'] = $this->model('Kelas_model')->getKelasByTP($id_tp);
 
         $this->view('templates/header', $this->data);
         $this->view('templates/sidebar_admin', $this->data);
@@ -6156,6 +6185,138 @@ Waktu: ' . date('d/m/Y H:i:s');
         $this->view('templates/sidebar_admin', $this->data);
         $this->view('admin/kirim_pesan', $this->data);
         $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Proses kirim pesan WA massal (Bulk WA Sender)
+     */
+    public function prosesKirimPesanWa()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/pesan');
+            exit;
+        }
+
+        $target_type = $_POST['target_type'] ?? '';
+        $id_kelas = $_POST['id_kelas'] ?? null;
+        $pesan = trim($_POST['pesan'] ?? '');
+        $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+
+        // Validasi
+        if (empty($target_type) || empty($pesan)) {
+            Flasher::setFlash('Target dan pesan wajib diisi!', 'error');
+            header('Location: ' . BASEURL . '/admin/pesan');
+            exit;
+        }
+
+        // Get nama sekolah
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $pengaturan = $pengaturanModel->getPengaturan();
+        $namaSekolah = $pengaturan['nama_aplikasi'] ?? $pengaturan['nama_sekolah'] ?? 'Sekolah';
+
+        // Format pesan dengan header
+        $formattedPesan = "📩 *PESAN DARI {$namaSekolah}*\n\n";
+        $formattedPesan .= $pesan;
+        $formattedPesan .= "\n\n━━━━━━━━━━━━━━━━━━━━━\n";
+        $formattedPesan .= "_Pesan ini dikirim otomatis._";
+
+        // Collect phone numbers based on target
+        $db = new Database();
+        $numbers = [];
+
+        switch ($target_type) {
+            case 'semua_guru':
+                $db->query("SELECT no_wa, nama FROM guru WHERE no_wa IS NOT NULL AND no_wa != ''");
+                $results = $db->resultSet();
+                foreach ($results as $r) {
+                    $numbers[] = ['no_wa' => $r['no_wa'], 'nama' => $r['nama']];
+                }
+                break;
+
+            case 'semua_siswa':
+                $db->query("SELECT no_wa, nama FROM siswa WHERE no_wa IS NOT NULL AND no_wa != ''");
+                $results = $db->resultSet();
+                foreach ($results as $r) {
+                    $numbers[] = ['no_wa' => $r['no_wa'], 'nama' => $r['nama']];
+                }
+                break;
+
+            case 'semua_ortu':
+                $db->query("SELECT id_siswa, nama, ayah_no_hp, ibu_no_hp FROM siswa WHERE (ayah_no_hp IS NOT NULL AND ayah_no_hp != '') OR (ibu_no_hp IS NOT NULL AND ibu_no_hp != '')");
+                $results = $db->resultSet();
+                foreach ($results as $r) {
+                    if (!empty($r['ayah_no_hp'])) {
+                        $numbers[] = ['no_wa' => $r['ayah_no_hp'], 'nama' => 'Ortu ' . $r['nama']];
+                    }
+                    if (!empty($r['ibu_no_hp'])) {
+                        $numbers[] = ['no_wa' => $r['ibu_no_hp'], 'nama' => 'Ortu ' . $r['nama']];
+                    }
+                }
+                break;
+
+            case 'kelas_siswa':
+                if (!empty($id_kelas)) {
+                    $db->query("SELECT s.no_wa, s.nama FROM siswa s
+                        INNER JOIN anggota_kelas ak ON s.id_siswa = ak.id_siswa
+                        WHERE ak.id_kelas = :id_kelas AND ak.id_tp = :id_tp
+                        AND s.no_wa IS NOT NULL AND s.no_wa != ''");
+                    $db->bind(':id_kelas', $id_kelas);
+                    $db->bind(':id_tp', $id_tp);
+                    $results = $db->resultSet();
+                    foreach ($results as $r) {
+                        $numbers[] = ['no_wa' => $r['no_wa'], 'nama' => $r['nama']];
+                    }
+                }
+                break;
+
+            case 'kelas_ortu':
+                if (!empty($id_kelas)) {
+                    $db->query("SELECT s.id_siswa, s.nama, s.ayah_no_hp, s.ibu_no_hp FROM siswa s
+                        INNER JOIN anggota_kelas ak ON s.id_siswa = ak.id_siswa
+                        WHERE ak.id_kelas = :id_kelas AND ak.id_tp = :id_tp
+                        AND ((s.ayah_no_hp IS NOT NULL AND s.ayah_no_hp != '') OR (s.ibu_no_hp IS NOT NULL AND s.ibu_no_hp != ''))");
+                    $db->bind(':id_kelas', $id_kelas);
+                    $db->bind(':id_tp', $id_tp);
+                    $results = $db->resultSet();
+                    foreach ($results as $r) {
+                        if (!empty($r['ayah_no_hp'])) {
+                            $numbers[] = ['no_wa' => $r['ayah_no_hp'], 'nama' => 'Ortu ' . $r['nama']];
+                        }
+                        if (!empty($r['ibu_no_hp'])) {
+                            $numbers[] = ['no_wa' => $r['ibu_no_hp'], 'nama' => 'Ortu ' . $r['nama']];
+                        }
+                    }
+                }
+                break;
+        }
+
+        // Add to queue
+        $queued = 0;
+        if (!empty($numbers)) {
+            require_once APPROOT . '/app/models/WaQueue_model.php';
+            require_once APPROOT . '/app/core/Fonnte.php';
+            $queueModel = new WaQueue_model();
+            $fonnte = new Fonnte();
+
+            foreach ($numbers as $n) {
+                $queueModel->addToQueue(
+                    $fonnte->formatNumber($n['no_wa']),
+                    $formattedPesan,
+                    'pesan_bulk',
+                    ['target' => $target_type, 'penerima' => $n['nama']]
+                );
+                $queued++;
+            }
+        }
+
+        if ($queued > 0) {
+            Flasher::setFlash("📤 {$queued} pesan WhatsApp masuk antrian. Monitor di Antrian WA.", 'success');
+        } else {
+            Flasher::setFlash('Tidak ada nomor WA yang ditemukan untuk target ini.', 'warning');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pesan');
+        exit;
     }
 
     /**
@@ -6283,38 +6444,43 @@ Waktu: ' . date('d/m/Y H:i:s');
             $waMessage .= "_Pesan ini dikirim otomatis dari {$namaApp}_\n\n";
             $waMessage .= "✅ *Apabila sudah menerima pesan ini, mohon balas dengan mengetik:* YA";
 
-            // Kirim ke masing-masing penerima yang punya no_wa
+            // Queue messages instead of sending directly
+            require_once APPROOT . '/app/models/WaQueue_model.php';
+            $queueModel = new WaQueue_model();
+
             foreach ($penerima_list as $penerima) {
                 $no_wa = null;
+                $nama_penerima = '';
 
                 if ($penerima['type'] === 'guru') {
                     $guru = $pesanModel->getGuruWithNoWa($penerima['id']);
                     $no_wa = $guru['no_wa'] ?? null;
+                    $nama_penerima = $guru['nama'] ?? '';
                 } elseif ($penerima['type'] === 'siswa') {
                     $siswa = $pesanModel->getSiswaWithNoWa($penerima['id']);
                     $no_wa = $siswa['no_wa'] ?? null;
+                    $nama_penerima = $siswa['nama'] ?? '';
                 }
 
                 if (!empty($no_wa)) {
-                    $result = $fonnte->send($no_wa, $waMessage);
-                    if (!empty($result['status']) && $result['status'] === true) {
-                        $wa_sent++;
-                    } else {
-                        $wa_failed++;
-                    }
+                    // Add to queue instead of send
+                    $queueModel->addToQueue(
+                        $fonnte->formatNumber($no_wa),
+                        $waMessage,
+                        'pesan_admin',
+                        ['judul' => $judul, 'penerima' => $nama_penerima]
+                    );
+                    $wa_sent++;
                 }
             }
         } catch (Exception $e) {
-            error_log("WhatsApp send error: " . $e->getMessage());
+            error_log("WhatsApp queue error: " . $e->getMessage());
         }
 
-        // Flash message dengan info WA
+        // Flash message dengan info WA queue
         $flashMsg = "Pesan berhasil disimpan untuk " . count($penerima_list) . " penerima.";
         if ($wa_sent > 0) {
-            $flashMsg .= " ✅ {$wa_sent} pesan WhatsApp terkirim.";
-        }
-        if ($wa_failed > 0) {
-            $flashMsg .= " ⚠️ {$wa_failed} WA gagal.";
+            $flashMsg .= " 📤 {$wa_sent} pesan WA masuk antrian.";
         }
 
         Flasher::setFlash($flashMsg, 'success');
@@ -6412,5 +6578,137 @@ Waktu: ' . date('d/m/Y H:i:s');
         header('Location: ' . BASEURL . '/admin/pengaturanSistem');
         exit;
     }
+
+    // =================================================================
+    // ANTRIAN PESAN WHATSAPP
+    // =================================================================
+
+    /**
+     * Halaman dashboard antrian WA
+     */
+    public function antrianWa()
+    {
+        $this->data['judul'] = 'Antrian Pesan WhatsApp';
+
+        $queueModel = $this->model('WaQueue_model');
+
+        // Statistik
+        $this->data['stats'] = $queueModel->getQueueStats();
+        $this->data['stats_by_jenis'] = $queueModel->getStatsByJenis();
+        $this->data['today_count'] = $queueModel->getTodayCount();
+
+        // Filter
+        $status = $_GET['status'] ?? 'all';
+        $this->data['filter_status'] = $status;
+
+        // Get messages
+        if ($status === 'all') {
+            $this->data['messages'] = $queueModel->getRecentMessages(100);
+        } else {
+            $this->data['messages'] = $queueModel->getByStatus($status, 100);
+        }
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/antrian_wa', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Retry pesan yang gagal
+     */
+    public function retryWaMessage($id = null)
+    {
+        if (!$id) {
+            Flasher::setFlash('ID tidak valid!', 'danger');
+            header('Location: ' . BASEURL . '/admin/antrianWa');
+            exit;
+        }
+
+        $queueModel = $this->model('WaQueue_model');
+        $queueModel->retryFailed($id);
+
+        Flasher::setFlash('Pesan akan dicoba kirim ulang.', 'success');
+        header('Location: ' . BASEURL . '/admin/antrianWa?status=failed');
+        exit;
+    }
+
+    /**
+     * Retry semua pesan gagal
+     */
+    public function retryAllWaMessages()
+    {
+        $queueModel = $this->model('WaQueue_model');
+        $queueModel->retryAllFailed();
+
+        Flasher::setFlash('Semua pesan gagal akan dicoba kirim ulang.', 'success');
+        header('Location: ' . BASEURL . '/admin/antrianWa');
+        exit;
+    }
+
+    /**
+     * Hapus pesan dari antrian
+     */
+    public function hapusWaMessage($id = null)
+    {
+        if (!$id) {
+            Flasher::setFlash('ID tidak valid!', 'danger');
+            header('Location: ' . BASEURL . '/admin/antrianWa');
+            exit;
+        }
+
+        $queueModel = $this->model('WaQueue_model');
+        $queueModel->delete($id);
+
+        Flasher::setFlash('Pesan dihapus dari antrian.', 'success');
+        header('Location: ' . BASEURL . '/admin/antrianWa');
+        exit;
+    }
+
+    /**
+     * Proses antrian manual (tanpa cron)
+     */
+    public function prosesAntrianWa()
+    {
+        set_time_limit(120); // 2 minutes max
+
+        require_once APPROOT . '/app/core/Fonnte.php';
+        $queueModel = $this->model('WaQueue_model');
+        $fonnte = new Fonnte();
+
+        $processed = 0;
+        $maxProcess = 5;
+
+        $pendingMessages = $queueModel->getPendingMessages($maxProcess);
+
+        foreach ($pendingMessages as $msg) {
+            $queueModel->markAsProcessing($msg['id']);
+
+            try {
+                $response = $fonnte->send($msg['no_wa'], $msg['pesan']);
+
+                if (isset($response['status']) && $response['status'] === true) {
+                    $queueModel->markAsSent($msg['id'], json_encode($response));
+                } else {
+                    $errorMsg = $response['reason'] ?? $response['message'] ?? 'Unknown error';
+                    $queueModel->markAsFailed($msg['id'], $errorMsg);
+                }
+            } catch (Exception $e) {
+                $queueModel->markAsFailed($msg['id'], $e->getMessage());
+            }
+
+            $processed++;
+
+            // Delay between messages
+            if ($processed < count($pendingMessages)) {
+                sleep(rand(8, 12));
+            }
+        }
+
+        Flasher::setFlash("Berhasil proses {$processed} pesan.", 'success');
+        header('Location: ' . BASEURL . '/admin/antrianWa');
+        exit;
+    }
 }
+
 

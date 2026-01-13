@@ -99,13 +99,19 @@ class SuratTugasController extends Controller
                 mkdir($uploadDir, 0777, true);
             }
 
-            $fileName = 'kop_' . time() . '_' . rand(100, 999) . '.png';
-            $ext = pathinfo($_FILES['kop_surat']['name'], PATHINFO_EXTENSION);
-            if ($ext)
-                $fileName = 'kop_' . time() . '_' . rand(100, 999) . '.' . $ext;
+            $allowed = ['jpg', 'jpeg', 'png'];
+            $ext = strtolower(pathinfo($_FILES['kop_surat']['name'], PATHINFO_EXTENSION));
 
-            move_uploaded_file($_FILES['kop_surat']['tmp_name'], $uploadDir . $fileName);
-            $data['kop_surat'] = $fileName;
+            if (in_array($ext, $allowed)) {
+                $fileName = 'kop_' . time() . '_' . rand(100, 999) . '.' . $ext;
+                if (move_uploaded_file($_FILES['kop_surat']['tmp_name'], $uploadDir . $fileName)) {
+                    $data['kop_surat'] = $fileName;
+                }
+            } else {
+                Flasher::setFlash('Format file tidak diizinkan! Gunakan JPG/PNG.', 'danger');
+                header('Location: ' . BASEURL . '/suratTugas/editLembaga/' . ($data['id_lembaga'] ?? ''));
+                exit;
+            }
         }
 
         if (!empty($data['id_lembaga'])) {
