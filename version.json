@@ -1,6 +1,6 @@
 {
-    "version": "1.11.5",
+    "version": "1.11.6",
     "build": 20260113,
     "release_date": "2026-01-13",
-    "description": "Critical Fix: Define APPROOT in config.php"
+    "description": "Fix constant APPROOT by defining it locally in cron processor (Safe for Encrypted Config)"
 }

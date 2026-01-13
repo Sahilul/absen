@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.11.6",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Revert perubahan config.php untuk menjaga kompatibilitas enkripsi"
+                },
+                {
+                    "type": "fix",
+                    "description": "Definisi CONSTANT APPROOT dipindahkan ke cron_wa_processor.php"
+                }
+            ]
+        },
+        {
             "version": "1.11.5",
             "date": "2026-01-13",
             "type": "patch",

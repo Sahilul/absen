@@ -30,7 +30,6 @@ function getBaseUrl()
 }
 
 define('BASEURL', getBaseUrl());
-define('APPROOT', dirname(__DIR__) . '/app');
 
 function getSystemSetting($key, $default = null)
 {
