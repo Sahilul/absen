@@ -1379,8 +1379,17 @@ class PSBController extends Controller
         $dokumen = $this->psbModel->getDokumenPendaftar($idPendaftar);
         $namaSekolah = getPengaturanAplikasi()['nama_aplikasi'] ?? 'Smart Absensi';
 
+        // Fetch lembaga data for letterhead
+        $lembaga = null;
+        if (!empty($pendaftar['id_periode'])) {
+            $periode = $this->psbModel->getPeriodeById($pendaftar['id_periode']);
+            if ($periode && !empty($periode['id_lembaga'])) {
+                $lembaga = $this->psbModel->getLembagaById($periode['id_lembaga']);
+            }
+        }
+
         // Generate HTML for PDF
-        $html = $this->generateFormulirHTML($pendaftar, $dokumen, $namaSekolah);
+        $html = $this->generateFormulirHTML($pendaftar, $dokumen, $namaSekolah, $lembaga);
 
         // Setup Dompdf
         $dompdfPath = __DIR__ . '/../core/dompdf/autoload.inc.php';
@@ -1437,8 +1446,17 @@ class PSBController extends Controller
         $dokumen = $this->psbModel->getDokumenPendaftar($idPendaftar);
         $namaSekolah = getPengaturanAplikasi()['nama_aplikasi'] ?? 'Smart Absensi';
 
+        // Fetch lembaga data for letterhead
+        $lembaga = null;
+        if (!empty($pendaftar['id_periode'])) {
+            $periode = $this->psbModel->getPeriodeById($pendaftar['id_periode']);
+            if ($periode && !empty($periode['id_lembaga'])) {
+                $lembaga = $this->psbModel->getLembagaById($periode['id_lembaga']);
+            }
+        }
+
         // Generate PDF
-        $html = $this->generateFormulirHTML($pendaftar, $dokumen, $namaSekolah);
+        $html = $this->generateFormulirHTML($pendaftar, $dokumen, $namaSekolah, $lembaga);
 
         $dompdfPath = __DIR__ . '/../core/dompdf/autoload.inc.php';
         if (!file_exists($dompdfPath)) {
@@ -1500,7 +1518,7 @@ class PSBController extends Controller
     /**
      * Generate HTML for formulir PDF
      */
-    private function generateFormulirHTML($p, $dokumen, $namaSekolah)
+    private function generateFormulirHTML($p, $dokumen, $namaSekolah, $lembaga = null)
     {
         $statusLabels = [
             'draft' => 'Draft',
@@ -1512,6 +1530,29 @@ class PSBController extends Controller
         ];
         $statusLabel = $statusLabels[$p['status'] ?? 'draft'] ?? 'Draft';
 
+        // Generate kop surat image if available
+        $kopSuratHtml = '';
+        if (!empty($lembaga['kop_gambar'])) {
+            $kopPath = APPROOT . '/public/img/psb_lembaga/' . $lembaga['kop_gambar'];
+            if (file_exists($kopPath)) {
+                $kopData = base64_encode(file_get_contents($kopPath));
+                $kopMime = mime_content_type($kopPath);
+                $kopSuratHtml = '
+    <div style="text-align: center; margin-bottom: 15px; border-bottom: 3px double #333; padding-bottom: 10px;">
+        <img src="data:' . $kopMime . ';base64,' . $kopData . '" style="max-width: 100%; height: auto; max-height: 120px;">
+    </div>';
+            }
+        }
+
+        // Fallback to text header if no kop image
+        if (empty($kopSuratHtml)) {
+            $kopNama = $lembaga['nama_lembaga'] ?? $namaSekolah;
+            $kopSuratHtml = '
+    <div style="text-align: center; margin-bottom: 15px; border-bottom: 3px double #333; padding-bottom: 10px;">
+        <h1 style="margin: 0; font-size: 18px; font-weight: bold; text-transform: uppercase;">' . htmlspecialchars($kopNama) . '</h1>
+    </div>';
+        }
+
         $html = '<!DOCTYPE html>
 <html>
 <head>
@@ -1519,9 +1560,9 @@ class PSBController extends Controller
     <title>Formulir Pendaftaran - ' . htmlspecialchars($p['no_pendaftaran'] ?? '') . '</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 11px; line-height: 1.4; margin: 20px; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #0ea5e9; padding-bottom: 15px; }
-        .header h1 { margin: 0; font-size: 18px; color: #0ea5e9; }
-        .header p { margin: 5px 0 0; color: #666; }
+        .header { text-align: center; margin-bottom: 15px; }
+        .header h2 { margin: 10px 0 5px; font-size: 14px; text-decoration: underline; }
+        .header p { margin: 3px 0; color: #666; font-size: 10px; }
         .section { margin-bottom: 15px; }
         .section-title { background: #f0f9ff; padding: 8px 12px; font-weight: bold; border-left: 4px solid #0ea5e9; margin-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; }
@@ -1538,10 +1579,12 @@ class PSBController extends Controller
     </style>
 </head>
 <body>
+    <!-- KOP SURAT -->
+    ' . $kopSuratHtml . '
+    
     <div class="header">
-        <h1>' . htmlspecialchars($namaSekolah) . '</h1>
-        <p>FORMULIR PENDAFTARAN SISWA BARU</p>
-        <p style="margin-top:10px">No. Pendaftaran: <strong>' . htmlspecialchars($p['no_pendaftaran'] ?? '-') . '</strong></p>
+        <h2>FORMULIR PENDAFTARAN SISWA BARU</h2>
+        <p>No. Pendaftaran: <strong>' . htmlspecialchars($p['no_pendaftaran'] ?? '-') . '</strong></p>
         <p>Status: <span class="status-box status-' . ($p['status'] ?? 'draft') . '">' . $statusLabel . '</span></p>
     </div>
 
@@ -1805,6 +1848,24 @@ class PSBController extends Controller
             'aktif' => isset($_POST['aktif']) ? 1 : 0
         ];
 
+        // Handle kop gambar file upload
+        if (isset($_FILES['kop_gambar']) && $_FILES['kop_gambar']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = APPROOT . '/public/img/psb_lembaga/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $ext = strtolower(pathinfo($_FILES['kop_gambar']['name'], PATHINFO_EXTENSION));
+            $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+            if (in_array($ext, $allowed)) {
+                $filename = 'kop_' . time() . '_' . uniqid() . '.' . $ext;
+                if (move_uploaded_file($_FILES['kop_gambar']['tmp_name'], $uploadDir . $filename)) {
+                    $data['kop_gambar'] = $filename;
+                }
+            }
+        }
+
         if ($this->psbModel->tambahLembaga($data)) {
             Flasher::setFlash('Lembaga berhasil ditambahkan', 'success');
         } else {
@@ -1814,6 +1875,7 @@ class PSBController extends Controller
         header('Location: ' . BASEURL . '/psb/lembaga');
         exit;
     }
+
 
     /**
      * Edit lembaga
@@ -1859,6 +1921,24 @@ class PSBController extends Controller
             'aktif' => isset($_POST['aktif']) ? 1 : 0
         ];
 
+        // Handle kop gambar file upload
+        if (isset($_FILES['kop_gambar']) && $_FILES['kop_gambar']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = APPROOT . '/public/img/psb_lembaga/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $ext = strtolower(pathinfo($_FILES['kop_gambar']['name'], PATHINFO_EXTENSION));
+            $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+            if (in_array($ext, $allowed)) {
+                $filename = 'kop_' . time() . '_' . uniqid() . '.' . $ext;
+                if (move_uploaded_file($_FILES['kop_gambar']['tmp_name'], $uploadDir . $filename)) {
+                    $data['kop_gambar'] = $filename;
+                }
+            }
+        }
+
         if ($this->psbModel->updateLembaga($id, $data)) {
             Flasher::setFlash('Lembaga berhasil diupdate', 'success');
         } else {
@@ -1868,6 +1948,7 @@ class PSBController extends Controller
         header('Location: ' . BASEURL . '/psb/lembaga');
         exit;
     }
+
 
     /**
      * Hapus lembaga

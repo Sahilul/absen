@@ -25,6 +25,11 @@
                 <p class="text-gray-600 mt-1">Kelola data dan akun siswa</p>
             </div>
             <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                <a href="<?= BASEURL; ?>/admin/importPsb"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors duration-200 shadow-sm">
+                    <i data-lucide="download-cloud" class="w-4 h-4 mr-2"></i>
+                    Import dari PSB
+                </a>
                 <a href="<?= BASEURL; ?>/admin/importSiswa"
                     class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors duration-200 shadow-sm">
                     <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-2"></i>

@@ -27,7 +27,8 @@
             </div>
         </div>
 
-        <form action="<?= BASEURL; ?>/psb/prosesTambahLembaga" method="POST" class="p-6 space-y-5">
+        <form action="<?= BASEURL; ?>/psb/prosesTambahLembaga" method="POST" enctype="multipart/form-data"
+            class="p-6 space-y-5">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                     <label class="block text-sm font-semibold text-secondary-700 mb-2">Kode Lembaga <span
@@ -76,6 +77,43 @@
                         class="w-full px-4 py-3 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
             </div>
+
+            <!-- KOP SURAT SECTION -->
+            <div class="border-t pt-5 mt-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-blue-100 p-2 rounded-lg">
+                        <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-secondary-800">Kop Surat</h3>
+                        <p class="text-sm text-secondary-500">Gambar kop surat lengkap untuk formulir PDF</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-secondary-700 mb-2">Gambar Kop Surat
+                            (Utama)</label>
+                        <input type="file" name="kop_gambar" accept="image/*"
+                            class="w-full px-4 py-3 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <p class="text-xs text-secondary-400 mt-1">Upload gambar kop surat lengkap (lebar penuh, rasio
+                            sekitar 6:1). Format: PNG/JPG</p>
+                        <p class="text-xs text-secondary-400">Contoh: gambar yang berisi logo + nama sekolah + alamat +
+                            kontak dalam satu file</p>
+                    </div>
+
+                    <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p class="text-sm text-blue-800 font-medium mb-2">💡 Tips:</p>
+                        <ul class="text-xs text-blue-700 list-disc list-inside space-y-1">
+                            <li>Gunakan gambar dengan lebar sekitar 800-1200px</li>
+                            <li>Tinggi sekitar 120-200px (rasio landscape)</li>
+                            <li>Background transparan (PNG) atau putih</li>
+                            <li>Pastikan teks terbaca jelas saat dicetak</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- END KOP SURAT -->
 
             <div class="flex items-center gap-2">
                 <input type="checkbox" name="aktif" id="aktif" checked

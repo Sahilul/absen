@@ -28,7 +28,8 @@ $l = $data['lembaga'];
             </div>
         </div>
 
-        <form action="<?= BASEURL; ?>/psb/prosesUpdateLembaga" method="POST" class="p-6 space-y-5">
+        <form action="<?= BASEURL; ?>/psb/prosesUpdateLembaga" method="POST" enctype="multipart/form-data"
+            class="p-6 space-y-5">
             <input type="hidden" name="id_lembaga" value="<?= $l['id_lembaga']; ?>">
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -79,6 +80,47 @@ $l = $data['lembaga'];
                         class="w-full px-4 py-3 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
             </div>
+
+            <!-- KOP SURAT SECTION -->
+            <div class="border-t pt-5 mt-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-blue-100 p-2 rounded-lg">
+                        <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-secondary-800">Kop Surat</h3>
+                        <p class="text-sm text-secondary-500">Gambar kop surat lengkap untuk formulir PDF</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-secondary-700 mb-2">Gambar Kop Surat</label>
+                        <?php if (!empty($l['kop_gambar'])): ?>
+                            <div class="mb-3 p-3 bg-gray-50 rounded-lg border">
+                                <p class="text-xs text-secondary-500 mb-2">Kop surat saat ini:</p>
+                                <img src="<?= BASEURL; ?>/public/img/psb_lembaga/<?= $l['kop_gambar']; ?>" alt="Kop Surat"
+                                    class="max-w-full h-auto border rounded shadow-sm">
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" name="kop_gambar" accept="image/*"
+                            class="w-full px-4 py-3 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <p class="text-xs text-secondary-400 mt-1">Kosongkan jika tidak ingin mengganti gambar kop surat
+                        </p>
+                    </div>
+
+                    <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p class="text-sm text-blue-800 font-medium mb-2">💡 Tips:</p>
+                        <ul class="text-xs text-blue-700 list-disc list-inside space-y-1">
+                            <li>Gunakan gambar dengan lebar sekitar 800-1200px</li>
+                            <li>Tinggi sekitar 120-200px (rasio landscape)</li>
+                            <li>Background transparan (PNG) atau putih</li>
+                            <li>Pastikan teks terbaca jelas saat dicetak</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- END KOP SURAT -->
 
             <div class="flex items-center gap-2">
                 <input type="checkbox" name="aktif" id="aktif" <?= $l['aktif'] ? 'checked' : ''; ?>

@@ -1,6 +1,29 @@
 {
     "versions": [
         {
+            "version": "1.10.0",
+            "date": "2026-01-13",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "PSB Import ke Siswa: Migrasi dokumen Google Drive sekarang berfungsi dengan benar"
+                },
+                {
+                    "type": "feature",
+                    "description": "Fitur Kop Surat PSB: Upload gambar kop surat per lembaga untuk formulir PDF"
+                },
+                {
+                    "type": "feature",
+                    "description": "Fitur Batalkan Import: Admin dapat mengembalikan siswa ke status PSB 'diterima'"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix bug dokumen tidak termigrasikan saat import PSB (untuk file Google Drive)"
+                }
+            ]
+        },
+        {
             "version": "1.9.0",
             "date": "2026-01-11",
             "type": "minor",

@@ -642,6 +642,145 @@ class AdminController extends Controller
     }
 
     // =================================================================
+    // IMPORT SISWA DARI PSB
+    // =================================================================
+    public function importPsb()
+    {
+        $this->data['judul'] = 'Import Siswa dari PSB';
+        $this->data['daftar_tp'] = $this->model('TahunPelajaran_model')->getAllTahunPelajaran();
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/import_psb', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    public function getCandidates()
+    {
+        // Return JSON for AJAX requests
+        $id_tp = $_GET['id_tp'] ?? 0;
+
+        if (!$id_tp) {
+            header('Content-Type: application/json');
+            echo json_encode([]);
+            exit;
+        }
+
+        $candidates = $this->model('PSB_model')->getCandidatesForImport($id_tp);
+
+        header('Content-Type: application/json');
+        echo json_encode($candidates);
+        exit;
+    }
+
+    public function processImport()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/siswa');
+            exit;
+        }
+
+        $ids = $_POST['ids'] ?? [];
+        if (empty($ids)) {
+            Flasher::setFlash('Gagal', 'Tidak ada siswa yang dipilih.', 'warning');
+            header('Location: ' . BASEURL . '/admin/importPsb');
+            exit;
+        }
+
+        $success = 0;
+        $failed = 0;
+        $errors = [];
+
+        foreach ($ids as $idPendaftar) {
+            $result = $this->model('PSB_model')->konversiKeDataSiswa($idPendaftar);
+            if ($result['success']) {
+                $success++;
+            } else {
+                $failed++;
+                $errors[] = "ID $idPendaftar: " . ($result['error'] ?? 'Unknown error');
+            }
+        }
+
+        if ($success > 0 && $failed === 0) {
+            Flasher::setFlash('Berhasil', "$success siswa berhasil diimport.", 'success');
+            header('Location: ' . BASEURL . '/admin/siswa');
+            exit;
+        } elseif ($success > 0 && $failed > 0) {
+            Flasher::setFlash('Sebagian Berhasil', "$success berhasil, $failed gagal.", 'warning');
+            header('Location: ' . BASEURL . '/admin/siswa'); // Redirect to list to show results
+            exit;
+        } else {
+            Flasher::setFlash('Gagal', 'Import gagal. ' . implode(', ', array_slice($errors, 0, 3)), 'danger');
+            header('Location: ' . BASEURL . '/admin/importPsb'); // Stay on import page if all failed
+            exit;
+        }
+    }
+    /**
+     * Batalkan import siswa - mengembalikan siswa ke status PSB 'diterima'
+     * Menghapus data siswa, user, dokumen, dan keanggotaan kelas
+     */
+    public function batalkanImport($id_siswa = null)
+    {
+        if (!$id_siswa) {
+            Flasher::setFlash('Gagal', 'ID Siswa tidak valid.', 'danger');
+            header('Location: ' . BASEURL . '/admin/siswa');
+            exit;
+        }
+
+        $db = new Database();
+
+        try {
+            // Get siswa data first
+            $db->query('SELECT nisn FROM siswa WHERE id_siswa = :id');
+            $db->bind(':id', $id_siswa);
+            $siswa = $db->single();
+
+            if (!$siswa) {
+                Flasher::setFlash('Gagal', 'Siswa tidak ditemukan.', 'danger');
+                header('Location: ' . BASEURL . '/admin/siswa');
+                exit;
+            }
+
+            $nisn = $siswa['nisn'];
+
+            // 1. Hapus dokumen siswa
+            $db->query('DELETE FROM siswa_dokumen WHERE id_siswa = :id');
+            $db->bind(':id', $id_siswa);
+            $db->execute();
+
+            // 2. Hapus keanggotaan kelas
+            $db->query('DELETE FROM keanggotaan_kelas WHERE id_siswa = :id');
+            $db->bind(':id', $id_siswa);
+            $db->execute();
+
+            // 3. Hapus akun user
+            $db->query('DELETE FROM users WHERE id_ref = :id AND role = "siswa"');
+            $db->bind(':id', $id_siswa);
+            $db->execute();
+
+            // 4. Hapus data siswa
+            $db->query('DELETE FROM siswa WHERE id_siswa = :id');
+            $db->bind(':id', $id_siswa);
+            $db->execute();
+
+            // 5. Reset status PSB jika ada
+            if ($nisn) {
+                $db->query('UPDATE psb_pendaftar SET status = "diterima", id_siswa = NULL WHERE nisn = :nisn');
+                $db->bind(':nisn', $nisn);
+                $db->execute();
+            }
+
+            Flasher::setFlash('Berhasil', 'Import siswa berhasil dibatalkan. Siswa dapat diimport ulang dari PSB.', 'success');
+
+        } catch (Exception $e) {
+            Flasher::setFlash('Gagal', 'Error: ' . $e->getMessage(), 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/siswa');
+        exit;
+    }
+
+    // =================================================================
     // DOKUMEN SISWA
     // =================================================================
     public function dokumenSiswa($id_siswa)

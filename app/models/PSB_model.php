@@ -48,8 +48,8 @@ class PSB_model
      */
     public function tambahLembaga($data)
     {
-        $this->db->query('INSERT INTO psb_lembaga (kode_lembaga, nama_lembaga, jenjang, alamat, kuota_default, urutan, aktif) 
-                          VALUES (:kode, :nama, :jenjang, :alamat, :kuota, :urutan, :aktif)');
+        $this->db->query('INSERT INTO psb_lembaga (kode_lembaga, nama_lembaga, jenjang, alamat, kuota_default, urutan, aktif, kop_gambar) 
+                          VALUES (:kode, :nama, :jenjang, :alamat, :kuota, :urutan, :aktif, :kop_gambar)');
         $this->db->bind(':kode', $data['kode_lembaga']);
         $this->db->bind(':nama', $data['nama_lembaga']);
         $this->db->bind(':jenjang', $data['jenjang']);
@@ -57,19 +57,34 @@ class PSB_model
         $this->db->bind(':kuota', $data['kuota_default'] ?? 0);
         $this->db->bind(':urutan', $data['urutan'] ?? 0);
         $this->db->bind(':aktif', $data['aktif'] ?? 1);
+        $this->db->bind(':kop_gambar', $data['kop_gambar'] ?? null);
         $this->db->execute();
         return $this->db->lastInsertId();
     }
+
+
 
     /**
      * Update lembaga
      */
     public function updateLembaga($id, $data)
     {
-        $this->db->query('UPDATE psb_lembaga SET 
-                          kode_lembaga = :kode, nama_lembaga = :nama, jenjang = :jenjang, 
-                          alamat = :alamat, kuota_default = :kuota, urutan = :urutan, aktif = :aktif 
-                          WHERE id_lembaga = :id');
+        $fields = [
+            'kode_lembaga = :kode',
+            'nama_lembaga = :nama',
+            'jenjang = :jenjang',
+            'alamat = :alamat',
+            'kuota_default = :kuota',
+            'urutan = :urutan',
+            'aktif = :aktif'
+        ];
+
+        // Only update kop_gambar if provided
+        if (isset($data['kop_gambar'])) {
+            $fields[] = 'kop_gambar = :kop_gambar';
+        }
+
+        $this->db->query('UPDATE psb_lembaga SET ' . implode(', ', $fields) . ' WHERE id_lembaga = :id');
         $this->db->bind(':kode', $data['kode_lembaga']);
         $this->db->bind(':nama', $data['nama_lembaga']);
         $this->db->bind(':jenjang', $data['jenjang']);
@@ -77,10 +92,15 @@ class PSB_model
         $this->db->bind(':kuota', $data['kuota_default'] ?? 0);
         $this->db->bind(':urutan', $data['urutan'] ?? 0);
         $this->db->bind(':aktif', $data['aktif'] ?? 1);
+        if (isset($data['kop_gambar'])) {
+            $this->db->bind(':kop_gambar', $data['kop_gambar']);
+        }
         $this->db->bind(':id', $id);
         $this->db->execute();
         return $this->db->rowCount();
     }
+
+
 
     /**
      * Hapus lembaga
@@ -613,14 +633,30 @@ class PSB_model
 
             // Buat akun user untuk siswa
             $username = $pendaftar['nisn'] ?? $pendaftar['no_pendaftaran'];
-            $password = substr($pendaftar['nisn'] ?? $pendaftar['no_pendaftaran'], -6);
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+            // Cek apakah ada akun PSB yang terkait
+            $psbAkun = null;
+            if (!empty($pendaftar['id_akun'])) {
+                $psbAkun = $this->getAkunById($pendaftar['id_akun']);
+            }
+
+            if ($psbAkun) {
+                // Gunakan password dari akun PSB
+                $password = null; // Tidak ada plain password
+                $hashedPassword = $psbAkun['password'];
+                $password_plain = null;
+            } else {
+                // Generate default
+                $password = substr($pendaftar['nisn'] ?? $pendaftar['no_pendaftaran'], -6);
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $password_plain = $password;
+            }
 
             $this->db->query('INSERT INTO users (username, password, password_plain, nama_lengkap, role, id_ref, status) 
                               VALUES (:username, :password, :password_plain, :nama, "siswa", :id_ref, "aktif")');
             $this->db->bind(':username', $username);
             $this->db->bind(':password', $hashedPassword);
-            $this->db->bind(':password_plain', $password);
+            $this->db->bind(':password_plain', $password_plain);
             $this->db->bind(':nama', $pendaftar['nama_lengkap']);
             $this->db->bind(':id_ref', $id_siswa);
             $this->db->execute();
@@ -637,13 +673,64 @@ class PSB_model
                 $this->db->execute();
             }
 
+            // MIGRASI DOKUMEN
+            $dokumenPSB = $this->getDokumenPendaftar($id_pendaftar);
+            $docsCopied = 0;
+
+            foreach ($dokumenPSB as $doc) {
+                // Cek apakah dokumen disimpan di Google Drive
+                $hasDriveUrl = !empty($doc['drive_url']) && !empty($doc['drive_file_id']);
+
+                if ($hasDriveUrl) {
+                    // Untuk Google Drive, langsung copy metadata (tidak perlu copy file fisik)
+                    $this->db->query('INSERT INTO siswa_dokumen (id_siswa, jenis_dokumen, nama_file, path_file, ukuran, drive_file_id, drive_url, created_at) 
+                                      VALUES (:id_siswa, :jenis, :nama, :path, :ukuran, :drive_id, :drive_url, NOW())');
+                    $this->db->bind(':id_siswa', $id_siswa);
+                    $this->db->bind(':jenis', $doc['jenis_dokumen']);
+                    $this->db->bind(':nama', $doc['nama_file']);
+                    $this->db->bind(':path', $doc['drive_url']); // Simpan URL sebagai path
+                    $this->db->bind(':ukuran', $doc['ukuran'] ?? 0);
+                    $this->db->bind(':drive_id', $doc['drive_file_id']);
+                    $this->db->bind(':drive_url', $doc['drive_url']);
+                    $this->db->execute();
+                    $docsCopied++;
+                } else {
+                    // Untuk file lokal, copy file fisik
+                    $srcPath = APPROOT . '/uploads/psb/' . $doc['path_file'];
+
+                    if (file_exists($srcPath)) {
+                        $ext = pathinfo($doc['path_file'], PATHINFO_EXTENSION);
+                        $destFilename = $id_siswa . '_' . $doc['jenis_dokumen'] . '_' . time() . '.' . $ext;
+                        $destPath = APPROOT . '/uploads/siswa_dokumen/' . $destFilename;
+
+                        // Buat folder jika belum ada
+                        if (!is_dir(dirname($destPath))) {
+                            mkdir(dirname($destPath), 0755, true);
+                        }
+
+                        if (copy($srcPath, $destPath)) {
+                            $this->db->query('INSERT INTO siswa_dokumen (id_siswa, jenis_dokumen, nama_file, path_file, ukuran, created_at) 
+                                              VALUES (:id_siswa, :jenis, :nama, :path, :ukuran, NOW())');
+                            $this->db->bind(':id_siswa', $id_siswa);
+                            $this->db->bind(':jenis', $doc['jenis_dokumen']);
+                            $this->db->bind(':nama', $doc['nama_file']);
+                            $this->db->bind(':path', $destFilename);
+                            $this->db->bind(':ukuran', $doc['ukuran'] ?? 0);
+                            $this->db->execute();
+                            $docsCopied++;
+                        }
+                    }
+                }
+            }
+
             $this->db->commit();
 
             return [
                 'success' => true,
                 'id_siswa' => $id_siswa,
                 'username' => $username,
-                'password' => $password
+                'password' => $password_plain, // Bisa null jika pakai akun PSB
+                'docs_migrated' => $docsCopied
             ];
 
         } catch (Exception $e) {
@@ -1255,6 +1342,26 @@ class PSB_model
     {
         $this->db->query('SELECT * FROM psb_dokumen WHERE id_pendaftar = :id');
         $this->db->bind(':id', $idPendaftar);
+        return $this->db->resultSet();
+    }
+    /**
+     * Get kandidat siswa untuk diimport ke data induk
+     * Kriteria: Status 'diterima' DAN id_siswa masih NULL (belum diimport)
+     */
+    public function getCandidatesForImport($id_tp)
+    {
+        // Join ke tabel users untuk cek apakah akun sudah dibuat
+        $this->db->query("SELECT p.*, j.nama_jalur, l.nama_lembaga, l.jenjang,
+                          (SELECT COUNT(*) FROM users u WHERE u.username = p.nisn OR u.username = p.no_pendaftaran) as has_account
+                          FROM psb_pendaftar p
+                          JOIN psb_jalur j ON p.id_jalur = j.id_jalur
+                          JOIN psb_periode per ON p.id_periode = per.id_periode
+                          JOIN psb_lembaga l ON per.id_lembaga = l.id_lembaga
+                          WHERE per.id_tp = :id_tp
+                          AND p.status = 'diterima'
+                          AND (p.id_siswa IS NULL OR p.id_siswa = 0)
+                          ORDER BY p.tanggal_daftar ASC");
+        $this->db->bind(':id_tp', $id_tp);
         return $this->db->resultSet();
     }
 }
