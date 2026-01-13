@@ -1,6 +1,6 @@
 {
-    "version": "1.11.9",
+    "version": "1.12.0",
     "build": 20260113,
     "release_date": "2026-01-13",
-    "description": "Fix Unauthorized Error in Token Generation"
+    "description": "Fitur Riwayat Login - Monitor aktivitas login pengguna"
 }

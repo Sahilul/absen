@@ -6746,6 +6746,75 @@ Waktu: ' . date('d/m/Y H:i:s');
         }
         exit;
     }
+
+    /**
+     * Halaman Riwayat Login
+     */
+    public function riwayatLogin()
+    {
+        $this->data['judul'] = 'Riwayat Login';
+
+        // Get query params
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $limit = (int) ($_GET['limit'] ?? 25);
+        $search = trim($_GET['search'] ?? '');
+        $status = $_GET['status'] ?? 'all';
+        $sortBy = $_GET['sort'] ?? 'login_at';
+        $sortOrder = $_GET['order'] ?? 'DESC';
+
+        // Validate limit options
+        if (!in_array($limit, [10, 25, 50, 100])) {
+            $limit = 25;
+        }
+
+        $offset = ($page - 1) * $limit;
+
+        $loginHistoryModel = $this->model('LoginHistory_model');
+
+        // Get data
+        $this->data['logs'] = $loginHistoryModel->getAll([
+            'limit' => $limit,
+            'offset' => $offset,
+            'search' => $search,
+            'status' => $status,
+            'sort_by' => $sortBy,
+            'sort_order' => $sortOrder
+        ]);
+
+        // Get total count for pagination
+        $totalRecords = $loginHistoryModel->countAll([
+            'search' => $search,
+            'status' => $status
+        ]);
+        $totalPages = max(1, ceil($totalRecords / $limit));
+
+        // Get stats
+        $this->data['stats'] = $loginHistoryModel->getStats();
+
+        // Pagination data
+        $this->data['pagination'] = [
+            'current_page' => $page,
+            'total_pages' => $totalPages,
+            'total_records' => $totalRecords,
+            'limit' => $limit
+        ];
+
+        // Filter data
+        $this->data['filter'] = [
+            'search' => $search,
+            'status' => $status,
+            'sort' => $sortBy,
+            'order' => $sortOrder
+        ];
+
+        // Cleanup old records (every request, but it's a quick query)
+        $loginHistoryModel->deleteOldRecords(90);
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/riwayat_login', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
 }
 
 

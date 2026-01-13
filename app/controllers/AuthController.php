@@ -72,6 +72,10 @@ class AuthController extends Controller
                 error_log("Login SUCCESS: " . $user['username'] . " | Role: " . $user['role'] . " | ID: " . $user['id_user']);
                 error_log("Session role: " . $_SESSION['role'] . " | Session user_role: " . $_SESSION['user_role']);
 
+                // === LOG RIWAYAT LOGIN (Sukses) ===
+                $loginHistoryModel = $this->model('LoginHistory_model');
+                $loginHistoryModel->log($user['id_user'], $user['username'], $user['nama_lengkap'], $user['role'], 'success');
+
                 // Redirect berdasarkan role
                 switch ($user['role']) {
                     case 'admin':
@@ -97,6 +101,12 @@ class AuthController extends Controller
                 }
             } else {
                 error_log("Login FAILED: " . $username . " | Password verification failed");
+
+                // === LOG RIWAYAT LOGIN (Gagal) ===
+                $loginHistoryModel = $this->model('LoginHistory_model');
+                $failReason = $user ? 'Password salah' : 'Username tidak ditemukan';
+                $loginHistoryModel->log(null, $username, null, null, 'failed', $failReason);
+
                 Flasher::setFlash('Username atau password salah.', 'danger');
                 header('Location: ' . BASEURL . '/auth/login');
                 exit;
@@ -233,6 +243,10 @@ class AuthController extends Controller
         $user = $userModel->getUserByEmail($userInfo['email']);
 
         if (!$user) {
+            // === LOG RIWAYAT LOGIN GOOGLE (Gagal - Email tidak terdaftar) ===
+            $loginHistoryModel = $this->model('LoginHistory_model');
+            $loginHistoryModel->log(null, $userInfo['email'], $userInfo['name'] ?? null, null, 'failed', 'Email tidak terdaftar (Google OAuth)');
+
             Flasher::setFlash('Email ' . htmlspecialchars($userInfo['email']) . ' tidak terdaftar di sistem.', 'danger');
             header('Location: ' . BASEURL . '/auth/login');
             exit;
@@ -275,6 +289,10 @@ class AuthController extends Controller
         $_SESSION['oauth_login'] = true; // Flag untuk tracking login via OAuth
 
         error_log("OAuth Login SUCCESS: " . $user['username'] . " | Email: " . $userInfo['email'] . " | Role: " . $user['role']);
+
+        // === LOG RIWAYAT LOGIN GOOGLE (Sukses) ===
+        $loginHistoryModel = $this->model('LoginHistory_model');
+        $loginHistoryModel->log($user['id_user'], $user['username'], $user['nama_lengkap'], $user['role'], 'success');
 
         // Redirect berdasarkan role
         switch ($user['role']) {

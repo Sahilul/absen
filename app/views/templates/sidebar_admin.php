@@ -374,7 +374,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: PENGATURAN -->
             <!-- ============================================== -->
-            <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru', 'Antrian Pesan WhatsApp']); ?>
+            <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru', 'Antrian Pesan WhatsApp', 'Riwayat Login']); ?>
             <li class="pt-2" x-data="{ open: <?= $pengaturanActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $pengaturanActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -388,6 +388,13 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                         :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <ul x-show="open" x-collapse class="mt-1 ml-4 space-y-1 border-l-2 border-slate-200 pl-3">
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/riwayatLogin"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Riwayat Login') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-cyan-50 hover:text-cyan-700' ?>">
+                            <i data-lucide="shield-check" class="w-4 h-4 mr-2"></i>
+                            Riwayat Login
+                        </a>
+                    </li>
                     <li>
                         <a href="<?= BASEURL; ?>/admin/configQR"
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Konfigurasi QR') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-purple-50 hover:text-purple-700' ?>">
