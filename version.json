@@ -1,6 +1,6 @@
 {
-    "version": "1.12.2",
+    "version": "1.12.3",
     "build": 20260114,
     "release_date": "2026-01-14",
-    "description": "Notifikasi absensi sekarang via antrian WA"
+    "description": "Fix dan debug notifikasi absensi via antrian WA"
 }

@@ -730,22 +730,34 @@ class GuruController extends Controller
     private function sendAbsensiNotifications($postData)
     {
         try {
+            error_log("=== sendAbsensiNotifications START ===");
+
             // Ambil data jurnal untuk info kelas dan mapel
             $id_jurnal = $postData['id_jurnal'] ?? null;
-            if (!$id_jurnal)
+            error_log("id_jurnal: " . ($id_jurnal ?? 'NULL'));
+
+            if (!$id_jurnal) {
+                error_log("EXIT: id_jurnal kosong");
                 return;
+            }
 
             $jurnal = $this->model('Jurnal_model')->getJurnalDetailById($id_jurnal);
-            if (!$jurnal)
+            if (!$jurnal) {
+                error_log("EXIT: jurnal tidak ditemukan");
                 return;
+            }
+            error_log("jurnal found: " . json_encode($jurnal));
 
             // Ambil pengaturan sekolah
             $pengaturan = $this->model('PengaturanAplikasi_model')->getPengaturan();
             $namaSekolah = $pengaturan['nama_sekolah'] ?? '';
+            error_log("namaSekolah: " . $namaSekolah);
 
-            // Cek setting notifikasi absensi
-            if (empty($pengaturan['wa_notif_absensi_enabled']) || $pengaturan['wa_notif_absensi_enabled'] != 1) {
-                error_log("Notifikasi absensi dinonaktifkan di pengaturan.");
+            // Cek setting notifikasi absensi (default: AKTIF jika tidak ada di database)
+            $notifEnabled = $pengaturan['wa_notif_absensi_enabled'] ?? 1;
+            error_log("notifEnabled: " . $notifEnabled);
+            if ($notifEnabled == 0) {
+                error_log("EXIT: Notifikasi absensi dinonaktifkan di pengaturan.");
                 return;
             }
 
@@ -755,6 +767,8 @@ class GuruController extends Controller
             // Kumpulkan siswa yang tidak hadir
             $siswaNotHadir = [];
             $statusSiswa = $postData['absensi'] ?? [];
+            error_log("statusSiswa count: " . count($statusSiswa));
+            error_log("statusSiswa data: " . json_encode($statusSiswa));
 
             foreach ($statusSiswa as $id_siswa => $status) {
                 if (in_array($status, $statusNotif)) {
@@ -762,8 +776,11 @@ class GuruController extends Controller
                 }
             }
 
-            if (empty($siswaNotHadir))
+            error_log("siswaNotHadir count: " . count($siswaNotHadir));
+            if (empty($siswaNotHadir)) {
+                error_log("EXIT: Tidak ada siswa yang tidak hadir (semua H)");
                 return;
+            }
 
             // Ambil data siswa dan orang tua
             $siswaModel = $this->model('Siswa_model');
@@ -773,6 +790,7 @@ class GuruController extends Controller
             require_once APPROOT . '/app/core/Fonnte.php';
             $queueModel = new WaQueue_model();
             $fonnte = new Fonnte();
+            error_log("Models loaded successfully");
 
             // Format tanggal
             $tanggal = date('d F Y', strtotime($jurnal['tanggal']));
@@ -791,8 +809,12 @@ class GuruController extends Controller
 
             foreach ($siswaNotHadir as $id_siswa => $status) {
                 $siswa = $siswaModel->getSiswaById($id_siswa);
-                if (!$siswa)
+                error_log("Processing siswa id: {$id_siswa}, status: {$status}");
+
+                if (!$siswa) {
+                    error_log("SKIP: siswa not found for id: {$id_siswa}");
                     continue;
+                }
 
                 $namaSiswa = $siswa['nama_siswa'] ?? '-';
                 $statusLabel = $statusText[$status] ?? $status;

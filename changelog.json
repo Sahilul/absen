@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.12.3",
+            "date": "2026-01-14",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix default setting wa_notif_absensi_enabled agar notifikasi aktif meskipun kolom tidak ada di database"
+                },
+                {
+                    "type": "debug",
+                    "description": "Tambahan debug log untuk tracing notifikasi absensi"
+                }
+            ]
+        },
+        {
             "version": "1.12.2",
             "date": "2026-01-14",
             "type": "feature",
