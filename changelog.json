@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.13.1",
+            "date": "2026-01-14",
+            "type": "fix",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan database migration untuk fitur Multi WA Account Rotation"
+                }
+            ]
+        },
+        {
             "version": "1.13.0",
             "date": "2026-01-14",
             "type": "feature",
