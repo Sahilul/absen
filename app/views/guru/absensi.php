@@ -14,8 +14,8 @@
     <div class="mb-5 sm:mb-8">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3 sm:space-x-4">
-                <a href="<?= BASEURL; ?>/guru/jurnal" 
-                   class="p-2 rounded-xl text-secondary-500 hover:text-primary-600 hover:bg-white/50 transition-all duration-200">
+                <a href="<?= BASEURL; ?>/guru/jurnal"
+                    class="p-2 rounded-xl text-secondary-500 hover:text-primary-600 hover:bg-white/50 transition-all duration-200">
                     <i data-lucide="arrow-left" class="w-6 h-6"></i>
                 </a>
                 <div>
@@ -23,7 +23,8 @@
                         <i data-lucide="users-check" class="w-7 h-7 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-success-500"></i>
                         Input Absensi Siswa
                     </h2>
-                    <p class="text-secondary-600 mt-1 text-sm sm:text-base">Catat kehadiran siswa untuk pertemuan ini</p>
+                    <p class="text-secondary-600 mt-1 text-sm sm:text-base">Catat kehadiran siswa untuk pertemuan ini
+                    </p>
                 </div>
             </div>
         </div>
@@ -32,7 +33,8 @@
     <!-- Jurnal Info Card -->
     <div class="mb-5 sm:mb-8">
         <!-- flat-mobile melembutkan box di mobile (konten terasa “di luar box”) -->
-        <div class="glass-effect flat-mobile rounded-none sm:rounded-xl px-0 sm:px-6 py-4 sm:py-6 border-0 sm:border border-white/20 shadow-none sm:shadow-lg animate-fade-in">
+        <div
+            class="glass-effect flat-mobile rounded-none sm:rounded-xl px-0 sm:px-6 py-4 sm:py-6 border-0 sm:border border-white/20 shadow-none sm:shadow-lg animate-fade-in">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div class="lg:col-span-2">
                     <div class="flex items-start space-x-3 sm:space-x-4">
@@ -41,7 +43,8 @@
                         </div>
                         <div>
                             <h3 class="text-lg sm:text-xl font-bold text-secondary-800 mb-2">
-                                <?= htmlspecialchars($data['jurnal']['nama_mapel']); ?> - <?= htmlspecialchars($data['jurnal']['nama_kelas']); ?>
+                                <?= htmlspecialchars($data['jurnal']['nama_mapel']); ?> -
+                                <?= htmlspecialchars($data['jurnal']['nama_kelas']); ?>
                             </h3>
                             <div class="space-y-2 text-sm text-secondary-600">
                                 <p class="flex items-center">
@@ -73,7 +76,8 @@
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-danger-600">Tidak Hadir:</span>
-                            <span class="font-semibold text-danger-700" id="count-tidak-hadir"><?= count($data['daftar_siswa']); ?></span>
+                            <span class="font-semibold text-danger-700"
+                                id="count-tidak-hadir"><?= count($data['daftar_siswa']); ?></span>
                         </div>
                     </div>
                 </div>
@@ -83,7 +87,8 @@
 
     <!-- Bulk Actions & Search (sticky di mobile) -->
     <div class="mb-4 sm:mb-6">
-        <div class="glass-effect flat-mobile rounded-none sm:rounded-xl px-0 sm:px-6 py-3 sm:py-6 border-0 sm:border border-white/20 shadow-none sm:shadow-lg animate-slide-up sticky top-[env(safe-area-inset-top,0)] z-30 backdrop-blur-sm bg-secondary-100/70 sm:bg-transparent">
+        <div
+            class="glass-effect flat-mobile rounded-none sm:rounded-xl px-0 sm:px-6 py-3 sm:py-6 border-0 sm:border border-white/20 shadow-none sm:shadow-lg animate-slide-up sticky top-[env(safe-area-inset-top,0)] z-30 backdrop-blur-sm bg-secondary-100/70 sm:bg-transparent">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 sm:gap-4">
                 <!-- Bulk Actions -->
                 <div class="w-full">
@@ -92,24 +97,24 @@
                         Aksi Cepat
                     </h3>
                     <div class="flex flex-wrap gap-2">
-                        <button type="button" onclick="setBulkStatus('H')" 
-                                class="btn-bulk bg-success-100 hover:bg-success-200 text-success-800 border-success-300">
+                        <button type="button" onclick="setBulkStatus('H')"
+                            class="btn-bulk bg-success-100 hover:bg-success-200 text-success-800 border-success-300">
                             <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i>Hadir Semua
                         </button>
-                        <button type="button" onclick="setBulkStatus('A')" 
-                                class="btn-bulk bg-danger-100 hover:bg-danger-200 text-danger-800 border-danger-300">
+                        <button type="button" onclick="setBulkStatus('A')"
+                            class="btn-bulk bg-danger-100 hover:bg-danger-200 text-danger-800 border-danger-300">
                             <i data-lucide="x-circle" class="w-4 h-4 mr-2"></i>Alpha Semua
                         </button>
-                        <button type="button" onclick="setBulkStatus('I')" 
-                                class="btn-bulk bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300">
+                        <button type="button" onclick="setBulkStatus('I')"
+                            class="btn-bulk bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300">
                             <i data-lucide="info" class="w-4 h-4 mr-2"></i>Izin Semua
                         </button>
-                        <button type="button" onclick="setBulkStatus('S')" 
-                                class="btn-bulk bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border-yellow-300">
+                        <button type="button" onclick="setBulkStatus('S')"
+                            class="btn-bulk bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border-yellow-300">
                             <i data-lucide="thermometer" class="w-4 h-4 mr-2"></i>Sakit Semua
                         </button>
-                        <button type="button" onclick="resetAll()" 
-                                class="btn-bulk bg-secondary-100 hover:bg-secondary-200 text-secondary-800 border-secondary-300">
+                        <button type="button" onclick="resetAll()"
+                            class="btn-bulk bg-secondary-100 hover:bg-secondary-200 text-secondary-800 border-secondary-300">
                             <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>Reset
                         </button>
                     </div>
@@ -118,8 +123,8 @@
                 <!-- Search -->
                 <div class="w-full lg:w-auto">
                     <div class="relative">
-                        <input type="text" id="search-siswa" placeholder="Cari nama siswa..." 
-                               class="input-modern pl-10 w-full lg:w-64 h-11">
+                        <input type="text" id="search-siswa" placeholder="Cari nama siswa..."
+                            class="input-modern pl-10 w-full lg:w-64 h-11">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <i data-lucide="search" class="w-4 h-4 text-secondary-400"></i>
                         </div>
@@ -132,29 +137,31 @@
     <!-- Absensi Form -->
     <form action="<?= BASEURL; ?>/guru/prosesSimpanAbsensi" method="POST" id="absensiForm">
         <input type="hidden" name="id_jurnal" value="<?= $data['jurnal']['id_jurnal']; ?>">
-        
+
         <!-- Students List -->
-        <div class="glass-effect flat-mobile rounded-none sm:rounded-xl border-0 sm:border border-white/20 shadow-none sm:shadow-lg overflow-visible sm:overflow-hidden animate-slide-up">
+        <div
+            class="glass-effect flat-mobile rounded-none sm:rounded-xl border-0 sm:border border-white/20 shadow-none sm:shadow-lg overflow-visible sm:overflow-hidden animate-slide-up">
             <div class="px-0 sm:px-6 py-4 sm:py-6 border-b border-secondary-200 gradient-primary">
                 <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
                     <i data-lucide="users" class="w-5 h-5 mr-2"></i>
                     Daftar Siswa (<?= count($data['daftar_siswa']); ?> siswa)
                 </h3>
             </div>
-            
-            <div class="max-h-none lg:max-h-[60vh] overflow-visible lg:overflow-y-auto">
+
+            <div class="max-h-none lg:max-h-[60vh] overflow-auto scroll-smooth">
                 <div class="divide-y divide-secondary-100" id="students-list" role="list">
-                    <?php foreach ($data['daftar_siswa'] as $index => $siswa) : ?>
-                        <div class="student-row p-4 sm:p-6 hover:bg-white/50 transition-all duration-200" 
-                             data-name="<?= strtolower(htmlspecialchars($siswa['nama_siswa'])); ?>"
-                             style="animation: slideInLeft 0.3s ease-out <?= $index * 0.05; ?>s both;">
-                            
+                    <?php foreach ($data['daftar_siswa'] as $index => $siswa): ?>
+                        <div class="student-row p-4 sm:p-6 hover:bg-white/50 transition-all duration-200"
+                            data-name="<?= strtolower(htmlspecialchars($siswa['nama_siswa'])); ?>"
+                            style="animation: slideInLeft 0.3s ease-out <?= $index * 0.05; ?>s both;">
+
                             <!-- Mobile-first: info di atas, status di bawah -->
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                 <!-- Student Info -->
                                 <div class="flex items-center space-x-3 sm:space-x-4">
                                     <div class="flex-shrink-0">
-                                        <div class="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-r from-primary-400 to-success-400 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                                        <div
+                                            class="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-r from-primary-400 to-success-400 rounded-xl flex items-center justify-center text-white font-bold text-lg">
                                             <?= substr(htmlspecialchars($siswa['nama_siswa']), 0, 1); ?>
                                         </div>
                                     </div>
@@ -172,15 +179,14 @@
                                 <!-- Status Selection -->
                                 <div class="w-full sm:w-auto">
                                     <!-- Grid 4 kolom di mobile, inline di desktop -->
-                                    <div class="grid grid-cols-4 gap-2 sm:gap-4 sm:flex sm:items-center sm:space-x-6" role="radiogroup" aria-label="Status kehadiran">
+                                    <div class="grid grid-cols-4 gap-2 sm:gap-4 sm:flex sm:items-center sm:space-x-6"
+                                        role="radiogroup" aria-label="Status kehadiran">
                                         <!-- Hadir -->
                                         <label class="status-option status-hadir group cursor-pointer items-center">
-                                            <input type="radio" 
-                                                   name="absensi[<?= $siswa['id_siswa']; ?>]" 
-                                                   value="H" 
-                                                   checked 
-                                                   class="status-radio sr-only">
-                                            <div class="status-button touch-target bg-success-100 border-success-300 text-success-700 group-hover:bg-success-200 group-hover:scale-105">
+                                            <input type="radio" name="absensi[<?= $siswa['id_siswa']; ?>]" value="H" checked
+                                                class="status-radio sr-only">
+                                            <div
+                                                class="status-button touch-target bg-success-100 border-success-300 text-success-700 group-hover:bg-success-200 group-hover:scale-105">
                                                 <i data-lucide="check" class="w-5 h-5"></i>
                                                 <span class="font-medium">H</span>
                                             </div>
@@ -189,11 +195,10 @@
 
                                         <!-- Izin -->
                                         <label class="status-option status-izin group cursor-pointer items-center">
-                                            <input type="radio" 
-                                                   name="absensi[<?= $siswa['id_siswa']; ?>]" 
-                                                   value="I" 
-                                                   class="status-radio sr-only">
-                                            <div class="status-button touch-target bg-blue-100 border-blue-300 text-blue-700 group-hover:bg-blue-200 group-hover:scale-105">
+                                            <input type="radio" name="absensi[<?= $siswa['id_siswa']; ?>]" value="I"
+                                                class="status-radio sr-only">
+                                            <div
+                                                class="status-button touch-target bg-blue-100 border-blue-300 text-blue-700 group-hover:bg-blue-200 group-hover:scale-105">
                                                 <i data-lucide="info" class="w-5 h-5"></i>
                                                 <span class="font-medium">I</span>
                                             </div>
@@ -202,11 +207,10 @@
 
                                         <!-- Sakit -->
                                         <label class="status-option status-sakit group cursor-pointer items-center">
-                                            <input type="radio" 
-                                                   name="absensi[<?= $siswa['id_siswa']; ?>]" 
-                                                   value="S" 
-                                                   class="status-radio sr-only">
-                                            <div class="status-button touch-target bg-yellow-100 border-yellow-300 text-yellow-700 group-hover:bg-yellow-200 group-hover:scale-105">
+                                            <input type="radio" name="absensi[<?= $siswa['id_siswa']; ?>]" value="S"
+                                                class="status-radio sr-only">
+                                            <div
+                                                class="status-button touch-target bg-yellow-100 border-yellow-300 text-yellow-700 group-hover:bg-yellow-200 group-hover:scale-105">
                                                 <i data-lucide="thermometer" class="w-5 h-5"></i>
                                                 <span class="font-medium">S</span>
                                             </div>
@@ -215,11 +219,10 @@
 
                                         <!-- Alpha -->
                                         <label class="status-option status-alpha group cursor-pointer items-center">
-                                            <input type="radio" 
-                                                   name="absensi[<?= $siswa['id_siswa']; ?>]" 
-                                                   value="A" 
-                                                   class="status-radio sr-only">
-                                            <div class="status-button touch-target bg-danger-100 border-danger-300 text-danger-700 group-hover:bg-danger-200 group-hover:scale-105">
+                                            <input type="radio" name="absensi[<?= $siswa['id_siswa']; ?>]" value="A"
+                                                class="status-radio sr-only">
+                                            <div
+                                                class="status-button touch-target bg-danger-100 border-danger-300 text-danger-700 group-hover:bg-danger-200 group-hover:scale-105">
                                                 <i data-lucide="x" class="w-5 h-5"></i>
                                                 <span class="font-medium">A</span>
                                             </div>
@@ -229,10 +232,8 @@
 
                                     <!-- Keterangan Input (full width di mobile) -->
                                     <div class="mt-3 sm:mt-0 sm:ml-6">
-                                        <input type="text" 
-                                               name="keterangan[<?= $siswa['id_siswa']; ?>]"
-                                               placeholder="Keterangan..."
-                                               class="input-modern text-sm w-full sm:w-48 py-2">
+                                        <input type="text" name="keterangan[<?= $siswa['id_siswa']; ?>]"
+                                            placeholder="Keterangan..." class="input-modern text-sm w-full sm:w-48 py-2">
                                     </div>
                                 </div>
                             </div>
@@ -243,7 +244,8 @@
         </div>
 
         <!-- Form Actions (sticky bottom di mobile) -->
-        <div class="mt-6 sm:mt-8 glass-effect flat-mobile rounded-none sm:rounded-xl px-0 sm:px-6 py-3 sm:py-6 border-0 sm:border border-white/20 shadow-none sm:shadow-lg animate-slide-up sticky bottom-0 z-30 bg-gradient-to-t from-secondary-100/90 to-transparent backdrop-blur-sm">
+        <div
+            class="mt-6 sm:mt-8 glass-effect flat-mobile rounded-none sm:rounded-xl px-0 sm:px-6 py-3 sm:py-6 border-0 sm:border border-white/20 shadow-none sm:shadow-lg animate-slide-up sticky bottom-0 z-30 bg-gradient-to-t from-secondary-100/90 to-transparent backdrop-blur-sm">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
                 <!-- Summary -->
                 <div class="grid grid-cols-4 gap-3 text-sm w-full sm:w-auto">
@@ -272,7 +274,8 @@
                         Batal
                     </a>
                     <button type="submit" class="btn-primary w-1/2 sm:w-auto px-8 py-3 group" id="submitBtn">
-                        <i data-lucide="save" class="w-4 h-4 inline mr-2 group-hover:scale-110 transition-transform"></i>
+                        <i data-lucide="save"
+                            class="w-4 h-4 inline mr-2 group-hover:scale-110 transition-transform"></i>
                         Simpan Absensi
                     </button>
                 </div>
@@ -295,13 +298,30 @@
     }
 
     /* Warna aksen per status (untuk state :checked) */
-    .status-hadir { --accent: #16a34a; }  /* success */
-    .status-izin  { --accent: #2563eb; }  /* blue    */
-    .status-sakit { --accent: #ca8a04; }  /* yellow  */
-    .status-alpha { --accent: #dc2626; }  /* red     */
+    .status-hadir {
+        --accent: #16a34a;
+    }
+
+    /* success */
+    .status-izin {
+        --accent: #2563eb;
+    }
+
+    /* blue    */
+    .status-sakit {
+        --accent: #ca8a04;
+    }
+
+    /* yellow  */
+    .status-alpha {
+        --accent: #dc2626;
+    }
+
+    /* red     */
 
     .status-button {
-        width: 3.25rem; /* lebih besar untuk tap target */
+        width: 3.25rem;
+        /* lebih besar untuk tap target */
         height: 3.25rem;
         border-radius: 0.75rem;
         border: 2px solid;
@@ -315,7 +335,8 @@
 
     .touch-target {
         min-width: 44px;
-        min-height: 44px; /* rekomendasi tap target */
+        min-height: 44px;
+        /* rekomendasi tap target */
         touch-action: manipulation;
     }
 
@@ -327,19 +348,27 @@
     }
 
     /* === PERUBAHAN INTI: gunakan --accent saat dipilih === */
-    .status-option .status-radio:checked + .status-button{
+    .status-option .status-radio:checked+.status-button {
         background: var(--accent) !important;
         background-image: linear-gradient(135deg, var(--accent), var(--accent)) !important;
         color: #fff !important;
         border-color: var(--accent) !important;
         transform: scale(1.1);
-        box-shadow: 0 8px 25px rgba(0,0,0,.15);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
     }
+
     /* (Catatan: aturan lama berbasis currentColor DIHAPUS agar tidak override dan tidak membuat putih) */
 
     @keyframes slideInLeft {
-        from { opacity: 0; transform: translateX(-30px); }
-        to   { opacity: 1; transform: translateX(0); }
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
 
     .student-row:nth-child(odd) {
@@ -359,7 +388,7 @@
 
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Initialize Lucide icons
         lucide.createIcons();
 
@@ -369,7 +398,7 @@
         // Search (debounced & toggle hidden class)
         const searchInput = document.getElementById('search-siswa');
         let t;
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
             clearTimeout(t);
             t = setTimeout(() => {
                 const term = this.value.toLowerCase().trim();
@@ -382,7 +411,7 @@
         });
 
         // Event delegation for radio change
-        document.getElementById('students-list').addEventListener('change', function(e) {
+        document.getElementById('students-list').addEventListener('change', function (e) {
             if (e.target && e.target.classList.contains('status-radio')) {
                 updateCounters();
             }
@@ -391,7 +420,7 @@
         // Form submission UX
         const form = document.getElementById('absensiForm');
         const submitBtn = document.getElementById('submitBtn');
-        form.addEventListener('submit', function() {
+        form.addEventListener('submit', function () {
             submitBtn.innerHTML = `
                 <i data-lucide="loader-2" class="w-4 h-4 inline mr-2 animate-spin"></i>
                 Menyimpan...
@@ -463,7 +492,7 @@
     function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg transition-all duration-300 transform translate-x-full`;
-        
+
         const colors = {
             success: 'bg-success-100 border-success-300 text-success-800',
             info: 'bg-blue-100 border-blue-300 text-blue-800',
