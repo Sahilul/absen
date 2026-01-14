@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.12.2",
+            "date": "2026-01-14",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Notifikasi absensi siswa (A/I/S/D) sekarang masuk ke antrian WA, bukan kirim langsung"
+                },
+                {
+                    "type": "feature",
+                    "description": "Jenis pesan 'notif_absensi' untuk tracking di halaman Antrian WA"
+                }
+            ]
+        },
+        {
             "version": "1.12.1",
             "date": "2026-01-14",
             "type": "patch",

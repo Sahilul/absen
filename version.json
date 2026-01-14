@@ -1,6 +1,6 @@
 {
-    "version": "1.12.1",
+    "version": "1.12.2",
     "build": 20260114,
     "release_date": "2026-01-14",
-    "description": "Fix scroll issue pada halaman absensi guru"
+    "description": "Notifikasi absensi sekarang via antrian WA"
 }

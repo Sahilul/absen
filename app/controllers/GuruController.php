@@ -725,7 +725,7 @@ class GuruController extends Controller
     }
 
     /**
-     * Kirim notifikasi WA untuk absensi yang tidak hadir (A/I/S/D)
+     * Kirim notifikasi WA untuk absensi yang tidak hadir (A/I/S/D) - VIA ANTRIAN
      */
     private function sendAbsensiNotifications($postData)
     {
@@ -742,6 +742,12 @@ class GuruController extends Controller
             // Ambil pengaturan sekolah
             $pengaturan = $this->model('PengaturanAplikasi_model')->getPengaturan();
             $namaSekolah = $pengaturan['nama_sekolah'] ?? '';
+
+            // Cek setting notifikasi absensi
+            if (empty($pengaturan['wa_notif_absensi_enabled']) || $pengaturan['wa_notif_absensi_enabled'] != 1) {
+                error_log("Notifikasi absensi dinonaktifkan di pengaturan.");
+                return;
+            }
 
             // Status yang perlu notifikasi
             $statusNotif = ['A', 'I', 'S', 'D'];
@@ -762,16 +768,26 @@ class GuruController extends Controller
             // Ambil data siswa dan orang tua
             $siswaModel = $this->model('Siswa_model');
 
-            // Load Fonnte
+            // Load Queue Model dan Fonnte (untuk format nomor & template)
+            require_once APPROOT . '/app/models/WaQueue_model.php';
             require_once APPROOT . '/app/core/Fonnte.php';
-            $fonnte = new \Fonnte();
+            $queueModel = new WaQueue_model();
+            $fonnte = new Fonnte();
 
             // Format tanggal
             $tanggal = date('d F Y', strtotime($jurnal['tanggal']));
             $namaKelas = $jurnal['nama_kelas'] ?? '-';
             $namaMapel = $jurnal['nama_mapel'] ?? '-';
 
-            $notifResults = [];
+            // Status text mapping
+            $statusText = [
+                'A' => 'ALPHA (Tanpa Keterangan)',
+                'I' => 'IZIN',
+                'S' => 'SAKIT',
+                'D' => 'DISPENSASI'
+            ];
+
+            $queued = 0;
 
             foreach ($siswaNotHadir as $id_siswa => $status) {
                 $siswa = $siswaModel->getSiswaById($id_siswa);
@@ -779,84 +795,74 @@ class GuruController extends Controller
                     continue;
 
                 $namaSiswa = $siswa['nama_siswa'] ?? '-';
+                $statusLabel = $statusText[$status] ?? $status;
 
                 // Helper cleaning number
-                $cleanNumber = function ($num) {
+                $cleanNumber = function ($num) use ($fonnte) {
                     $num = preg_replace('/[^0-9]/', '', $num);
-                    return (strlen($num) > 7) ? $num : ''; // Minimal 8 digit (e.g. 0812...)
+                    return (strlen($num) > 7) ? $fonnte->formatNumber($num) : '';
                 };
 
                 $ayahNo = $cleanNumber($siswa['ayah_no_hp'] ?? '');
                 $ibuNo = $cleanNumber($siswa['ibu_no_hp'] ?? '');
                 $waliNo = $cleanNumber($siswa['wali_no_hp'] ?? '');
 
-                // Kirim ke Ayah
+                // Build message template
+                $buildMessage = function ($namaOrtu) use ($namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status) {
+                    $msg = "🔔 *PEMBERITAHUAN KEHADIRAN*\n\n";
+                    $msg .= "Yth. Bapak/Ibu *{$namaOrtu}*,\n\n";
+                    $msg .= "Kami informasikan bahwa putra/putri Anda:\n";
+                    $msg .= "📌 *{$namaSiswa}* - Kelas *{$namaKelas}*\n";
+                    $msg .= "📅 Tanggal: {$tanggal}\n\n";
+                    $msg .= "Tercatat dengan status: *{$statusLabel}*\n\n";
+                    if ($status === 'A')
+                        $msg .= "⚠️ Mohon konfirmasi kepada pihak sekolah.\n\n";
+                    $msg .= "Hormat kami,\n*{$namaSekolah}*";
+                    return $msg;
+                };
+
+                // Kirim ke Ayah (via queue)
                 if ($ayahNo) {
                     $namaAyah = $siswa['ayah_kandung'] ?? 'Bapak';
-                    $result = $fonnte->sendNotifikasiAbsensi(
+                    $queueModel->addToQueue(
                         $ayahNo,
-                        $namaAyah,
-                        $namaSiswa,
-                        $namaKelas,
-                        $status,
-                        $tanggal,
-                        $namaMapel,
-                        $namaSekolah
+                        $buildMessage($namaAyah),
+                        'notif_absensi',
+                        ['siswa' => $namaSiswa, 'target' => 'Ayah', 'status' => $status]
                     );
-                    $notifResults[] = [
-                        'siswa' => $namaSiswa,
-                        'target' => 'Ayah',
-                        'status' => $result['status'] ?? false
-                    ];
+                    $queued++;
                 }
 
-                // Kirim ke Ibu
+                // Kirim ke Ibu (via queue)
                 if ($ibuNo) {
                     $namaIbu = $siswa['ibu_kandung'] ?? 'Ibu';
-                    $result = $fonnte->sendNotifikasiAbsensi(
+                    $queueModel->addToQueue(
                         $ibuNo,
-                        $namaIbu,
-                        $namaSiswa,
-                        $namaKelas,
-                        $status,
-                        $tanggal,
-                        $namaMapel,
-                        $namaSekolah
+                        $buildMessage($namaIbu),
+                        'notif_absensi',
+                        ['siswa' => $namaSiswa, 'target' => 'Ibu', 'status' => $status]
                     );
-                    $notifResults[] = [
-                        'siswa' => $namaSiswa,
-                        'target' => 'Ibu',
-                        'status' => $result['status'] ?? false
-                    ];
+                    $queued++;
                 }
 
-                // Kirim ke Wali (Kirim juga jika ada, tidak peduli ortu ada atau tidak)
+                // Kirim ke Wali (via queue)
                 if ($waliNo) {
                     $namaWali = $siswa['wali_nama'] ?? 'Wali';
-                    $result = $fonnte->sendNotifikasiAbsensi(
+                    $queueModel->addToQueue(
                         $waliNo,
-                        $namaWali,
-                        $namaSiswa,
-                        $namaKelas,
-                        $status,
-                        $tanggal,
-                        $namaMapel,
-                        $namaSekolah
+                        $buildMessage($namaWali),
+                        'notif_absensi',
+                        ['siswa' => $namaSiswa, 'target' => 'Wali', 'status' => $status]
                     );
-                    $notifResults[] = [
-                        'siswa' => $namaSiswa,
-                        'target' => 'Wali',
-                        'status' => $result['status'] ?? false
-                    ];
+                    $queued++;
                 }
             }
 
-            // Log hasil notifikasi
-            $successCount = count(array_filter($notifResults, fn($r) => $r['status']));
-            error_log("Notifikasi absensi terkirim: {$successCount}/" . count($notifResults));
+            // Log hasil
+            error_log("Notifikasi absensi masuk antrian: {$queued} pesan");
 
         } catch (Exception $e) {
-            error_log("Error sending absensi notifications: " . $e->getMessage());
+            error_log("Error queuing absensi notifications: " . $e->getMessage());
         }
     }
 
