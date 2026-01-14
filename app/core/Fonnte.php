@@ -550,7 +550,7 @@ class Fonnte
         $statusLabel = $statusText[$status] ?? $status;
 
         // Build message using random template
-        $message = $this->getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $status);
+        $message = $this->getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $status, $mataPelajaran);
 
         return $this->send($noWa, $message);
     }
@@ -558,15 +558,17 @@ class Fonnte
     /**
      * Get random absensi template (10 variasi)
      */
-    private function getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode)
+    private function getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel = '')
     {
         $templates = [
             // Template 1 - Formal
-            function () use ($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode) {
+            function () use ($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel) {
                 $msg = "🔔 *PEMBERITAHUAN KEHADIRAN*\n\n";
                 $msg .= "Yth. Bapak/Ibu *{$namaOrtu}*,\n\n";
                 $msg .= "Kami informasikan bahwa putra/putri Anda:\n";
                 $msg .= "📌 *{$namaSiswa}* - Kelas *{$kelas}*\n";
+                if ($mapel)
+                    $msg .= "📚 Mata Pelajaran: *{$mapel}*\n";
                 $msg .= "📅 Tanggal: {$tanggal}\n\n";
                 $msg .= "Tercatat dengan status: *{$statusLabel}*\n\n";
                 if ($statusCode === 'A')
@@ -576,9 +578,11 @@ class Fonnte
             },
 
             // Template 2 - Singkat
-            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $mapel) {
                 $msg = "📢 *Info Kehadiran*\n\n";
                 $msg .= "{$namaSiswa} ({$kelas})\n";
+                if ($mapel)
+                    $msg .= "Mapel: {$mapel}\n";
                 $msg .= "Status: *{$statusLabel}*\n";
                 $msg .= "Tanggal: {$tanggal}\n\n";
                 $msg .= "- {$namaSekolah}";
@@ -586,11 +590,13 @@ class Fonnte
             },
 
             // Template 3 - Friendly
-            function () use ($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode) {
+            function () use ($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel) {
                 $msg = "Assalamualaikum Bapak/Ibu *{$namaOrtu}* 🙏\n\n";
                 $msg .= "Kami sampaikan info kehadiran anak Anda hari ini:\n\n";
                 $msg .= "👤 *{$namaSiswa}*\n";
                 $msg .= "📚 Kelas: {$kelas}\n";
+                if ($mapel)
+                    $msg .= "📖 Mapel: {$mapel}\n";
                 $msg .= "📆 {$tanggal}\n";
                 $msg .= "📋 Status: *{$statusLabel}*\n\n";
                 if ($statusCode === 'A')
@@ -600,10 +606,12 @@ class Fonnte
             },
 
             // Template 4 - Emoji Focus
-            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $mapel) {
                 $msg = "📱 *UPDATE KEHADIRAN* 📱\n\n";
                 $msg .= "🧒 {$namaSiswa}\n";
                 $msg .= "🏫 {$kelas}\n";
+                if ($mapel)
+                    $msg .= "📖 {$mapel}\n";
                 $msg .= "📅 {$tanggal}\n";
                 $msg .= "✅ Status: *{$statusLabel}*\n\n";
                 $msg .= "Salam,\n{$namaSekolah} 🏫";
@@ -611,21 +619,25 @@ class Fonnte
             },
 
             // Template 5 - Minimal
-            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $mapel) {
                 $msg = "[INFO ABSENSI]\n\n";
                 $msg .= "{$namaSiswa} - {$kelas}\n";
+                if ($mapel)
+                    $msg .= "Mapel: {$mapel}\n";
                 $msg .= "{$tanggal}: *{$statusLabel}*\n\n";
                 $msg .= "{$namaSekolah}";
                 return $msg;
             },
 
             // Template 6 - Conversational
-            function () use ($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode) {
+            function () use ($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel) {
                 $msg = "Halo Pak/Bu *{$namaOrtu}*! 👋\n\n";
                 $msg .= "Sekadar info, anak Bapak/Ibu:\n";
                 $msg .= "• Nama: *{$namaSiswa}*\n";
-                $msg .= "• Kelas: {$kelas}\n\n";
-                $msg .= "Hari ini ({$tanggal}) tercatat *{$statusLabel}*.\n\n";
+                $msg .= "• Kelas: {$kelas}\n";
+                if ($mapel)
+                    $msg .= "• Mapel: {$mapel}\n";
+                $msg .= "\nHari ini ({$tanggal}) tercatat *{$statusLabel}*.\n\n";
                 if ($statusCode === 'A')
                     $msg .= "Boleh dikonfirmasi ya Pak/Bu? 🙏\n\n";
                 $msg .= "Salam hangat dari kami!\n*{$namaSekolah}*";
@@ -633,12 +645,14 @@ class Fonnte
             },
 
             // Template 7 - Professional
-            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $mapel) {
                 $msg = "━━━━━━━━━━━━━━━━━━━━\n";
                 $msg .= "📋 *LAPORAN KEHADIRAN SISWA*\n";
                 $msg .= "━━━━━━━━━━━━━━━━━━━━\n\n";
                 $msg .= "Nama: {$namaSiswa}\n";
                 $msg .= "Kelas: {$kelas}\n";
+                if ($mapel)
+                    $msg .= "Mapel: {$mapel}\n";
                 $msg .= "Tanggal: {$tanggal}\n";
                 $msg .= "Status: *{$statusLabel}*\n\n";
                 $msg .= "Demikian informasi ini kami sampaikan.\n\n";
@@ -647,9 +661,10 @@ class Fonnte
             },
 
             // Template 8 - Parent-Friendly
-            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode) {
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel) {
                 $msg = "Bapak/Ibu Yth,\n\n";
-                $msg .= "Putra/putri tersayang *{$namaSiswa}* dari kelas *{$kelas}* pada tanggal {$tanggal} tercatat dengan status kehadiran:\n\n";
+                $mapelText = $mapel ? " pada mata pelajaran *{$mapel}*" : "";
+                $msg .= "Putra/putri tersayang *{$namaSiswa}* dari kelas *{$kelas}*{$mapelText} pada tanggal {$tanggal} tercatat dengan status kehadiran:\n\n";
                 $msg .= "➡️ *{$statusLabel}*\n\n";
                 if ($statusCode === 'A')
                     $msg .= "Mohon dapat berkoordinasi dengan wali kelas.\n\n";
@@ -658,22 +673,25 @@ class Fonnte
             },
 
             // Template 9 - Quick Alert
-            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $mapel) {
                 $msg = "⚡ *NOTIFIKASI CEPAT*\n\n";
                 $msg .= "📛 {$namaSiswa}\n";
-                $msg .= "📖 {$kelas} | 📆 {$tanggal}\n";
+                $mapelInfo = $mapel ? " | 📖 {$mapel}" : "";
+                $msg .= "📖 {$kelas}{$mapelInfo} | 📆 {$tanggal}\n";
                 $msg .= "📊 *{$statusLabel}*\n\n";
                 $msg .= "Balas OK jika sudah membaca.\n- {$namaSekolah}";
                 return $msg;
             },
 
             // Template 10 - Modern
-            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah) {
+            function () use ($namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $mapel) {
                 $msg = "Hey Bapak/Ibu! 🌟\n\n";
                 $msg .= "Update kehadiran untuk:\n";
                 $msg .= "┌─────────────────\n";
                 $msg .= "│ 👤 {$namaSiswa}\n";
                 $msg .= "│ 🎒 {$kelas}\n";
+                if ($mapel)
+                    $msg .= "│ 📖 {$mapel}\n";
                 $msg .= "│ 📅 {$tanggal}\n";
                 $msg .= "│ 📝 *{$statusLabel}*\n";
                 $msg .= "└─────────────────\n\n";

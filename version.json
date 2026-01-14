@@ -1,6 +1,6 @@
 {
-    "version": "1.12.3",
+    "version": "1.12.4",
     "build": 20260114,
     "release_date": "2026-01-14",
-    "description": "Fix dan debug notifikasi absensi via antrian WA"
+    "description": "Tambah mata pelajaran di semua template notifikasi absensi"
 }

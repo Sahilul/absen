@@ -830,11 +830,12 @@ class GuruController extends Controller
                 $waliNo = $cleanNumber($siswa['wali_no_hp'] ?? '');
 
                 // Build message template
-                $buildMessage = function ($namaOrtu) use ($namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status) {
+                $buildMessage = function ($namaOrtu) use ($namaSiswa, $namaKelas, $namaMapel, $statusLabel, $tanggal, $namaSekolah, $status) {
                     $msg = "🔔 *PEMBERITAHUAN KEHADIRAN*\n\n";
                     $msg .= "Yth. Bapak/Ibu *{$namaOrtu}*,\n\n";
                     $msg .= "Kami informasikan bahwa putra/putri Anda:\n";
                     $msg .= "📌 *{$namaSiswa}* - Kelas *{$namaKelas}*\n";
+                    $msg .= "📚 Mata Pelajaran: *{$namaMapel}*\n";
                     $msg .= "📅 Tanggal: {$tanggal}\n\n";
                     $msg .= "Tercatat dengan status: *{$statusLabel}*\n\n";
                     if ($status === 'A')

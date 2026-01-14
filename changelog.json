@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.12.4",
+            "date": "2026-01-14",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Tambah informasi Mata Pelajaran di semua 10 template notifikasi absensi"
+                },
+                {
+                    "type": "feature",
+                    "description": "Template via antrian (GuruController) dan via API langsung (Fonnte.php) sudah support mata pelajaran"
+                }
+            ]
+        },
+        {
             "version": "1.12.3",
             "date": "2026-01-14",
             "type": "patch",
