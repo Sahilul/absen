@@ -827,10 +827,22 @@ class GuruController extends Controller
 
                 $ayahNo = $cleanNumber($siswa['ayah_no_hp'] ?? '');
                 $ibuNo = $cleanNumber($siswa['ibu_no_hp'] ?? '');
-                $waliNo = $cleanNumber($siswa['wali_no_hp'] ?? '');
 
-                // Kirim ke Ayah (via queue) - gunakan random template dari Fonnte
-                if ($ayahNo) {
+                // Prioritas: Kirim ke Ibu dulu, jika tidak ada baru ke Ayah
+                // Hanya 1 pesan per siswa untuk mengurangi beban
+                if ($ibuNo) {
+                    // Kirim ke Ibu
+                    $namaIbu = $siswa['ibu_kandung'] ?? 'Ibu';
+                    $pesan = $fonnte->buildAbsensiMessage($namaIbu, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
+                    $queueModel->addToQueue(
+                        $ibuNo,
+                        $pesan,
+                        'notif_absensi',
+                        ['siswa' => $namaSiswa, 'target' => 'Ibu', 'status' => $status]
+                    );
+                    $queued++;
+                } elseif ($ayahNo) {
+                    // Fallback ke Ayah jika nomor Ibu tidak ada
                     $namaAyah = $siswa['ayah_kandung'] ?? 'Bapak';
                     $pesan = $fonnte->buildAbsensiMessage($namaAyah, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
                     $queueModel->addToQueue(
@@ -841,32 +853,7 @@ class GuruController extends Controller
                     );
                     $queued++;
                 }
-
-                // Kirim ke Ibu (via queue) - gunakan random template dari Fonnte
-                if ($ibuNo) {
-                    $namaIbu = $siswa['ibu_kandung'] ?? 'Ibu';
-                    $pesan = $fonnte->buildAbsensiMessage($namaIbu, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
-                    $queueModel->addToQueue(
-                        $ibuNo,
-                        $pesan,
-                        'notif_absensi',
-                        ['siswa' => $namaSiswa, 'target' => 'Ibu', 'status' => $status]
-                    );
-                    $queued++;
-                }
-
-                // Kirim ke Wali (via queue) - gunakan random template dari Fonnte
-                if ($waliNo) {
-                    $namaWali = $siswa['wali_nama'] ?? 'Wali';
-                    $pesan = $fonnte->buildAbsensiMessage($namaWali, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
-                    $queueModel->addToQueue(
-                        $waliNo,
-                        $pesan,
-                        'notif_absensi',
-                        ['siswa' => $namaSiswa, 'target' => 'Wali', 'status' => $status]
-                    );
-                    $queued++;
-                }
+                // Wali tidak dikirim untuk mengurangi jumlah pesan
             }
 
             // Log hasil

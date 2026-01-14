@@ -1,6 +1,45 @@
 {
     "versions": [
         {
+            "version": "1.13.0",
+            "date": "2026-01-14",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur Multi WA Account Rotation - kelola beberapa akun WA Gateway dengan rotasi otomatis"
+                },
+                {
+                    "type": "feature",
+                    "description": "3 mode rotasi: Round Robin (berurutan), Random (acak), Load Balance (beban terendah)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Limit harian per akun dengan auto-reset tengah malam"
+                },
+                {
+                    "type": "feature",
+                    "description": "Halaman admin baru: Pengaturan WA Gateway dengan UI modern"
+                },
+                {
+                    "type": "feature",
+                    "description": "Tracking akun mana yang mengirim setiap pesan"
+                },
+                {
+                    "type": "feature",
+                    "description": "Deteksi otomatis akun WA terblokir dengan notifikasi ke admin"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Notifikasi absensi hanya ke Ibu (fallback ke Ayah jika tidak ada) untuk hemat kuota"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Hanya notifikasi absensi yang pakai multi WA, notifikasi lain tetap pakai gateway default"
+                }
+            ]
+        },
+        {
             "version": "1.12.5",
             "date": "2026-01-14",
             "type": "feature",

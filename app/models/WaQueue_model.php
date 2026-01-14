@@ -96,12 +96,20 @@ class WaQueue_model
     /**
      * Tandai pesan berhasil terkirim
      */
-    public function markAsSent($id, $response = null)
+    public function markAsSent($id, $response = null, $waAccountId = null)
     {
-        $this->db->query('UPDATE wa_message_queue 
-                          SET status = "sent", sent_at = NOW(), error_message = NULL 
-                          WHERE id = :id');
+        $sql = 'UPDATE wa_message_queue 
+                SET status = "sent", sent_at = NOW(), error_message = NULL';
+        if ($waAccountId) {
+            $sql .= ', wa_account_id = :wa_account_id';
+        }
+        $sql .= ' WHERE id = :id';
+
+        $this->db->query($sql);
         $this->db->bind(':id', $id);
+        if ($waAccountId) {
+            $this->db->bind(':wa_account_id', $waAccountId);
+        }
         $this->db->execute();
 
         // Log ke tabel log

@@ -11,6 +11,7 @@ class Fonnte
     private $provider = 'fonnte'; // fonnte, gowa, wablas, dripsender
     private $username = '';
     private $password = '';
+    private $accountId = null; // ID akun dari wa_accounts
 
     // Daftar provider populer di Indonesia
     public static $providers = [
@@ -59,6 +60,28 @@ class Fonnte
         } else {
             $this->loadSettingsFromDatabase();
         }
+    }
+
+    /**
+     * Konfigurasi dari data akun wa_accounts
+     * @param array $account Data akun dari wa_accounts table
+     */
+    public function configureFromAccount($account)
+    {
+        $this->accountId = $account['id'];
+        $this->provider = $account['provider'] ?? 'fonnte';
+        $this->apiUrl = $account['api_url'] ?? (self::$providers[$this->provider]['url'] ?? 'https://api.fonnte.com/send');
+        $this->token = $account['token'] ?? '';
+        $this->username = $account['username'] ?? '';
+        $this->password = $account['password'] ?? '';
+    }
+
+    /**
+     * Get current account ID (untuk tracking)
+     */
+    public function getAccountId()
+    {
+        return $this->accountId;
     }
 
     /**

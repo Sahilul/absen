@@ -232,4 +232,30 @@ class PengaturanAplikasi_model
 
         return $this->db->execute();
     }
+
+    /**
+     * Update single setting by column name
+     */
+    public function updateSetting($column, $value)
+    {
+        // Whitelist allowed columns for security
+        $allowedColumns = [
+            'wa_rotation_enabled',
+            'wa_rotation_mode',
+            'wa_last_account_id',
+            'admin_wa_number',
+            'cron_secret',
+            'wa_gateway_provider',
+            'wa_gateway_url',
+            'wa_gateway_token'
+        ];
+
+        if (!in_array($column, $allowedColumns)) {
+            return false;
+        }
+
+        $this->db->query("UPDATE {$this->table} SET {$column} = :value, updated_at = NOW() WHERE id = 1");
+        $this->db->bind(':value', $value);
+        return $this->db->execute();
+    }
 }

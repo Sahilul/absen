@@ -6815,6 +6815,163 @@ Waktu: ' . date('d/m/Y H:i:s');
         $this->view('admin/riwayat_login', $this->data);
         $this->view('templates/footer', $this->data);
     }
+
+    // ===============================================
+    // WA GATEWAY MANAGEMENT - Multi Account Rotation
+    // ===============================================
+
+    /**
+     * Halaman Pengaturan WA Gateway
+     */
+    public function waGateway()
+    {
+        $this->data['judul'] = 'Pengaturan WA Gateway';
+
+        // Load model
+        $waAccountModel = $this->model('WaAccount_model');
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+
+        // Get data
+        $this->data['accounts'] = $waAccountModel->getAll();
+        $this->data['stats'] = $waAccountModel->getStats();
+        $pengaturan = $pengaturanModel->getPengaturan();
+        $this->data['rotation_enabled'] = ($pengaturan['wa_rotation_enabled'] ?? 0) == 1;
+        $this->data['rotation_mode'] = $pengaturan['wa_rotation_mode'] ?? 'round_robin';
+        $this->data['admin_wa_number'] = $pengaturan['admin_wa_number'] ?? '';
+
+        // Load Fonnte class untuk akses providers list
+        require_once APPROOT . '/app/core/Fonnte.php';
+        $this->data['providers'] = Fonnte::$providers;
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/wa_gateway', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Simpan pengaturan rotasi
+     */
+    public function prosesWaGateway()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $pengaturanModel = $this->model('PengaturanAplikasi_model');
+
+            $rotationEnabled = isset($_POST['rotation_enabled']) ? 1 : 0;
+            $rotationMode = $_POST['rotation_mode'] ?? 'round_robin';
+            $adminWaNumber = $_POST['admin_wa_number'] ?? '';
+
+            $pengaturanModel->updateSetting('wa_rotation_enabled', $rotationEnabled);
+            $pengaturanModel->updateSetting('wa_rotation_mode', $rotationMode);
+            $pengaturanModel->updateSetting('admin_wa_number', $adminWaNumber);
+
+            Flasher::setFlash('Pengaturan rotasi WA berhasil disimpan.', 'success');
+        }
+
+        header('Location: ' . BASEURL . '/admin/waGateway');
+        exit;
+    }
+
+    /**
+     * Tambah akun WA baru
+     */
+    public function tambahWaAkun()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $waAccountModel = $this->model('WaAccount_model');
+
+            $data = [
+                'nama' => $_POST['nama'] ?? '',
+                'provider' => $_POST['provider'] ?? 'fonnte',
+                'api_url' => $_POST['api_url'] ?? '',
+                'token' => $_POST['token'] ?? '',
+                'username' => $_POST['username'] ?? '',
+                'password' => $_POST['password'] ?? '',
+                'is_active' => isset($_POST['is_active']) ? 1 : 0,
+                'daily_limit' => (int) ($_POST['daily_limit'] ?? 100)
+            ];
+
+            if (empty($data['nama'])) {
+                Flasher::setFlash('Nama akun wajib diisi.', 'danger');
+            } else {
+                $waAccountModel->create($data);
+                Flasher::setFlash('Akun WA berhasil ditambahkan.', 'success');
+            }
+        }
+
+        header('Location: ' . BASEURL . '/admin/waGateway');
+        exit;
+    }
+
+    /**
+     * Edit akun WA
+     */
+    public function editWaAkun($id = null)
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
+            $waAccountModel = $this->model('WaAccount_model');
+
+            $data = [
+                'nama' => $_POST['nama'] ?? '',
+                'provider' => $_POST['provider'] ?? 'fonnte',
+                'api_url' => $_POST['api_url'] ?? '',
+                'token' => $_POST['token'] ?? '',
+                'username' => $_POST['username'] ?? '',
+                'password' => $_POST['password'] ?? '',
+                'is_active' => isset($_POST['is_active']) ? 1 : 0,
+                'daily_limit' => (int) ($_POST['daily_limit'] ?? 100)
+            ];
+
+            $waAccountModel->update($id, $data);
+            Flasher::setFlash('Akun WA berhasil diperbarui.', 'success');
+        }
+
+        header('Location: ' . BASEURL . '/admin/waGateway');
+        exit;
+    }
+
+    /**
+     * Hapus akun WA
+     */
+    public function hapusWaAkun($id = null)
+    {
+        if ($id) {
+            $waAccountModel = $this->model('WaAccount_model');
+            $waAccountModel->delete($id);
+            Flasher::setFlash('Akun WA berhasil dihapus.', 'success');
+        }
+
+        header('Location: ' . BASEURL . '/admin/waGateway');
+        exit;
+    }
+
+    /**
+     * Toggle aktif/nonaktif akun WA
+     */
+    public function toggleWaAkun($id = null)
+    {
+        if ($id) {
+            $waAccountModel = $this->model('WaAccount_model');
+            $waAccountModel->toggleActive($id);
+            Flasher::setFlash('Status akun WA berhasil diubah.', 'success');
+        }
+
+        header('Location: ' . BASEURL . '/admin/waGateway');
+        exit;
+    }
+
+    /**
+     * Reset counter harian semua akun
+     */
+    public function resetWaCounter()
+    {
+        $waAccountModel = $this->model('WaAccount_model');
+        $waAccountModel->resetAllCounters();
+        Flasher::setFlash('Counter harian semua akun berhasil direset.', 'success');
+
+        header('Location: ' . BASEURL . '/admin/waGateway');
+        exit;
+    }
 }
 
 
