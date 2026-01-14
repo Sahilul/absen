@@ -1,6 +1,25 @@
 {
     "versions": [
         {
+            "version": "1.12.5",
+            "date": "2026-01-14",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Notifikasi absensi via antrian sekarang menggunakan 10 template random (sama seperti pengiriman langsung)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Tambah method buildAbsensiMessage() di Fonnte.php untuk penggunaan eksternal"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix pengambilan nama sekolah dari kolom 'nama_aplikasi' yang benar di database"
+                }
+            ]
+        },
+        {
             "version": "1.12.4",
             "date": "2026-01-14",
             "type": "feature",

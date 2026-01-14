@@ -556,6 +556,23 @@ class Fonnte
     }
 
     /**
+     * Build pesan absensi dengan random template (untuk queue atau penggunaan eksternal)
+     * @param string $namaOrtu Nama orang tua/wali
+     * @param string $namaSiswa Nama siswa
+     * @param string $kelas Nama kelas
+     * @param string $statusLabel Label status (ALPHA, IZIN, SAKIT, DISPENSASI)
+     * @param string $tanggal Tanggal format readable
+     * @param string $namaSekolah Nama sekolah
+     * @param string $statusCode Kode status (A/I/S/D)
+     * @param string $mapel Mata pelajaran (opsional)
+     * @return string Pesan yang sudah dibuild dengan random template
+     */
+    public function buildAbsensiMessage($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel = '')
+    {
+        return $this->getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel);
+    }
+
+    /**
      * Get random absensi template (10 variasi)
      */
     private function getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel = '')

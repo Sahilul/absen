@@ -750,7 +750,7 @@ class GuruController extends Controller
 
             // Ambil pengaturan sekolah
             $pengaturan = $this->model('PengaturanAplikasi_model')->getPengaturan();
-            $namaSekolah = $pengaturan['nama_sekolah'] ?? '';
+            $namaSekolah = $pengaturan['nama_aplikasi'] ?? '';
             error_log("namaSekolah: " . $namaSekolah);
 
             // Cek setting notifikasi absensi (default: AKTIF jika tidak ada di database)
@@ -829,51 +829,39 @@ class GuruController extends Controller
                 $ibuNo = $cleanNumber($siswa['ibu_no_hp'] ?? '');
                 $waliNo = $cleanNumber($siswa['wali_no_hp'] ?? '');
 
-                // Build message template
-                $buildMessage = function ($namaOrtu) use ($namaSiswa, $namaKelas, $namaMapel, $statusLabel, $tanggal, $namaSekolah, $status) {
-                    $msg = "🔔 *PEMBERITAHUAN KEHADIRAN*\n\n";
-                    $msg .= "Yth. Bapak/Ibu *{$namaOrtu}*,\n\n";
-                    $msg .= "Kami informasikan bahwa putra/putri Anda:\n";
-                    $msg .= "📌 *{$namaSiswa}* - Kelas *{$namaKelas}*\n";
-                    $msg .= "📚 Mata Pelajaran: *{$namaMapel}*\n";
-                    $msg .= "📅 Tanggal: {$tanggal}\n\n";
-                    $msg .= "Tercatat dengan status: *{$statusLabel}*\n\n";
-                    if ($status === 'A')
-                        $msg .= "⚠️ Mohon konfirmasi kepada pihak sekolah.\n\n";
-                    $msg .= "Hormat kami,\n*{$namaSekolah}*";
-                    return $msg;
-                };
-
-                // Kirim ke Ayah (via queue)
+                // Kirim ke Ayah (via queue) - gunakan random template dari Fonnte
                 if ($ayahNo) {
                     $namaAyah = $siswa['ayah_kandung'] ?? 'Bapak';
+                    $pesan = $fonnte->buildAbsensiMessage($namaAyah, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
                     $queueModel->addToQueue(
                         $ayahNo,
-                        $buildMessage($namaAyah),
+                        $pesan,
                         'notif_absensi',
                         ['siswa' => $namaSiswa, 'target' => 'Ayah', 'status' => $status]
                     );
                     $queued++;
                 }
 
-                // Kirim ke Ibu (via queue)
+                // Kirim ke Ibu (via queue) - gunakan random template dari Fonnte
                 if ($ibuNo) {
                     $namaIbu = $siswa['ibu_kandung'] ?? 'Ibu';
+                    $pesan = $fonnte->buildAbsensiMessage($namaIbu, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
                     $queueModel->addToQueue(
                         $ibuNo,
-                        $buildMessage($namaIbu),
+                        $pesan,
                         'notif_absensi',
                         ['siswa' => $namaSiswa, 'target' => 'Ibu', 'status' => $status]
                     );
                     $queued++;
                 }
 
-                // Kirim ke Wali (via queue)
+                // Kirim ke Wali (via queue) - gunakan random template dari Fonnte
                 if ($waliNo) {
                     $namaWali = $siswa['wali_nama'] ?? 'Wali';
+                    $pesan = $fonnte->buildAbsensiMessage($namaWali, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
                     $queueModel->addToQueue(
                         $waliNo,
-                        $buildMessage($namaWali),
+                        $pesan,
                         'notif_absensi',
                         ['siswa' => $namaSiswa, 'target' => 'Wali', 'status' => $status]
                     );
