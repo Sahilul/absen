@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.13.4",
+            "date": "2026-01-15",
+            "type": "fix",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Error 'Token WA Gateway tidak dikonfigurasi' sekarang trigger failover ke akun lain"
+                }
+            ]
+        },
+        {
             "version": "1.13.3",
             "date": "2026-01-15",
             "type": "feature",

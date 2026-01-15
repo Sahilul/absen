@@ -266,7 +266,10 @@ class WaAccount_model
             'qr code',
             'tidak terhubung',
             'terblokir',
-            'diblokir'
+            'diblokir',
+            'tidak dikonfigurasi',
+            'token kosong',
+            'empty token'
         ];
 
         foreach ($blockIndicators as $indicator) {
