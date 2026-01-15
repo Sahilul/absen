@@ -6597,16 +6597,22 @@ Waktu: ' . date('d/m/Y H:i:s');
         $this->data['stats_by_jenis'] = $queueModel->getStatsByJenis();
         $this->data['today_count'] = $queueModel->getTodayCount();
 
-        // Filter
+        // Filter & Pagination
         $status = $_GET['status'] ?? 'all';
+        $page = max(1, intval($_GET['page'] ?? 1));
+        $perPage = 20;
+
         $this->data['filter_status'] = $status;
 
-        // Get messages
-        if ($status === 'all') {
-            $this->data['messages'] = $queueModel->getRecentMessages(100);
-        } else {
-            $this->data['messages'] = $queueModel->getByStatus($status, 100);
-        }
+        // Get paginated messages
+        $result = $queueModel->getPaginated($status, $page, $perPage);
+        $this->data['messages'] = $result['data'];
+        $this->data['pagination'] = [
+            'current' => $result['page'],
+            'total_pages' => $result['total_pages'],
+            'total' => $result['total'],
+            'per_page' => $result['per_page']
+        ];
 
         $this->view('templates/header', $this->data);
         $this->view('templates/sidebar_admin', $this->data);
@@ -6661,6 +6667,27 @@ Waktu: ' . date('d/m/Y H:i:s');
         $queueModel->delete($id);
 
         Flasher::setFlash('Pesan dihapus dari antrian.', 'success');
+        header('Location: ' . BASEURL . '/admin/antrianWa');
+        exit;
+    }
+
+    /**
+     * Bulk delete pesan dari antrian
+     */
+    public function bulkDeleteWaMessages()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $ids = $_POST['ids'] ?? [];
+
+            if (empty($ids)) {
+                Flasher::setFlash('Tidak ada pesan yang dipilih!', 'warning');
+            } else {
+                $queueModel = $this->model('WaQueue_model');
+                $queueModel->bulkDelete($ids);
+                Flasher::setFlash(count($ids) . ' pesan berhasil dihapus.', 'success');
+            }
+        }
+
         header('Location: ' . BASEURL . '/admin/antrianWa');
         exit;
     }

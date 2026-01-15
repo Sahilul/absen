@@ -1,6 +1,25 @@
 {
     "versions": [
         {
+            "version": "1.13.2",
+            "date": "2026-01-15",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Tombol Detail Pesan - lihat isi pesan lengkap dalam modal popup"
+                },
+                {
+                    "type": "feature",
+                    "description": "Bulk Delete - pilih banyak pesan sekaligus dan hapus massal"
+                },
+                {
+                    "type": "feature",
+                    "description": "Pagination - navigasi halaman untuk data banyak (20 pesan per halaman)"
+                }
+            ]
+        },
+        {
             "version": "1.13.1",
             "date": "2026-01-14",
             "type": "fix",

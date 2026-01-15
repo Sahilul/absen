@@ -1,6 +1,6 @@
 {
-    "version": "1.13.1",
+    "version": "1.13.2",
     "build": 20260115,
-    "release_date": "2026-01-14",
-    "description": "Database Migration Fix for Multi WA Account"
+    "release_date": "2026-01-15",
+    "description": "Enhanced WA Queue Admin Page"
 }

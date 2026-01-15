@@ -273,13 +273,71 @@ class WaQueue_model
     }
 
     /**
+     * Hapus banyak pesan sekaligus (bulk delete)
+     * @param array $ids Array of message IDs
+     */
+    public function bulkDelete($ids)
+    {
+        if (empty($ids))
+            return 0;
+
+        // Sanitize IDs
+        $ids = array_map('intval', $ids);
+        $placeholders = implode(',', $ids);
+
+        $this->db->query("DELETE FROM wa_message_queue WHERE id IN ({$placeholders})");
+        return $this->db->execute();
+    }
+
+    /**
      * Hitung pesan hari ini
      */
     public function getTodayCount()
     {
         $this->db->query('SELECT COUNT(*) as total FROM wa_message_queue 
                           WHERE DATE(created_at) = CURDATE()');
-        $result = $this->db->single();
-        return $result['total'] ?? 0;
+        return $this->db->single()['total'] ?? 0;
+    }
+
+    /**
+     * Ambil pesan dengan pagination
+     * @param string $status Filter status (all, pending, sent, failed)
+     * @param int $page Halaman saat ini
+     * @param int $perPage Jumlah per halaman
+     */
+    public function getPaginated($status = 'all', $page = 1, $perPage = 20)
+    {
+        $offset = ($page - 1) * $perPage;
+
+        // Count total
+        if ($status === 'all') {
+            $this->db->query('SELECT COUNT(*) as total FROM wa_message_queue WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)');
+        } else {
+            $this->db->query('SELECT COUNT(*) as total FROM wa_message_queue WHERE status = :status AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)');
+            $this->db->bind(':status', $status);
+        }
+        $total = $this->db->single()['total'] ?? 0;
+
+        // Get messages
+        if ($status === 'all') {
+            $this->db->query("SELECT * FROM wa_message_queue 
+                              WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                              ORDER BY created_at DESC 
+                              LIMIT {$perPage} OFFSET {$offset}");
+        } else {
+            $this->db->query("SELECT * FROM wa_message_queue 
+                              WHERE status = :status AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                              ORDER BY created_at DESC 
+                              LIMIT {$perPage} OFFSET {$offset}");
+            $this->db->bind(':status', $status);
+        }
+
+        return [
+            'data' => $this->db->resultSet(),
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => ceil($total / $perPage)
+        ];
     }
 }
