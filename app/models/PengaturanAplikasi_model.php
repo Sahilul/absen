@@ -258,4 +258,76 @@ class PengaturanAplikasi_model
         $this->db->bind(':value', $value);
         return $this->db->execute();
     }
+
+    /**
+     * Get single setting value by name (key-value style)
+     * Uses a separate key-value storage approach for dynamic settings
+     */
+    public function getValue($name)
+    {
+        // First check if it's a column in the main table
+        $pengaturan = $this->getPengaturan();
+        if (isset($pengaturan[$name])) {
+            return $pengaturan[$name];
+        }
+
+        // Otherwise check key-value style storage in app_settings table
+        try {
+            $this->db->query("SELECT value FROM app_settings WHERE name = :name LIMIT 1");
+            $this->db->bind(':name', $name);
+            $result = $this->db->single();
+            return $result ? $result['value'] : null;
+        } catch (Exception $e) {
+            // Table might not exist, try to create it
+            $this->ensureAppSettingsTable();
+            return null;
+        }
+    }
+
+    /**
+     * Set or update a setting by name (key-value style)
+     */
+    public function setOrUpdate($name, $value)
+    {
+        try {
+            // Ensure table exists
+            $this->ensureAppSettingsTable();
+
+            // Check if exists
+            $this->db->query("SELECT id FROM app_settings WHERE name = :name LIMIT 1");
+            $this->db->bind(':name', $name);
+            $existing = $this->db->single();
+
+            if ($existing) {
+                // Update
+                $this->db->query("UPDATE app_settings SET value = :value, updated_at = NOW() WHERE name = :name");
+            } else {
+                // Insert
+                $this->db->query("INSERT INTO app_settings (name, value, created_at) VALUES (:name, :value, NOW())");
+            }
+
+            $this->db->bind(':name', $name);
+            $this->db->bind(':value', $value);
+            return $this->db->execute();
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Ensure app_settings table exists
+     */
+    private function ensureAppSettingsTable()
+    {
+        $this->db->query("CREATE TABLE IF NOT EXISTS `app_settings` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `name` varchar(100) NOT NULL,
+            `value` text,
+            `created_at` datetime DEFAULT NULL,
+            `updated_at` datetime DEFAULT NULL,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `name` (`name`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $this->db->execute();
+    }
 }

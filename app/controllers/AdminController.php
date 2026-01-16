@@ -6999,6 +6999,113 @@ Waktu: ' . date('d/m/Y H:i:s');
         header('Location: ' . BASEURL . '/admin/waGateway');
         exit;
     }
+
+    /**
+     * Halaman Pengaturan Mobile App
+     */
+    public function pengaturanMobileApp()
+    {
+        $this->data['judul'] = 'Pengaturan Mobile App';
+
+        // Get existing settings
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+
+        $this->data['firebase_project_id'] = $pengaturanModel->getValue('firebase_project_id') ?? '';
+        $this->data['firebase_client_email'] = $pengaturanModel->getValue('firebase_client_email') ?? '';
+        $this->data['firebase_private_key'] = $pengaturanModel->getValue('firebase_private_key') ?? '';
+        $this->data['google_client_id'] = $pengaturanModel->getValue('google_client_id') ?? '';
+        $this->data['mobile_app_enabled'] = $pengaturanModel->getValue('mobile_app_enabled') ?? '0';
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/pengaturan_mobile_app', $this->data);
+        $this->view('templates/footer');
+    }
+
+    /**
+     * Simpan Pengaturan Mobile App
+     */
+    public function simpanPengaturanMobileApp()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/pengaturanMobileApp');
+            exit;
+        }
+
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+
+        // Save Firebase settings
+        $settings = [
+            'firebase_project_id' => $_POST['firebase_project_id'] ?? '',
+            'firebase_client_email' => $_POST['firebase_client_email'] ?? '',
+            'firebase_private_key' => $_POST['firebase_private_key'] ?? '',
+            'google_client_id' => $_POST['google_client_id'] ?? '',
+            'mobile_app_enabled' => isset($_POST['mobile_app_enabled']) ? '1' : '0'
+        ];
+
+        $success = true;
+        foreach ($settings as $name => $value) {
+            if (!$pengaturanModel->setOrUpdate($name, $value)) {
+                $success = false;
+            }
+        }
+
+        if ($success) {
+            Flasher::setFlash('Pengaturan Mobile App berhasil disimpan', 'success');
+        } else {
+            Flasher::setFlash('Gagal menyimpan beberapa pengaturan', 'warning');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pengaturanMobileApp');
+        exit;
+    }
+
+    /**
+     * Import Service Account JSON
+     */
+    public function importServiceAccount()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Method tidak diizinkan']);
+            exit;
+        }
+
+        $json = $_POST['service_account_json'] ?? '';
+
+        if (empty($json)) {
+            echo json_encode(['success' => false, 'message' => 'JSON tidak boleh kosong']);
+            exit;
+        }
+
+        $data = json_decode($json, true);
+
+        if (!$data) {
+            echo json_encode(['success' => false, 'message' => 'JSON tidak valid']);
+            exit;
+        }
+
+        // Extract required fields
+        $projectId = $data['project_id'] ?? '';
+        $clientEmail = $data['client_email'] ?? '';
+        $privateKey = $data['private_key'] ?? '';
+
+        if (empty($projectId) || empty($clientEmail) || empty($privateKey)) {
+            echo json_encode(['success' => false, 'message' => 'JSON tidak lengkap. Pastikan ada project_id, client_email, dan private_key']);
+            exit;
+        }
+
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'project_id' => $projectId,
+                'client_email' => $clientEmail,
+                'private_key' => $privateKey
+            ]
+        ]);
+        exit;
+    }
 }
 
 

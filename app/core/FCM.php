@@ -4,17 +4,14 @@
  * File: app/core/FCM.php
  * 
  * Menggunakan FCM HTTP v1 API dengan Service Account authentication
- * 
- * Setup:
- * 1. Download Service Account JSON dari Firebase Console
- * 2. Simpan di: app/config/firebase-service-account.json
- * 3. Atau simpan path-nya di pengaturan_aplikasi
+ * Credential dibaca dari database (pengaturan_aplikasi)
  */
 
 class FCM
 {
     private $projectId;
-    private $serviceAccountPath;
+    private $clientEmail;
+    private $privateKey;
     private $accessToken;
     private $tokenExpiry;
     private $fcmUrl;
@@ -24,22 +21,48 @@ class FCM
     {
         $this->db = new Database();
 
-        // Get project ID from google-services.json or pengaturan
-        $this->db->query("SELECT value FROM pengaturan_aplikasi WHERE name = 'firebase_project_id' LIMIT 1");
-        $result = $this->db->single();
-        $this->projectId = $result['value'] ?? '';
+        // Load credentials from database (app_settings table)
+        $this->loadCredentialsFromDatabase();
 
-        // Default service account path
-        $this->serviceAccountPath = APPROOT . '/app/config/firebase-service-account.json';
-
-        // Check if custom path is set
-        $this->db->query("SELECT value FROM pengaturan_aplikasi WHERE name = 'firebase_service_account_path' LIMIT 1");
-        $result = $this->db->single();
-        if (!empty($result['value'])) {
-            $this->serviceAccountPath = $result['value'];
+        if ($this->projectId) {
+            $this->fcmUrl = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
         }
+    }
 
-        $this->fcmUrl = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
+    /**
+     * Load Firebase credentials from database
+     */
+    private function loadCredentialsFromDatabase()
+    {
+        try {
+            // Get project ID
+            $this->db->query("SELECT value FROM app_settings WHERE name = 'firebase_project_id' LIMIT 1");
+            $result = $this->db->single();
+            $this->projectId = $result ? $result['value'] : '';
+
+            // Get client email
+            $this->db->query("SELECT value FROM app_settings WHERE name = 'firebase_client_email' LIMIT 1");
+            $result = $this->db->single();
+            $this->clientEmail = $result ? $result['value'] : '';
+
+            // Get private key
+            $this->db->query("SELECT value FROM app_settings WHERE name = 'firebase_private_key' LIMIT 1");
+            $result = $this->db->single();
+            $this->privateKey = $result ? $result['value'] : '';
+        } catch (Exception $e) {
+            // Table doesn't exist yet
+            $this->projectId = '';
+            $this->clientEmail = '';
+            $this->privateKey = '';
+        }
+    }
+
+    /**
+     * Check if FCM is configured
+     */
+    public function isConfigured()
+    {
+        return !empty($this->projectId) && !empty($this->clientEmail) && !empty($this->privateKey);
     }
 
     /**
@@ -53,11 +76,14 @@ class FCM
     }
 
     /**
-     * Set service account path manually
+     * Set credentials manually
      */
-    public function setServiceAccountPath($path)
+    public function setCredentials($projectId, $clientEmail, $privateKey)
     {
-        $this->serviceAccountPath = $path;
+        $this->projectId = $projectId;
+        $this->clientEmail = $clientEmail;
+        $this->privateKey = $privateKey;
+        $this->fcmUrl = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
         return $this;
     }
 
@@ -71,15 +97,8 @@ class FCM
             return $this->accessToken;
         }
 
-        // Read service account file
-        if (!file_exists($this->serviceAccountPath)) {
-            throw new Exception("Service Account file not found: {$this->serviceAccountPath}");
-        }
-
-        $serviceAccount = json_decode(file_get_contents($this->serviceAccountPath), true);
-
-        if (!$serviceAccount) {
-            throw new Exception("Invalid Service Account JSON file");
+        if (!$this->isConfigured()) {
+            throw new Exception("Firebase credentials not configured. Please set up in Admin > Pengaturan Mobile App");
         }
 
         // Create JWT
@@ -92,8 +111,8 @@ class FCM
         $expiry = $now + 3600; // 1 hour
 
         $claims = [
-            'iss' => $serviceAccount['client_email'],
-            'sub' => $serviceAccount['client_email'],
+            'iss' => $this->clientEmail,
+            'sub' => $this->clientEmail,
             'aud' => 'https://oauth2.googleapis.com/token',
             'iat' => $now,
             'exp' => $expiry,
@@ -106,10 +125,10 @@ class FCM
 
         // Sign with private key
         $signatureInput = $headerEncoded . '.' . $claimsEncoded;
-        $privateKey = openssl_pkey_get_private($serviceAccount['private_key']);
+        $privateKey = openssl_pkey_get_private($this->privateKey);
 
         if (!$privateKey) {
-            throw new Exception("Invalid private key in Service Account");
+            throw new Exception("Invalid private key. Please check Firebase credentials in Admin settings.");
         }
 
         openssl_sign($signatureInput, $signature, $privateKey, OPENSSL_ALGO_SHA256);
@@ -313,8 +332,8 @@ class FCM
      */
     private function send($message)
     {
-        if (empty($this->projectId)) {
-            return ['success' => false, 'error' => 'Firebase Project ID not configured'];
+        if (!$this->isConfigured()) {
+            return ['success' => false, 'error' => 'Firebase not configured. Go to Admin > Pengaturan Mobile App'];
         }
 
         try {
@@ -363,7 +382,7 @@ class FCM
      */
     private function logNotification($message, $response)
     {
-        $logFile = dirname(__DIR__, 2) . '/logs/fcm_' . date('Y-m-d') . '.log';
+        $logFile = APPROOT . '/logs/fcm_' . date('Y-m-d') . '.log';
         $logDir = dirname($logFile);
 
         if (!is_dir($logDir)) {

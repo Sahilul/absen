@@ -417,6 +417,13 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                         </a>
                     </li>
                     <li>
+                        <a href="<?= BASEURL; ?>/admin/pengaturanMobileApp"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan Mobile App') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-green-50 hover:text-green-700' ?>">
+                            <i data-lucide="smartphone" class="w-4 h-4 mr-2"></i>
+                            Pengaturan Mobile App
+                        </a>
+                    </li>
+                    <li>
                         <a href="<?= BASEURL; ?>/admin/pengaturanMenu"
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan Menu') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-blue-50 hover:text-blue-700' ?>">
                             <i data-lucide="menu" class="w-4 h-4 mr-2"></i>

@@ -1,6 +1,29 @@
 {
     "versions": [
         {
+            "version": "1.13.8",
+            "date": "2026-01-16",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Pengaturan Mobile App - UI untuk konfigurasi Firebase & Google Sign-In di Admin Panel"
+                },
+                {
+                    "type": "feature",
+                    "description": "Import Service Account JSON - import credential Firebase dengan mudah"
+                },
+                {
+                    "type": "improvement",
+                    "description": "FCM sekarang membaca credential dari database (lebih aman)"
+                },
+                {
+                    "type": "new",
+                    "description": "Database: app_settings table untuk menyimpan konfigurasi dinamis"
+                }
+            ]
+        },
+        {
             "version": "1.13.7",
             "date": "2026-01-16",
             "type": "improvement",
