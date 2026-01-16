@@ -34,3 +34,5 @@ cache/
 *.bak
 *.backup
 *-backup.*
+app/config/firebase-service-account.json
+app/config/*.json

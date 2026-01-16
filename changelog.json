@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.13.7",
+            "date": "2026-01-16",
+            "type": "improvement",
+            "changes": [
+                {
+                    "type": "improvement",
+                    "description": "FCM upgrade ke V1 API - menggunakan Service Account authentication (OAuth2)"
+                },
+                {
+                    "type": "new",
+                    "description": "Database: firebase_project_id setting untuk konfigurasi FCM"
+                }
+            ]
+        },
+        {
             "version": "1.13.6",
             "date": "2026-01-16",
             "type": "feature",

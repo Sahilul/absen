@@ -1,91 +1,202 @@
 <?php
 /**
- * Firebase Cloud Messaging (FCM) Service
+ * Firebase Cloud Messaging (FCM) V1 API Service
  * File: app/core/FCM.php
  * 
- * Digunakan untuk mengirim push notification ke device mobile
+ * Menggunakan FCM HTTP v1 API dengan Service Account authentication
+ * 
+ * Setup:
+ * 1. Download Service Account JSON dari Firebase Console
+ * 2. Simpan di: app/config/firebase-service-account.json
+ * 3. Atau simpan path-nya di pengaturan_aplikasi
  */
 
 class FCM
 {
-    private $serverKey;
-    private $fcmUrl = 'https://fcm.googleapis.com/fcm/send';
+    private $projectId;
+    private $serviceAccountPath;
+    private $accessToken;
+    private $tokenExpiry;
+    private $fcmUrl;
     private $db;
 
     public function __construct()
     {
         $this->db = new Database();
 
-        // Get FCM Server Key from pengaturan_aplikasi
-        $this->db->query("SELECT value FROM pengaturan_aplikasi WHERE name = 'fcm_server_key' LIMIT 1");
+        // Get project ID from google-services.json or pengaturan
+        $this->db->query("SELECT value FROM pengaturan_aplikasi WHERE name = 'firebase_project_id' LIMIT 1");
         $result = $this->db->single();
-        $this->serverKey = $result['value'] ?? '';
+        $this->projectId = $result['value'] ?? '';
+
+        // Default service account path
+        $this->serviceAccountPath = APPROOT . '/app/config/firebase-service-account.json';
+
+        // Check if custom path is set
+        $this->db->query("SELECT value FROM pengaturan_aplikasi WHERE name = 'firebase_service_account_path' LIMIT 1");
+        $result = $this->db->single();
+        if (!empty($result['value'])) {
+            $this->serviceAccountPath = $result['value'];
+        }
+
+        $this->fcmUrl = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
     }
 
     /**
-     * Set server key manually
+     * Set project ID manually
      */
-    public function setServerKey($key)
+    public function setProjectId($projectId)
     {
-        $this->serverKey = $key;
+        $this->projectId = $projectId;
+        $this->fcmUrl = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
         return $this;
     }
 
     /**
+     * Set service account path manually
+     */
+    public function setServiceAccountPath($path)
+    {
+        $this->serviceAccountPath = $path;
+        return $this;
+    }
+
+    /**
+     * Get OAuth2 access token using Service Account
+     */
+    private function getAccessToken()
+    {
+        // Check if we have a valid cached token
+        if ($this->accessToken && $this->tokenExpiry && time() < $this->tokenExpiry) {
+            return $this->accessToken;
+        }
+
+        // Read service account file
+        if (!file_exists($this->serviceAccountPath)) {
+            throw new Exception("Service Account file not found: {$this->serviceAccountPath}");
+        }
+
+        $serviceAccount = json_decode(file_get_contents($this->serviceAccountPath), true);
+
+        if (!$serviceAccount) {
+            throw new Exception("Invalid Service Account JSON file");
+        }
+
+        // Create JWT
+        $header = [
+            'alg' => 'RS256',
+            'typ' => 'JWT'
+        ];
+
+        $now = time();
+        $expiry = $now + 3600; // 1 hour
+
+        $claims = [
+            'iss' => $serviceAccount['client_email'],
+            'sub' => $serviceAccount['client_email'],
+            'aud' => 'https://oauth2.googleapis.com/token',
+            'iat' => $now,
+            'exp' => $expiry,
+            'scope' => 'https://www.googleapis.com/auth/firebase.messaging'
+        ];
+
+        // Encode header and claims
+        $headerEncoded = $this->base64UrlEncode(json_encode($header));
+        $claimsEncoded = $this->base64UrlEncode(json_encode($claims));
+
+        // Sign with private key
+        $signatureInput = $headerEncoded . '.' . $claimsEncoded;
+        $privateKey = openssl_pkey_get_private($serviceAccount['private_key']);
+
+        if (!$privateKey) {
+            throw new Exception("Invalid private key in Service Account");
+        }
+
+        openssl_sign($signatureInput, $signature, $privateKey, OPENSSL_ALGO_SHA256);
+        $signatureEncoded = $this->base64UrlEncode($signature);
+
+        $jwt = $signatureInput . '.' . $signatureEncoded;
+
+        // Exchange JWT for access token
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://oauth2.googleapis.com/token');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            'assertion' => $jwt
+        ]));
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode !== 200) {
+            throw new Exception("Failed to get access token: $response");
+        }
+
+        $tokenData = json_decode($response, true);
+        $this->accessToken = $tokenData['access_token'];
+        $this->tokenExpiry = $now + ($tokenData['expires_in'] ?? 3600) - 60; // 1 minute buffer
+
+        return $this->accessToken;
+    }
+
+    /**
+     * Base64 URL encode
+     */
+    private function base64UrlEncode($data)
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+
+    /**
      * Send notification to a single device
-     * 
-     * @param string $token FCM device token
-     * @param string $title Notification title
-     * @param string $body Notification body
-     * @param array $data Additional data payload
-     * @return array Response from FCM
      */
     public function sendToDevice($token, $title, $body, $data = [])
     {
         $message = [
-            'to' => $token,
-            'notification' => [
-                'title' => $title,
-                'body' => $body,
-                'sound' => 'default',
-                'badge' => 1
-            ],
-            'data' => $data,
-            'priority' => 'high'
+            'message' => [
+                'token' => $token,
+                'notification' => [
+                    'title' => $title,
+                    'body' => $body
+                ],
+                'android' => [
+                    'priority' => 'high',
+                    'notification' => [
+                        'sound' => 'default',
+                        'channel_id' => 'high_importance_channel'
+                    ]
+                ],
+                'apns' => [
+                    'payload' => [
+                        'aps' => [
+                            'sound' => 'default',
+                            'badge' => 1
+                        ]
+                    ]
+                ]
+            ]
         ];
+
+        if (!empty($data)) {
+            $message['message']['data'] = array_map('strval', $data);
+        }
 
         return $this->send($message);
     }
 
     /**
      * Send notification to multiple devices
-     * 
-     * @param array $tokens Array of FCM device tokens
-     * @param string $title Notification title
-     * @param string $body Notification body
-     * @param array $data Additional data payload
-     * @return array Response from FCM
      */
     public function sendToMultiple($tokens, $title, $body, $data = [])
     {
-        // FCM supports max 1000 tokens per request
-        $chunks = array_chunk($tokens, 1000);
         $results = [];
 
-        foreach ($chunks as $chunk) {
-            $message = [
-                'registration_ids' => $chunk,
-                'notification' => [
-                    'title' => $title,
-                    'body' => $body,
-                    'sound' => 'default',
-                    'badge' => 1
-                ],
-                'data' => $data,
-                'priority' => 'high'
-            ];
-
-            $results[] = $this->send($message);
+        foreach ($tokens as $token) {
+            $results[] = $this->sendToDevice($token, $title, $body, $data);
         }
 
         return $results;
@@ -93,16 +204,9 @@ class FCM
 
     /**
      * Send notification to a user by user_id
-     * 
-     * @param int $userId User ID
-     * @param string $title Notification title
-     * @param string $body Notification body
-     * @param array $data Additional data payload
-     * @return array Response
      */
     public function sendToUser($userId, $title, $body, $data = [])
     {
-        // Get all tokens for user
         $this->db->query("SELECT fcm_token FROM user_devices WHERE user_id = :user_id AND is_active = 1");
         $this->db->bind(':user_id', $userId);
         $devices = $this->db->resultSet();
@@ -122,12 +226,6 @@ class FCM
 
     /**
      * Send notification to users by role
-     * 
-     * @param string $role Role name (guru, siswa, admin)
-     * @param string $title Notification title
-     * @param string $body Notification body
-     * @param array $data Additional data payload
-     * @return array Response
      */
     public function sendToRole($role, $title, $body, $data = [])
     {
@@ -148,17 +246,10 @@ class FCM
 
     /**
      * Send absensi notification to parent
-     * 
-     * @param int $idSiswa Siswa ID
-     * @param string $status Absensi status (H/I/S/A)
-     * @param string $namaSiswa Nama siswa
-     * @param string $tanggal Tanggal absensi
-     * @return array Response
      */
     public function sendAbsensiNotification($idSiswa, $status, $namaSiswa, $tanggal)
     {
-        // Get parent user_id from siswa
-        $this->db->query("SELECT u.id as user_id, s.ayah_no_hp, s.ibu_no_hp
+        $this->db->query("SELECT u.id as user_id
                           FROM siswa s 
                           LEFT JOIN users u ON u.id_ref = s.id AND u.role = 'ortu'
                           WHERE s.id = :id_siswa");
@@ -177,7 +268,7 @@ class FCM
 
         $data = [
             'type' => 'absensi',
-            'id_siswa' => $idSiswa,
+            'id_siswa' => (string) $idSiswa,
             'status' => $status,
             'tanggal' => $tanggal
         ];
@@ -191,12 +282,6 @@ class FCM
 
     /**
      * Send pembayaran notification
-     * 
-     * @param int $idSiswa Siswa ID
-     * @param string $jenisPembayaran Jenis pembayaran
-     * @param int $nominal Nominal
-     * @param string $status Status pembayaran
-     * @return array Response
      */
     public function sendPembayaranNotification($idSiswa, $jenisPembayaran, $nominal, $status)
     {
@@ -212,8 +297,8 @@ class FCM
 
         $data = [
             'type' => 'pembayaran',
-            'id_siswa' => $idSiswa,
-            'nominal' => $nominal
+            'id_siswa' => (string) $idSiswa,
+            'nominal' => (string) $nominal
         ];
 
         if ($parent && $parent['user_id']) {
@@ -224,16 +309,22 @@ class FCM
     }
 
     /**
-     * Send raw FCM message
+     * Send FCM message using V1 API
      */
     private function send($message)
     {
-        if (empty($this->serverKey)) {
-            return ['success' => false, 'error' => 'FCM Server Key not configured'];
+        if (empty($this->projectId)) {
+            return ['success' => false, 'error' => 'Firebase Project ID not configured'];
+        }
+
+        try {
+            $accessToken = $this->getAccessToken();
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
         }
 
         $headers = [
-            'Authorization: key=' . $this->serverKey,
+            'Authorization: Bearer ' . $accessToken,
             'Content-Type: application/json'
         ];
 
@@ -272,7 +363,6 @@ class FCM
      */
     private function logNotification($message, $response)
     {
-        // Optional: Log to database or file
         $logFile = dirname(__DIR__, 2) . '/logs/fcm_' . date('Y-m-d') . '.log';
         $logDir = dirname($logFile);
 
