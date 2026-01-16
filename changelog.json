@@ -1,6 +1,48 @@
 {
     "versions": [
         {
+            "version": "1.13.6",
+            "date": "2026-01-16",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "REST API untuk Mobile App - endpoint auth, guru, siswa, wali kelas"
+                },
+                {
+                    "type": "feature",
+                    "description": "FCM Push Notification - kirim notifikasi ke device mobile"
+                },
+                {
+                    "type": "feature",
+                    "description": "Google Sign-In - login dengan akun Google"
+                },
+                {
+                    "type": "feature",
+                    "description": "FCM.php - class untuk mengirim push notification dari server"
+                },
+                {
+                    "type": "new",
+                    "description": "Database: user_devices table untuk menyimpan FCM token"
+                },
+                {
+                    "type": "new",
+                    "description": "Database: google_id dan avatar kolom di users table"
+                }
+            ]
+        },
+        {
+            "version": "1.13.5",
+            "date": "2026-01-16",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "new",
+                    "description": "Database: user_devices table untuk FCM token storage"
+                }
+            ]
+        },
+        {
             "version": "1.13.4",
             "date": "2026-01-15",
             "type": "fix",

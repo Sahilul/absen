@@ -1,6 +1,6 @@
 {
-    "version": "1.13.4",
-    "build": 20260115,
-    "release_date": "2026-01-15",
-    "description": "Fix failover for empty token error"
+    "version": "1.13.6",
+    "build": 20260116,
+    "release_date": "2026-01-16",
+    "description": "REST API untuk Mobile App + FCM Push Notifications + Google Sign-In"
 }
