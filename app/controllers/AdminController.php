@@ -7261,6 +7261,41 @@ Waktu: ' . date('d/m/Y H:i:s');
     }
 
     /**
+     * Sync daftar grup WhatsApp dari Fonnte API
+     * Menampilkan daftar grup yang tersedia untuk dipilih
+     */
+    public function syncGrupFonnte()
+    {
+        require_once APPROOT . '/app/core/Fonnte.php';
+        $fonnte = new Fonnte();
+
+        // Step 1: Fetch/update grup dari WA ke Fonnte server
+        $fetchResult = $fonnte->fetchWhatsAppGroups();
+        error_log("[AdminController::syncGrupFonnte] Fetch result: " . json_encode($fetchResult));
+
+        // Step 2: Ambil daftar grup dari Fonnte
+        $getResult = $fonnte->getWhatsAppGroups();
+        error_log("[AdminController::syncGrupFonnte] Get result: " . json_encode($getResult));
+
+        if (isset($getResult['data']) && is_array($getResult['data'])) {
+            $groups = $getResult['data'];
+            $grupCount = count($groups);
+
+            // Simpan ke session untuk ditampilkan di UI
+            $_SESSION['fonnte_groups'] = $groups;
+
+            Flasher::setFlash("✅ Berhasil sync {$grupCount} grup dari Fonnte! Pilih grup dari daftar untuk menambahkan.", 'success');
+        } else {
+            $reason = $getResult['reason'] ?? $getResult['detail'] ?? 'Unknown error';
+            Flasher::setFlash("❌ Gagal sync grup: {$reason}", 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+        exit;
+    }
+
+
+    /**
      * Simpan pengaturan mode notifikasi
      */
     public function simpanPengaturanNotifikasiAbsensi()

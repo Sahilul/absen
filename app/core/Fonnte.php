@@ -401,6 +401,83 @@ class Fonnte
         return $cleanNumber;
     }
 
+    /**
+     * Fetch daftar grup WA dari Fonnte (harus dipanggil sekali setelah join grup baru)
+     * Endpoint: POST https://api.fonnte.com/fetch-group
+     * @return array Response dari Fonnte
+     */
+    public function fetchWhatsAppGroups()
+    {
+        if (empty($this->token)) {
+            return ['status' => false, 'reason' => 'Token tidak dikonfigurasi'];
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://api.fonnte.com/fetch-group',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_HTTPHEADER => [
+                'Authorization: ' . $this->token
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            return ['status' => false, 'reason' => 'cURL Error: ' . $err];
+        }
+
+        $result = json_decode($response, true);
+        error_log("[Fonnte fetch-group] Response: " . $response);
+
+        return $result ?: ['status' => false, 'reason' => 'Invalid response'];
+    }
+
+    /**
+     * Ambil daftar grup WA yang sudah di-fetch dari Fonnte
+     * Endpoint: POST https://api.fonnte.com/get-whatsapp-group
+     * @return array Response dari Fonnte dengan daftar grup
+     */
+    public function getWhatsAppGroups()
+    {
+        if (empty($this->token)) {
+            return ['status' => false, 'reason' => 'Token tidak dikonfigurasi'];
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://api.fonnte.com/get-whatsapp-group',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_HTTPHEADER => [
+                'Authorization: ' . $this->token
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            return ['status' => false, 'reason' => 'cURL Error: ' . $err];
+        }
+
+        $result = json_decode($response, true);
+        error_log("[Fonnte get-whatsapp-group] Response: " . $response);
+
+        return $result ?: ['status' => false, 'reason' => 'Invalid response'];
+    }
 
 
     /**

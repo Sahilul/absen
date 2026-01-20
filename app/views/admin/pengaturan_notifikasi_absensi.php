@@ -196,6 +196,56 @@ $grupData = $data['grup_data'] ?? [];
                 </div>
             <?php endif; ?>
 
+            <!-- Sync Grup dari Fonnte -->
+            <?php
+            $fonnte_groups = $_SESSION['fonnte_groups'] ?? [];
+            ?>
+            <div class="mt-6 p-4 bg-green-50 rounded-lg border border-green-100">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div>
+                        <h6 class="font-medium text-green-800 flex items-center">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                            Sync Grup dari Fonnte
+                        </h6>
+                        <p class="text-sm text-green-700 mt-1">
+                            Klik tombol untuk mengambil daftar grup WA dari akun Fonnte Anda.
+                            <?php if (!empty($fonnte_groups)): ?>
+                                <strong>(<?= count($fonnte_groups); ?> grup tersedia)</strong>
+                            <?php endif; ?>
+                        </p>
+                    </div>
+                    <a href="<?= BASEURL; ?>/admin/syncGrupFonnte"
+                        class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center whitespace-nowrap">
+                        <i data-lucide="cloud-download" class="w-4 h-4 mr-2"></i>
+                        Sync Sekarang
+                    </a>
+                </div>
+
+                <?php if (!empty($fonnte_groups)): ?>
+                    <div class="mt-4 border-t border-green-200 pt-4">
+                        <label class="block text-sm font-medium text-green-800 mb-2">Pilih Grup untuk Ditambahkan:</label>
+                        <div
+                            class="max-h-48 overflow-y-auto bg-white rounded-lg border border-green-200 divide-y divide-green-100">
+                            <?php foreach ($fonnte_groups as $fg): ?>
+                                <div class="px-3 py-2 flex items-center justify-between hover:bg-green-25">
+                                    <div>
+                                        <span
+                                            class="font-medium text-slate-800"><?= htmlspecialchars($fg['name'] ?? 'Grup'); ?></span>
+                                        <span
+                                            class="text-xs text-slate-500 ml-2 font-mono"><?= htmlspecialchars($fg['id'] ?? ''); ?></span>
+                                    </div>
+                                    <button type="button"
+                                        onclick="useGrupId('<?= htmlspecialchars($fg['id'] ?? ''); ?>', '<?= htmlspecialchars(addslashes($fg['name'] ?? 'Grup')); ?>')"
+                                        class="text-xs bg-primary-100 hover:bg-primary-200 text-primary-700 px-2 py-1 rounded">
+                                        Gunakan
+                                    </button>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+
             <!-- Info -->
             <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
                 <div class="flex">
@@ -203,12 +253,15 @@ $grupData = $data['grup_data'] ?? [];
                     <div class="text-sm text-blue-800">
                         <p class="font-medium mb-1">Format ID Grup WhatsApp:</p>
                         <ul class="list-disc list-inside text-blue-700 space-y-1">
-                            <li>Nomor admin grup: <code class="bg-blue-100 px-1 rounded">628123456789</code></li>
-                            <li>ID grup (jika support): <code
-                                    class="bg-blue-100 px-1 rounded">628123456789-1234567890@g.us</code></li>
+                            <li><strong>Format Baru (Rekomendasi):</strong> <code
+                                    class="bg-blue-100 px-1 rounded">120363293602727822</code></li>
+                            <li><strong>Format Lama (Tidak Didukung):</strong> <code
+                                    class="bg-red-100 px-1 rounded line-through">628123456789-1234567890@g.us</code>
+                            </li>
                         </ul>
-                        <p class="mt-2">Notifikasi akan dikirim ke <strong>semua grup aktif</strong> untuk kelas
-                            tersebut.</p>
+                        <p class="mt-2 text-red-600 font-medium">
+                            ⚠️ Gunakan tombol "Sync Sekarang" untuk mendapatkan ID grup yang valid dari Fonnte.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -323,6 +376,16 @@ $grupData = $data['grup_data'] ?? [];
     function deleteGrup(id, nama) {
         if (!confirm('Hapus grup "' + nama + '"? Aksi ini tidak dapat dibatalkan.')) return;
         window.location.href = '<?= BASEURL; ?>/admin/hapusGrupWaKelas/' + id;
+    }
+
+    // Use Grup ID from Fonnte sync
+    function useGrupId(grupId, grupName) {
+        // Auto-fill the Add Grup modal fields
+        document.getElementById('addGrupNama').value = grupName;
+        document.getElementById('addGrupWaId').value = grupId;
+
+        // Prompt user to select a class first
+        alert('ID Grup "' + grupName + '" siap digunakan!\n\nSekarang klik tombol "+ Tambah" pada kelas yang ingin Anda tambahkan grup ini.');
     }
 
     // Close modal on backdrop click
