@@ -186,6 +186,12 @@ class KelasGrupWa_model
             return $number;
         }
 
+        // 2. Deteksi Legacy Group ID (format: 628xxx-14xxx)
+        // JANGAN hapus tanda hubung (-) dan tambahkan @g.us jika belum ada
+        if (preg_match('/^\d+-\d+$/', $number)) {
+            return $number . '@g.us';
+        }
+
         // Bersihkan karakter non-numeric
         $cleanNumber = preg_replace('/[^0-9]/', '', $number);
 

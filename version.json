@@ -1,6 +1,6 @@
 {
-    "version": "1.15.0",
+    "version": "1.15.1",
     "build": 20260120,
     "release_date": "2026-01-20",
-    "description": "Major Fixes: Notifikasi Absensi, Group ID, Queue Mode"
+    "description": "Hotfix: Database Schema for Legacy Group IDs"
 }

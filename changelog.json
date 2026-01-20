@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.15.1",
+            "date": "2026-01-20",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Database Fix: Resize kolom no_wa di tabel antrian agar support ID Grup Legacy yang panjang"
+                }
+            ]
+        },
+        {
             "version": "1.15.0",
             "date": "2026-01-20",
             "type": "patch",
