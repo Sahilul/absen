@@ -1,7 +1,36 @@
 <?php
 // File: app/views/siswa/edit_identitas.php
 $siswa = $data['siswa'] ?? [];
+$fc = $data['fieldConfig'] ?? [];
 ?>
+<style>
+    /* Responsive Form Row */
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-row>div {
+        flex: 1 1 200px;
+        min-width: 200px;
+    }
+
+    .form-row-2>div {
+        flex: 1 1 300px;
+    }
+
+    .form-row-3>div {
+        flex: 1 1 220px;
+    }
+
+    @media (max-width: 640px) {
+        .form-row>div {
+            min-width: 100%;
+        }
+    }
+</style>
 <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-secondary-50 to-secondary-100 p-4 sm:p-6">
     <!-- Breadcrumb -->
     <div class="mb-4 sm:mb-6">
@@ -75,46 +104,60 @@ $siswa = $data['siswa'] ?? [];
                         </option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
-                    <input type="text" name="tempat_lahir"
-                        value="<?= htmlspecialchars($siswa['tempat_lahir'] ?? ''); ?>" class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
-                    <input type="date" name="tgl_lahir" value="<?= $siswa['tgl_lahir'] ?? ''; ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Agama</label>
-                    <select name="agama" class="input-modern w-full">
-                        <?php $agamaList = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu']; ?>
-                        <?php foreach ($agamaList as $ag): ?>
-                            <option value="<?= $ag; ?>" <?= ($siswa['agama'] ?? '') == $ag ? 'selected' : ''; ?>><?= $ag; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Hobi</label>
-                    <input type="text" name="hobi" value="<?= htmlspecialchars($siswa['hobi'] ?? ''); ?>"
-                        class="input-modern w-full" placeholder="Contoh: Membaca, Olahraga">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Cita-cita</label>
-                    <input type="text" name="cita_cita" value="<?= htmlspecialchars($siswa['cita_cita'] ?? ''); ?>"
-                        class="input-modern w-full" placeholder="Contoh: Dokter, Guru">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. WhatsApp</label>
-                    <input type="text" name="no_wa" value="<?= htmlspecialchars($siswa['no_wa'] ?? ''); ?>"
-                        class="input-modern w-full" placeholder="08xxxxxxxxxx">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" name="email" value="<?= htmlspecialchars($siswa['email'] ?? ''); ?>"
-                        class="input-modern w-full" placeholder="contoh@email.com">
-                </div>
+                <?php if ($fc['tempat_lahir'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
+                        <input type="text" name="tempat_lahir"
+                            value="<?= htmlspecialchars($siswa['tempat_lahir'] ?? ''); ?>" class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['tgl_lahir'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+                        <input type="date" name="tgl_lahir" value="<?= $siswa['tgl_lahir'] ?? ''; ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['agama'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Agama</label>
+                        <select name="agama" class="input-modern w-full">
+                            <?php $agamaList = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu']; ?>
+                            <?php foreach ($agamaList as $ag): ?>
+                                <option value="<?= $ag; ?>" <?= ($siswa['agama'] ?? '') == $ag ? 'selected' : ''; ?>><?= $ag; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['hobi'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hobi</label>
+                        <input type="text" name="hobi" value="<?= htmlspecialchars($siswa['hobi'] ?? ''); ?>"
+                            class="input-modern w-full" placeholder="Contoh: Membaca, Olahraga">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['cita_cita'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cita-cita</label>
+                        <input type="text" name="cita_cita" value="<?= htmlspecialchars($siswa['cita_cita'] ?? ''); ?>"
+                            class="input-modern w-full" placeholder="Contoh: Dokter, Guru">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['no_wa'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">No. WhatsApp</label>
+                        <input type="text" name="no_wa" value="<?= htmlspecialchars($siswa['no_wa'] ?? ''); ?>"
+                            class="input-modern w-full" placeholder="08xxxxxxxxxx">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['email'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="email" value="<?= htmlspecialchars($siswa['email'] ?? ''); ?>"
+                            class="input-modern w-full" placeholder="contoh@email.com">
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -124,56 +167,74 @@ $siswa = $data['siswa'] ?? [];
                 <i data-lucide="map-pin" class="w-5 h-5 mr-2 text-green-600"></i>
                 Alamat
             </h3>
-            <div class="grid grid-cols-1 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
-                    <textarea name="alamat" rows="2"
-                        class="input-modern w-full"><?= htmlspecialchars($siswa['alamat'] ?? ''); ?></textarea>
+            <?php if ($fc['alamat'] ?? true): ?>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
+                        <textarea name="alamat" rows="2"
+                            class="input-modern w-full"><?= htmlspecialchars($siswa['alamat'] ?? ''); ?></textarea>
+                    </div>
                 </div>
+            <?php endif; ?>
+            <div class="form-row mt-4">
+                <?php if ($fc['rt'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">RT</label>
+                        <input type="text" name="rt" value="<?= htmlspecialchars($siswa['rt'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['rw'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">RW</label>
+                        <input type="text" name="rw" value="<?= htmlspecialchars($siswa['rw'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['dusun'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Dusun</label>
+                        <input type="text" name="dusun" value="<?= htmlspecialchars($siswa['dusun'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['kode_pos'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kode Pos</label>
+                        <input type="text" name="kode_pos" value="<?= htmlspecialchars($siswa['kode_pos'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">RT</label>
-                    <input type="text" name="rt" value="<?= htmlspecialchars($siswa['rt'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">RW</label>
-                    <input type="text" name="rw" value="<?= htmlspecialchars($siswa['rw'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Dusun</label>
-                    <input type="text" name="dusun" value="<?= htmlspecialchars($siswa['dusun'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kode Pos</label>
-                    <input type="text" name="kode_pos" value="<?= htmlspecialchars($siswa['kode_pos'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kelurahan/Desa</label>
-                    <input type="text" name="kelurahan" value="<?= htmlspecialchars($siswa['kelurahan'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kecamatan</label>
-                    <input type="text" name="kecamatan" value="<?= htmlspecialchars($siswa['kecamatan'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kabupaten/Kota</label>
-                    <input type="text" name="kabupaten" value="<?= htmlspecialchars($siswa['kabupaten'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Provinsi</label>
-                    <input type="text" name="provinsi" value="<?= htmlspecialchars($siswa['provinsi'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
+            <div class="form-row mt-4">
+                <?php if ($fc['kelurahan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kelurahan/Desa</label>
+                        <input type="text" name="kelurahan" value="<?= htmlspecialchars($siswa['kelurahan'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['kecamatan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kecamatan</label>
+                        <input type="text" name="kecamatan" value="<?= htmlspecialchars($siswa['kecamatan'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['kabupaten'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kabupaten/Kota</label>
+                        <input type="text" name="kabupaten" value="<?= htmlspecialchars($siswa['kabupaten'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['provinsi'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Provinsi</label>
+                        <input type="text" name="provinsi" value="<?= htmlspecialchars($siswa['provinsi'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -183,69 +244,87 @@ $siswa = $data['siswa'] ?? [];
                 <i data-lucide="user" class="w-5 h-5 mr-2 text-blue-600"></i>
                 Data Ayah
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ayah</label>
-                    <input type="text" name="ayah_kandung"
-                        value="<?= htmlspecialchars($siswa['ayah_kandung'] ?? ''); ?>" class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">NIK Ayah</label>
-                    <input type="text" name="ayah_nik" value="<?= htmlspecialchars($siswa['ayah_nik'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ayah <span
-                            class="text-xs text-amber-600">🔒</span></label>
-                    <input type="text" value="<?= htmlspecialchars($siswa['ayah_no_hp'] ?? ''); ?>"
-                        class="input-modern w-full bg-gray-100 cursor-not-allowed" readonly
-                        title="Hubungi Wali Kelas atau Admin untuk mengubah nomor ini">
-                    <p class="text-xs text-gray-400 mt-1">Hubungi Wali Kelas/Admin untuk mengubah</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
-                    <input type="text" name="ayah_tempat_lahir"
-                        value="<?= htmlspecialchars($siswa['ayah_tempat_lahir'] ?? ''); ?>" class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
-                    <input type="date" name="ayah_tanggal_lahir" value="<?= $siswa['ayah_tanggal_lahir'] ?? ''; ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select name="ayah_status" class="input-modern w-full">
-                        <option value="Masih Hidup" <?= ($siswa['ayah_status'] ?? '') == 'Masih Hidup' ? 'selected' : ''; ?>>Masih Hidup</option>
-                        <option value="Sudah Meninggal" <?= ($siswa['ayah_status'] ?? '') == 'Sudah Meninggal' ? 'selected' : ''; ?>>Sudah Meninggal</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
-                    <select name="ayah_pendidikan" class="input-modern w-full">
-                        <?php $pendidikanList = ['Tidak Sekolah', 'SD/Sederajat', 'SMP/Sederajat', 'SMA/Sederajat', 'D1', 'D2', 'D3', 'D4/S1', 'S2', 'S3']; ?>
-                        <?php foreach ($pendidikanList as $p): ?>
-                            <option value="<?= $p; ?>" <?= ($siswa['ayah_pendidikan'] ?? '') == $p ? 'selected' : ''; ?>>
-                                <?= $p; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
-                    <input type="text" name="ayah_pekerjaan"
-                        value="<?= htmlspecialchars($siswa['ayah_pekerjaan'] ?? ''); ?>" class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
-                    <select name="ayah_penghasilan" class="input-modern w-full">
-                        <?php $penghasilanList = ['< Rp 1.000.000', 'Rp 1.000.000 - Rp 3.000.000', 'Rp 3.000.000 - Rp 5.000.000', 'Rp 5.000.000 - Rp 10.000.000', '> Rp 10.000.000']; ?>
-                        <?php foreach ($penghasilanList as $ph): ?>
-                            <option value="<?= $ph; ?>" <?= ($siswa['ayah_penghasilan'] ?? '') == $ph ? 'selected' : ''; ?>>
-                                <?= $ph; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+            <div class="form-row form-row-3">
+                <?php if ($fc['ayah_nama'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ayah</label>
+                        <input type="text" name="ayah_kandung"
+                            value="<?= htmlspecialchars($siswa['ayah_kandung'] ?? ''); ?>" class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ayah_nik'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">NIK Ayah</label>
+                        <input type="text" name="ayah_nik" value="<?= htmlspecialchars($siswa['ayah_nik'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ayah_no_hp'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ayah <span
+                                class="text-xs text-amber-600">🔒</span></label>
+                        <input type="text" value="<?= htmlspecialchars($siswa['ayah_no_hp'] ?? ''); ?>"
+                            class="input-modern w-full bg-gray-100 cursor-not-allowed" readonly
+                            title="Hubungi Wali Kelas atau Admin untuk mengubah nomor ini">
+                        <p class="text-xs text-gray-400 mt-1">Hubungi Wali Kelas/Admin untuk mengubah</p>
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ayah_tempat_lahir'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
+                        <input type="text" name="ayah_tempat_lahir"
+                            value="<?= htmlspecialchars($siswa['ayah_tempat_lahir'] ?? ''); ?>" class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ayah_tanggal_lahir'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+                        <input type="date" name="ayah_tanggal_lahir" value="<?= $siswa['ayah_tanggal_lahir'] ?? ''; ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ayah_status'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select name="ayah_status" class="input-modern w-full">
+                            <option value="Masih Hidup" <?= ($siswa['ayah_status'] ?? '') == 'Masih Hidup' ? 'selected' : ''; ?>>Masih Hidup</option>
+                            <option value="Sudah Meninggal" <?= ($siswa['ayah_status'] ?? '') == 'Sudah Meninggal' ? 'selected' : ''; ?>>Sudah Meninggal</option>
+                        </select>
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ayah_pendidikan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
+                        <select name="ayah_pendidikan" class="input-modern w-full">
+                            <?php $pendidikanList = ['Tidak Sekolah', 'SD/Sederajat', 'SMP/Sederajat', 'SMA/Sederajat', 'D1', 'D2', 'D3', 'D4/S1', 'S2', 'S3']; ?>
+                            <?php foreach ($pendidikanList as $p): ?>
+                                <option value="<?= $p; ?>" <?= ($siswa['ayah_pendidikan'] ?? '') == $p ? 'selected' : ''; ?>>
+                                    <?= $p; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ayah_pekerjaan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
+                        <input type="text" name="ayah_pekerjaan"
+                            value="<?= htmlspecialchars($siswa['ayah_pekerjaan'] ?? ''); ?>" class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ayah_penghasilan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
+                        <select name="ayah_penghasilan" class="input-modern w-full">
+                            <?php $penghasilanList = ['< Rp 1.000.000', 'Rp 1.000.000 - Rp 3.000.000', 'Rp 3.000.000 - Rp 5.000.000', 'Rp 5.000.000 - Rp 10.000.000', '> Rp 10.000.000']; ?>
+                            <?php foreach ($penghasilanList as $ph): ?>
+                                <option value="<?= $ph; ?>" <?= ($siswa['ayah_penghasilan'] ?? '') == $ph ? 'selected' : ''; ?>>
+                                    <?= $ph; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -255,67 +334,85 @@ $siswa = $data['siswa'] ?? [];
                 <i data-lucide="heart" class="w-5 h-5 mr-2 text-pink-600"></i>
                 Data Ibu
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ibu</label>
-                    <input type="text" name="ibu_kandung" value="<?= htmlspecialchars($siswa['ibu_kandung'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">NIK Ibu</label>
-                    <input type="text" name="ibu_nik" value="<?= htmlspecialchars($siswa['ibu_nik'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ibu <span
-                            class="text-xs text-amber-600">🔒</span></label>
-                    <input type="text" value="<?= htmlspecialchars($siswa['ibu_no_hp'] ?? ''); ?>"
-                        class="input-modern w-full bg-gray-100 cursor-not-allowed" readonly
-                        title="Hubungi Wali Kelas atau Admin untuk mengubah nomor ini">
-                    <p class="text-xs text-gray-400 mt-1">Hubungi Wali Kelas/Admin untuk mengubah</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
-                    <input type="text" name="ibu_tempat_lahir"
-                        value="<?= htmlspecialchars($siswa['ibu_tempat_lahir'] ?? ''); ?>" class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
-                    <input type="date" name="ibu_tanggal_lahir" value="<?= $siswa['ibu_tanggal_lahir'] ?? ''; ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select name="ibu_status" class="input-modern w-full">
-                        <option value="Masih Hidup" <?= ($siswa['ibu_status'] ?? '') == 'Masih Hidup' ? 'selected' : ''; ?>>Masih Hidup</option>
-                        <option value="Sudah Meninggal" <?= ($siswa['ibu_status'] ?? '') == 'Sudah Meninggal' ? 'selected' : ''; ?>>Sudah Meninggal</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
-                    <select name="ibu_pendidikan" class="input-modern w-full">
-                        <?php foreach ($pendidikanList as $p): ?>
-                            <option value="<?= $p; ?>" <?= ($siswa['ibu_pendidikan'] ?? '') == $p ? 'selected' : ''; ?>>
-                                <?= $p; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
-                    <input type="text" name="ibu_pekerjaan"
-                        value="<?= htmlspecialchars($siswa['ibu_pekerjaan'] ?? ''); ?>" class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
-                    <select name="ibu_penghasilan" class="input-modern w-full">
-                        <?php foreach ($penghasilanList as $ph): ?>
-                            <option value="<?= $ph; ?>" <?= ($siswa['ibu_penghasilan'] ?? '') == $ph ? 'selected' : ''; ?>>
-                                <?= $ph; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+            <div class="form-row form-row-3">
+                <?php if ($fc['ibu_nama'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ibu</label>
+                        <input type="text" name="ibu_kandung" value="<?= htmlspecialchars($siswa['ibu_kandung'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ibu_nik'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">NIK Ibu</label>
+                        <input type="text" name="ibu_nik" value="<?= htmlspecialchars($siswa['ibu_nik'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ibu_no_hp'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ibu <span
+                                class="text-xs text-amber-600">🔒</span></label>
+                        <input type="text" value="<?= htmlspecialchars($siswa['ibu_no_hp'] ?? ''); ?>"
+                            class="input-modern w-full bg-gray-100 cursor-not-allowed" readonly
+                            title="Hubungi Wali Kelas atau Admin untuk mengubah nomor ini">
+                        <p class="text-xs text-gray-400 mt-1">Hubungi Wali Kelas/Admin untuk mengubah</p>
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ibu_tempat_lahir'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
+                        <input type="text" name="ibu_tempat_lahir"
+                            value="<?= htmlspecialchars($siswa['ibu_tempat_lahir'] ?? ''); ?>" class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ibu_tanggal_lahir'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+                        <input type="date" name="ibu_tanggal_lahir" value="<?= $siswa['ibu_tanggal_lahir'] ?? ''; ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ibu_status'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select name="ibu_status" class="input-modern w-full">
+                            <option value="Masih Hidup" <?= ($siswa['ibu_status'] ?? '') == 'Masih Hidup' ? 'selected' : ''; ?>>Masih Hidup</option>
+                            <option value="Sudah Meninggal" <?= ($siswa['ibu_status'] ?? '') == 'Sudah Meninggal' ? 'selected' : ''; ?>>Sudah Meninggal</option>
+                        </select>
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ibu_pendidikan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
+                        <select name="ibu_pendidikan" class="input-modern w-full">
+                            <?php foreach ($pendidikanList as $p): ?>
+                                <option value="<?= $p; ?>" <?= ($siswa['ibu_pendidikan'] ?? '') == $p ? 'selected' : ''; ?>>
+                                    <?= $p; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ibu_pekerjaan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
+                        <input type="text" name="ibu_pekerjaan"
+                            value="<?= htmlspecialchars($siswa['ibu_pekerjaan'] ?? ''); ?>" class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['ibu_penghasilan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
+                        <select name="ibu_penghasilan" class="input-modern w-full">
+                            <?php foreach ($penghasilanList as $ph): ?>
+                                <option value="<?= $ph; ?>" <?= ($siswa['ibu_penghasilan'] ?? '') == $ph ? 'selected' : ''; ?>>
+                                    <?= $ph; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -325,55 +422,69 @@ $siswa = $data['siswa'] ?? [];
                 <i data-lucide="users" class="w-5 h-5 mr-2 text-amber-600"></i>
                 Data Wali (Opsional)
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Wali</label>
-                    <input type="text" name="wali_nama" value="<?= htmlspecialchars($siswa['wali_nama'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Hubungan</label>
-                    <input type="text" name="wali_hubungan"
-                        value="<?= htmlspecialchars($siswa['wali_hubungan'] ?? ''); ?>" class="input-modern w-full"
-                        placeholder="Contoh: Paman, Kakek">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">NIK Wali</label>
-                    <input type="text" name="wali_nik" value="<?= htmlspecialchars($siswa['wali_nik'] ?? ''); ?>"
-                        class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Wali</label>
-                    <input type="text" name="wali_no_hp" value="<?= htmlspecialchars($siswa['wali_no_hp'] ?? ''); ?>"
-                        class="input-modern w-full" placeholder="08xxxxxxxxxx">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
-                    <select name="wali_pendidikan" class="input-modern w-full">
-                        <option value="">-- Pilih --</option>
-                        <?php foreach ($pendidikanList as $p): ?>
-                            <option value="<?= $p; ?>" <?= ($siswa['wali_pendidikan'] ?? '') == $p ? 'selected' : ''; ?>>
-                                <?= $p; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
-                    <input type="text" name="wali_pekerjaan"
-                        value="<?= htmlspecialchars($siswa['wali_pekerjaan'] ?? ''); ?>" class="input-modern w-full">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
-                    <select name="wali_penghasilan" class="input-modern w-full">
-                        <option value="">-- Pilih --</option>
-                        <?php foreach ($penghasilanList as $ph): ?>
-                            <option value="<?= $ph; ?>" <?= ($siswa['wali_penghasilan'] ?? '') == $ph ? 'selected' : ''; ?>>
-                                <?= $ph; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+            <div class="form-row form-row-3">
+                <?php if ($fc['wali_nama'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Wali</label>
+                        <input type="text" name="wali_nama" value="<?= htmlspecialchars($siswa['wali_nama'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['wali_hubungan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hubungan</label>
+                        <input type="text" name="wali_hubungan"
+                            value="<?= htmlspecialchars($siswa['wali_hubungan'] ?? ''); ?>" class="input-modern w-full"
+                            placeholder="Contoh: Paman, Kakek">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['wali_nik'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">NIK Wali</label>
+                        <input type="text" name="wali_nik" value="<?= htmlspecialchars($siswa['wali_nik'] ?? ''); ?>"
+                            class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['wali_no_hp'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Wali</label>
+                        <input type="text" name="wali_no_hp" value="<?= htmlspecialchars($siswa['wali_no_hp'] ?? ''); ?>"
+                            class="input-modern w-full" placeholder="08xxxxxxxxxx">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['wali_pendidikan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
+                        <select name="wali_pendidikan" class="input-modern w-full">
+                            <option value="">-- Pilih --</option>
+                            <?php foreach ($pendidikanList as $p): ?>
+                                <option value="<?= $p; ?>" <?= ($siswa['wali_pendidikan'] ?? '') == $p ? 'selected' : ''; ?>>
+                                    <?= $p; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['wali_pekerjaan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
+                        <input type="text" name="wali_pekerjaan"
+                            value="<?= htmlspecialchars($siswa['wali_pekerjaan'] ?? ''); ?>" class="input-modern w-full">
+                    </div>
+                <?php endif; ?>
+                <?php if ($fc['wali_penghasilan'] ?? true): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
+                        <select name="wali_penghasilan" class="input-modern w-full">
+                            <option value="">-- Pilih --</option>
+                            <?php foreach ($penghasilanList as $ph): ?>
+                                <option value="<?= $ph; ?>" <?= ($siswa['wali_penghasilan'] ?? '') == $ph ? 'selected' : ''; ?>>
+                                    <?= $ph; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 

@@ -1,4 +1,7 @@
-<?php $s = $data['siswa'] ?? []; ?>
+<?php
+$s = $data['siswa'] ?? [];
+$fc = $data['fieldConfig'] ?? [];
+?>
 <!DOCTYPE html>
 <html lang="id">
 
@@ -23,6 +26,56 @@
 
         .collapse-content.open {
             max-height: 2000px;
+        }
+
+        /* Responsive form fields - auto-arrange when siblings hidden */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-row>div {
+            flex: 1 1 200px;
+            min-width: 200px;
+            max-width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .form-row>div {
+                flex: 1 1 250px;
+                max-width: 50%;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .form-row>div {
+                max-width: 33.333%;
+            }
+        }
+
+        /* For 4-column rows */
+        .form-row-4>div {
+            flex: 1 1 150px;
+            min-width: 150px;
+        }
+
+        @media (min-width: 768px) {
+            .form-row-4>div {
+                max-width: 25%;
+            }
+        }
+
+        /* For 2-column rows */
+        .form-row-2>div {
+            flex: 1 1 250px;
+        }
+
+        @media (min-width: 768px) {
+            .form-row-2>div {
+                max-width: 50%;
+            }
         }
     </style>
 </head>
@@ -61,7 +114,7 @@
                                 class="w-5 h-5 text-indigo-600 transition-transform"></i>
                         </div>
                         <div id="section-identitas" class="collapse-content open space-y-4 px-2">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="form-row">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">NISN <span
                                             class="text-red-500">*</span></label>
@@ -69,19 +122,23 @@
                                         value="<?= htmlspecialchars($s['nisn'] ?? ''); ?>"
                                         class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
-                                    <input type="text" name="nik" maxlength="16"
-                                        value="<?= htmlspecialchars($s['nik'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
-                                    <input type="password" name="password" placeholder="Kosongkan jika tidak diubah"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
+                                <?php if ($fc['nik'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
+                                        <input type="text" name="nik" maxlength="16"
+                                            value="<?= htmlspecialchars($s['nik'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['password'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
+                                        <input type="password" name="password" placeholder="Kosongkan jika tidak diubah"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-row form-row-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span
                                             class="text-red-500">*</span></label>
@@ -102,7 +159,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="form-row">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
                                     <input type="text" name="tempat_lahir"
@@ -114,79 +171,99 @@
                                     <input type="date" name="tgl_lahir" value="<?= $s['tgl_lahir'] ?? ''; ?>"
                                         class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Agama</label>
-                                    <select name="agama"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'] as $ag): ?>
-                                            <option value="<?= $ag; ?>" <?= ($s['agama'] ?? '') == $ag ? 'selected' : ''; ?>>
-                                                <?= $ag; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
+                                <?php if ($fc['agama'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Agama</label>
+                                        <select name="agama"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'] as $ag): ?>
+                                                <option value="<?= $ag; ?>" <?= ($s['agama'] ?? '') == $ag ? 'selected' : ''; ?>>
+                                                    <?= $ag; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Anak Ke</label>
-                                    <input type="number" name="anak_ke" min="1" value="<?= $s['anak_ke'] ?? '1'; ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Saudara</label>
-                                    <input type="number" name="jumlah_saudara" min="0"
-                                        value="<?= $s['jumlah_saudara'] ?? '0'; ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Hobi</label>
-                                    <input type="text" name="hobi" value="<?= htmlspecialchars($s['hobi'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Cita-cita</label>
-                                    <input type="text" name="cita_cita"
-                                        value="<?= htmlspecialchars($s['cita_cita'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
+                            <div class="form-row form-row-4">
+                                <?php if ($fc['anak_ke'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Anak Ke</label>
+                                        <input type="number" name="anak_ke" min="1" value="<?= $s['anak_ke'] ?? '1'; ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['jumlah_saudara'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Saudara</label>
+                                        <input type="number" name="jumlah_saudara" min="0"
+                                            value="<?= $s['jumlah_saudara'] ?? '0'; ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['hobi'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Hobi</label>
+                                        <input type="text" name="hobi" value="<?= htmlspecialchars($s['hobi'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['cita_cita'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Cita-cita</label>
+                                        <input type="text" name="cita_cita"
+                                            value="<?= htmlspecialchars($s['cita_cita'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">No. WhatsApp</label>
-                                    <input type="text" name="no_wa" value="<?= htmlspecialchars($s['no_wa'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                    <input type="email" name="email" value="<?= htmlspecialchars($s['email'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
+                            <div class="form-row form-row-2">
+                                <?php if ($fc['no_wa'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">No. WhatsApp</label>
+                                        <input type="text" name="no_wa" value="<?= htmlspecialchars($s['no_wa'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['email'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                        <input type="email" name="email" value="<?= htmlspecialchars($s['email'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">No. KIP</label>
-                                    <input type="text" name="kip" value="<?= htmlspecialchars($s['kip'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Yang Membiayai</label>
-                                    <select name="yang_membiayai"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <?php foreach (['Orang Tua', 'Wali', 'Beasiswa', 'Lainnya'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['yang_membiayai'] ?? 'Orang Tua') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Kebutuhan Khusus</label>
-                                    <select name="kebutuhan_khusus"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <?php foreach (['Tidak Ada', 'Tuna Rungu', 'Tuna Netra', 'Tuna Daksa', 'Lainnya'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['kebutuhan_khusus'] ?? 'Tidak Ada') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
+                            <div class="form-row">
+                                <?php if ($fc['no_kip'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">No. KIP</label>
+                                        <input type="text" name="kip" value="<?= htmlspecialchars($s['kip'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['yang_membiayai'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Yang Membiayai</label>
+                                        <select name="yang_membiayai"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <?php foreach (['Orang Tua', 'Wali', 'Beasiswa', 'Lainnya'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['yang_membiayai'] ?? 'Orang Tua') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['kebutuhan_khusus'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Kebutuhan Khusus</label>
+                                        <select name="kebutuhan_khusus"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <?php foreach (['Tidak Ada', 'Tuna Rungu', 'Tuna Netra', 'Tuna Daksa', 'Lainnya'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['kebutuhan_khusus'] ?? 'Tidak Ada') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -202,111 +279,135 @@
                                 class="w-5 h-5 text-green-600 transition-transform"></i>
                         </div>
                         <div id="section-alamat" class="collapse-content open space-y-4 px-2">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
-                                <textarea name="alamat" rows="2"
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"><?= htmlspecialchars($s['alamat'] ?? ''); ?></textarea>
+                            <?php if ($fc['alamat'] ?? true): ?>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
+                                    <textarea name="alamat" rows="2"
+                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"><?= htmlspecialchars($s['alamat'] ?? ''); ?></textarea>
+                                </div>
+                            <?php endif; ?>
+                            <div class="form-row form-row-4">
+                                <?php if ($fc['rt'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">RT</label>
+                                        <input type="text" name="rt" maxlength="3"
+                                            value="<?= htmlspecialchars($s['rt'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['rw'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">RW</label>
+                                        <input type="text" name="rw" maxlength="3"
+                                            value="<?= htmlspecialchars($s['rw'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['dusun'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Dusun</label>
+                                        <input type="text" name="dusun" value="<?= htmlspecialchars($s['dusun'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['kode_pos'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Kode Pos</label>
+                                        <input type="text" name="kode_pos" maxlength="5"
+                                            value="<?= htmlspecialchars($s['kode_pos'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">RT</label>
-                                    <input type="text" name="rt" maxlength="3"
-                                        value="<?= htmlspecialchars($s['rt'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">RW</label>
-                                    <input type="text" name="rw" maxlength="3"
-                                        value="<?= htmlspecialchars($s['rw'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Dusun</label>
-                                    <input type="text" name="dusun" value="<?= htmlspecialchars($s['dusun'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Kode Pos</label>
-                                    <input type="text" name="kode_pos" maxlength="5"
-                                        value="<?= htmlspecialchars($s['kode_pos'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
+                            <div class="form-row form-row-2">
+                                <?php if ($fc['provinsi'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Provinsi</label>
+                                        <select name="provinsi" id="provinsi"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
+                                            onchange="loadKabupaten(this.value)">
+                                            <option value="">-- Pilih Provinsi --</option>
+                                        </select>
+                                        <input type="hidden" name="id_provinsi" id="id_provinsi"
+                                            value="<?= htmlspecialchars($s['id_provinsi'] ?? ''); ?>">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['kabupaten'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Kabupaten/Kota</label>
+                                        <select name="kabupaten" id="kabupaten"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
+                                            onchange="loadKecamatan(this.value)">
+                                            <option value="">-- Pilih Kabupaten --</option>
+                                        </select>
+                                        <input type="hidden" name="id_kabupaten" id="id_kabupaten"
+                                            value="<?= htmlspecialchars($s['id_kabupaten'] ?? ''); ?>">
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Provinsi</label>
-                                    <select name="provinsi" id="provinsi"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
-                                        onchange="loadKabupaten(this.value)">
-                                        <option value="">-- Pilih Provinsi --</option>
-                                    </select>
-                                    <input type="hidden" name="id_provinsi" id="id_provinsi"
-                                        value="<?= htmlspecialchars($s['id_provinsi'] ?? ''); ?>">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Kabupaten/Kota</label>
-                                    <select name="kabupaten" id="kabupaten"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
-                                        onchange="loadKecamatan(this.value)">
-                                        <option value="">-- Pilih Kabupaten --</option>
-                                    </select>
-                                    <input type="hidden" name="id_kabupaten" id="id_kabupaten"
-                                        value="<?= htmlspecialchars($s['id_kabupaten'] ?? ''); ?>">
-                                </div>
+                            <div class="form-row form-row-2">
+                                <?php if ($fc['kecamatan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Kecamatan</label>
+                                        <select name="kecamatan" id="kecamatan"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
+                                            onchange="loadKelurahan(this.value)">
+                                            <option value="">-- Pilih Kecamatan --</option>
+                                        </select>
+                                        <input type="hidden" name="id_kecamatan" id="id_kecamatan"
+                                            value="<?= htmlspecialchars($s['id_kecamatan'] ?? ''); ?>">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['kelurahan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Kelurahan/Desa</label>
+                                        <select name="kelurahan" id="kelurahan"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih Kelurahan --</option>
+                                        </select>
+                                        <input type="hidden" name="id_kelurahan" id="id_kelurahan"
+                                            value="<?= htmlspecialchars($s['id_kelurahan'] ?? ''); ?>">
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Kecamatan</label>
-                                    <select name="kecamatan" id="kecamatan"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
-                                        onchange="loadKelurahan(this.value)">
-                                        <option value="">-- Pilih Kecamatan --</option>
-                                    </select>
-                                    <input type="hidden" name="id_kecamatan" id="id_kecamatan"
-                                        value="<?= htmlspecialchars($s['id_kecamatan'] ?? ''); ?>">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Kelurahan/Desa</label>
-                                    <select name="kelurahan" id="kelurahan"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih Kelurahan --</option>
-                                    </select>
-                                    <input type="hidden" name="id_kelurahan" id="id_kelurahan"
-                                        value="<?= htmlspecialchars($s['id_kelurahan'] ?? ''); ?>">
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Tempat
-                                        Tinggal</label>
-                                    <select name="status_tempat_tinggal"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['Milik Sendiri', 'Kontrak', 'Kos', 'Menumpang'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['status_tempat_tinggal'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Jarak ke Sekolah</label>
-                                    <select name="jarak_ke_sekolah"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['< 1 km', '1-5 km', '5-10 km', '> 10 km'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['jarak_ke_sekolah'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Transportasi</label>
-                                    <select name="transportasi"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['Jalan Kaki', 'Sepeda', 'Motor', 'Mobil', 'Angkutan Umum'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['transportasi'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
+                            <div class="form-row">
+                                <?php if ($fc['status_tempat_tinggal'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Status Tempat
+                                            Tinggal</label>
+                                        <select name="status_tempat_tinggal"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['Milik Sendiri', 'Kontrak', 'Kos', 'Menumpang'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['status_tempat_tinggal'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['jarak_sekolah'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Jarak ke Sekolah</label>
+                                        <select name="jarak_ke_sekolah"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['< 1 km', '1-5 km', '5-10 km', '> 10 km'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['jarak_ke_sekolah'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['transportasi'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Transportasi</label>
+                                        <select name="transportasi"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['Jalan Kaki', 'Sepeda', 'Motor', 'Mobil', 'Angkutan Umum'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['transportasi'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -322,77 +423,95 @@
                                 class="w-5 h-5 text-blue-600 transition-transform"></i>
                         </div>
                         <div id="section-ayah" class="collapse-content space-y-4 px-2">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ayah</label>
-                                    <input type="text" name="ayah_kandung"
-                                        value="<?= htmlspecialchars($s['ayah_kandung'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">NIK Ayah</label>
-                                    <input type="text" name="ayah_nik" maxlength="16"
-                                        value="<?= htmlspecialchars($s['ayah_nik'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
+                            <div class="form-row form-row-2">
+                                <?php if ($fc['ayah_nama'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ayah</label>
+                                        <input type="text" name="ayah_kandung"
+                                            value="<?= htmlspecialchars($s['ayah_kandung'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['ayah_nik'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">NIK Ayah</label>
+                                        <input type="text" name="ayah_nik" maxlength="16"
+                                            value="<?= htmlspecialchars($s['ayah_nik'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="form-row">
+                                <?php if ($fc['ayah_tempat_lahir'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
+                                        <input type="text" name="ayah_tempat_lahir"
+                                            value="<?= htmlspecialchars($s['ayah_tempat_lahir'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['ayah_tanggal_lahir'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+                                        <input type="date" name="ayah_tanggal_lahir"
+                                            value="<?= $s['ayah_tanggal_lahir'] ?? ''; ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['ayah_status'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                        <select name="ayah_status"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <?php foreach (['Masih Hidup', 'Meninggal', 'Tidak Diketahui'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['ayah_status'] ?? 'Masih Hidup') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="form-row">
+                                <?php if ($fc['ayah_pendidikan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
+                                        <select name="ayah_pendidikan"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['ayah_pendidikan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['ayah_pekerjaan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
+                                        <input type="text" name="ayah_pekerjaan"
+                                            value="<?= htmlspecialchars($s['ayah_pekerjaan'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['ayah_penghasilan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
+                                        <select name="ayah_penghasilan"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['< 1 Juta', '1-3 Juta', '3-5 Juta', '5-10 Juta', '> 10 Juta'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['ayah_penghasilan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ($fc['ayah_no_hp'] ?? true): ?>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
-                                    <input type="text" name="ayah_tempat_lahir"
-                                        value="<?= htmlspecialchars($s['ayah_tempat_lahir'] ?? ''); ?>"
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ayah</label>
+                                    <input type="text" name="ayah_no_hp"
+                                        value="<?= htmlspecialchars($s['ayah_no_hp'] ?? ''); ?>"
                                         class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
-                                    <input type="date" name="ayah_tanggal_lahir"
-                                        value="<?= $s['ayah_tanggal_lahir'] ?? ''; ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                    <select name="ayah_status"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <?php foreach (['Masih Hidup', 'Meninggal', 'Tidak Diketahui'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['ayah_status'] ?? 'Masih Hidup') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
-                                    <select name="ayah_pendidikan"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['ayah_pendidikan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
-                                    <input type="text" name="ayah_pekerjaan"
-                                        value="<?= htmlspecialchars($s['ayah_pekerjaan'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
-                                    <select name="ayah_penghasilan"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['< 1 Juta', '1-3 Juta', '3-5 Juta', '5-10 Juta', '> 10 Juta'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['ayah_penghasilan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ayah</label>
-                                <input type="text" name="ayah_no_hp"
-                                    value="<?= htmlspecialchars($s['ayah_no_hp'] ?? ''); ?>"
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -407,77 +526,95 @@
                                 class="w-5 h-5 text-pink-600 transition-transform"></i>
                         </div>
                         <div id="section-ibu" class="collapse-content space-y-4 px-2">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ibu</label>
-                                    <input type="text" name="ibu_kandung"
-                                        value="<?= htmlspecialchars($s['ibu_kandung'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">NIK Ibu</label>
-                                    <input type="text" name="ibu_nik" maxlength="16"
-                                        value="<?= htmlspecialchars($s['ibu_nik'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
+                            <div class="form-row form-row-2">
+                                <?php if ($fc['ibu_nama'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ibu</label>
+                                        <input type="text" name="ibu_kandung"
+                                            value="<?= htmlspecialchars($s['ibu_kandung'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['ibu_nik'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">NIK Ibu</label>
+                                        <input type="text" name="ibu_nik" maxlength="16"
+                                            value="<?= htmlspecialchars($s['ibu_nik'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="form-row">
+                                <?php if ($fc['ibu_tempat_lahir'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
+                                        <input type="text" name="ibu_tempat_lahir"
+                                            value="<?= htmlspecialchars($s['ibu_tempat_lahir'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['ibu_tanggal_lahir'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+                                        <input type="date" name="ibu_tanggal_lahir"
+                                            value="<?= $s['ibu_tanggal_lahir'] ?? ''; ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['ibu_status'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                        <select name="ibu_status"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <?php foreach (['Masih Hidup', 'Meninggal', 'Tidak Diketahui'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['ibu_status'] ?? 'Masih Hidup') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="form-row">
+                                <?php if ($fc['ibu_pendidikan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
+                                        <select name="ibu_pendidikan"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['ibu_pendidikan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['ibu_pekerjaan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
+                                        <input type="text" name="ibu_pekerjaan"
+                                            value="<?= htmlspecialchars($s['ibu_pekerjaan'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['ibu_penghasilan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
+                                        <select name="ibu_penghasilan"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['< 1 Juta', '1-3 Juta', '3-5 Juta', '5-10 Juta', '> 10 Juta'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['ibu_penghasilan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ($fc['ibu_no_hp'] ?? true): ?>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
-                                    <input type="text" name="ibu_tempat_lahir"
-                                        value="<?= htmlspecialchars($s['ibu_tempat_lahir'] ?? ''); ?>"
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ibu</label>
+                                    <input type="text" name="ibu_no_hp"
+                                        value="<?= htmlspecialchars($s['ibu_no_hp'] ?? ''); ?>"
                                         class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
-                                    <input type="date" name="ibu_tanggal_lahir"
-                                        value="<?= $s['ibu_tanggal_lahir'] ?? ''; ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                    <select name="ibu_status"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <?php foreach (['Masih Hidup', 'Meninggal', 'Tidak Diketahui'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['ibu_status'] ?? 'Masih Hidup') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
-                                    <select name="ibu_pendidikan"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['ibu_pendidikan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
-                                    <input type="text" name="ibu_pekerjaan"
-                                        value="<?= htmlspecialchars($s['ibu_pekerjaan'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
-                                    <select name="ibu_penghasilan"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['< 1 Juta', '1-3 Juta', '3-5 Juta', '5-10 Juta', '> 10 Juta'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['ibu_penghasilan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Ibu</label>
-                                <input type="text" name="ibu_no_hp"
-                                    value="<?= htmlspecialchars($s['ibu_no_hp'] ?? ''); ?>"
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -492,66 +629,80 @@
                                 class="w-5 h-5 text-amber-600 transition-transform"></i>
                         </div>
                         <div id="section-wali" class="collapse-content space-y-4 px-2">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Wali</label>
-                                    <input type="text" name="wali_nama"
-                                        value="<?= htmlspecialchars($s['wali_nama'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Hubungan dengan
-                                        Siswa</label>
-                                    <select name="wali_hubungan"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['Kakek', 'Nenek', 'Paman', 'Bibi', 'Kakak', 'Lainnya'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['wali_hubungan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
+                            <div class="form-row form-row-2">
+                                <?php if ($fc['wali_nama'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Wali</label>
+                                        <input type="text" name="wali_nama"
+                                            value="<?= htmlspecialchars($s['wali_nama'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['wali_hubungan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Hubungan dengan
+                                            Siswa</label>
+                                        <select name="wali_hubungan"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['Kakek', 'Nenek', 'Paman', 'Bibi', 'Kakak', 'Lainnya'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['wali_hubungan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">NIK Wali</label>
-                                    <input type="text" name="wali_nik" maxlength="16"
-                                        value="<?= htmlspecialchars($s['wali_nik'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Wali</label>
-                                    <input type="text" name="wali_no_hp"
-                                        value="<?= htmlspecialchars($s['wali_no_hp'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
+                            <div class="form-row form-row-2">
+                                <?php if ($fc['wali_nik'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">NIK Wali</label>
+                                        <input type="text" name="wali_nik" maxlength="16"
+                                            value="<?= htmlspecialchars($s['wali_nik'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['wali_no_hp'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Wali</label>
+                                        <input type="text" name="wali_no_hp"
+                                            value="<?= htmlspecialchars($s['wali_no_hp'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
-                                    <select name="wali_pendidikan"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['wali_pendidikan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
-                                    <input type="text" name="wali_pekerjaan"
-                                        value="<?= htmlspecialchars($s['wali_pekerjaan'] ?? ''); ?>"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
-                                    <select name="wali_penghasilan"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach (['< 1 Juta', '1-3 Juta', '3-5 Juta', '5-10 Juta', '> 10 Juta'] as $opt): ?>
-                                            <option value="<?= $opt; ?>" <?= ($s['wali_penghasilan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
+                            <div class="form-row">
+                                <?php if ($fc['wali_pendidikan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
+                                        <select name="wali_pendidikan"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['wali_pendidikan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['wali_pekerjaan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Pekerjaan</label>
+                                        <input type="text" name="wali_pekerjaan"
+                                            value="<?= htmlspecialchars($s['wali_pekerjaan'] ?? ''); ?>"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($fc['wali_penghasilan'] ?? true): ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Penghasilan</label>
+                                        <select name="wali_penghasilan"
+                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                                            <option value="">-- Pilih --</option>
+                                            <?php foreach (['< 1 Juta', '1-3 Juta', '3-5 Juta', '5-10 Juta', '> 10 Juta'] as $opt): ?>
+                                                <option value="<?= $opt; ?>" <?= ($s['wali_penghasilan'] ?? '') == $opt ? 'selected' : ''; ?>><?= $opt; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

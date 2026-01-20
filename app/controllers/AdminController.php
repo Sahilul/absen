@@ -376,6 +376,11 @@ class AdminController extends Controller
         $this->data['judul'] = 'Manajemen Siswa';
         $this->data['siswa'] = $this->model('Siswa_model')->getAllSiswa();
         $this->data['kelas_list'] = $this->model('Kelas_model')->getAllKelas();
+
+        // Load field configuration
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $this->data['fieldConfig'] = $pengaturanModel->getFieldSiswaConfig();
+
         $this->view('templates/header', $this->data);
         $this->view('templates/sidebar_admin', $this->data);
         $this->view('admin/siswa', $this->data);
@@ -384,6 +389,12 @@ class AdminController extends Controller
     public function tambahSiswa()
     {
         $this->data['judul'] = 'Tambah Data Siswa';
+
+        // Load field configuration
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $this->data['fieldConfig'] = $pengaturanModel->getFieldSiswaConfig();
+        $this->data['mandatoryFields'] = $pengaturanModel->getMandatoryFields();
+
         $this->view('templates/header', $this->data);
         $this->view('templates/sidebar_admin', $this->data);
         $this->view('admin/tambah_siswa', $this->data);
@@ -450,6 +461,11 @@ class AdminController extends Controller
     {
         $this->data['judul'] = 'Edit Data Siswa';
         $this->data['siswa'] = $this->model('Siswa_model')->getSiswaById($id);
+
+        // Load field configuration
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $this->data['fieldConfig'] = $pengaturanModel->getFieldSiswaConfig();
+
         $this->view('templates/header', $this->data);
         $this->view('templates/sidebar_admin', $this->data);
         $this->view('admin/edit_siswa', $this->data);
@@ -7000,112 +7016,67 @@ Waktu: ' . date('d/m/Y H:i:s');
         exit;
     }
 
+    // =================================================================
+    // PENGATURAN FIELD DATA SISWA
+    // =================================================================
+
     /**
-     * Halaman Pengaturan Mobile App
+     * Halaman Pengaturan Field Data Siswa
      */
-    public function pengaturanMobileApp()
+    public function pengaturanFieldSiswa()
     {
-        $this->data['judul'] = 'Pengaturan Mobile App';
+        $this->data['judul'] = 'Pengaturan Field Data Siswa';
 
-        // Get existing settings
         $pengaturanModel = $this->model('PengaturanAplikasi_model');
-
-        $this->data['firebase_project_id'] = $pengaturanModel->getValue('firebase_project_id') ?? '';
-        $this->data['firebase_client_email'] = $pengaturanModel->getValue('firebase_client_email') ?? '';
-        $this->data['firebase_private_key'] = $pengaturanModel->getValue('firebase_private_key') ?? '';
-        $this->data['google_client_id'] = $pengaturanModel->getValue('google_client_id') ?? '';
-        $this->data['mobile_app_enabled'] = $pengaturanModel->getValue('mobile_app_enabled') ?? '0';
+        $this->data['fieldConfig'] = $pengaturanModel->getFieldSiswaConfig();
+        $this->data['mandatoryFields'] = $pengaturanModel->getMandatoryFields();
 
         $this->view('templates/header', $this->data);
         $this->view('templates/sidebar_admin', $this->data);
-        $this->view('admin/pengaturan_mobile_app', $this->data);
+        $this->view('admin/pengaturan_field_siswa', $this->data);
         $this->view('templates/footer');
     }
 
     /**
-     * Simpan Pengaturan Mobile App
+     * Simpan Pengaturan Field Data Siswa
      */
-    public function simpanPengaturanMobileApp()
+    public function simpanPengaturanFieldSiswa()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASEURL . '/admin/pengaturanMobileApp');
+            header('Location: ' . BASEURL . '/admin/pengaturanFieldSiswa');
             exit;
         }
 
         $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $mandatoryFields = $pengaturanModel->getMandatoryFields();
 
-        // Save Firebase settings
-        $settings = [
-            'firebase_project_id' => $_POST['firebase_project_id'] ?? '',
-            'firebase_client_email' => $_POST['firebase_client_email'] ?? '',
-            'firebase_private_key' => $_POST['firebase_private_key'] ?? '',
-            'google_client_id' => $_POST['google_client_id'] ?? '',
-            'mobile_app_enabled' => isset($_POST['mobile_app_enabled']) ? '1' : '0'
-        ];
+        // Get submitted fields
+        $submittedFields = $_POST['fields'] ?? [];
 
-        $success = true;
-        foreach ($settings as $name => $value) {
-            if (!$pengaturanModel->setOrUpdate($name, $value)) {
-                $success = false;
+        // Build config array (all fields start as false, checked ones become true)
+        $defaultConfig = $pengaturanModel->getDefaultFieldConfig();
+        $newConfig = [];
+
+        foreach ($defaultConfig as $field => $defaultValue) {
+            if (in_array($field, $mandatoryFields)) {
+                // Mandatory fields are always true
+                $newConfig[$field] = true;
+            } else {
+                // Optional fields based on checkbox
+                $newConfig[$field] = isset($submittedFields[$field]);
             }
         }
 
-        if ($success) {
-            Flasher::setFlash('Pengaturan Mobile App berhasil disimpan', 'success');
+        if ($pengaturanModel->saveFieldSiswaConfig($newConfig)) {
+            Flasher::setFlash('Pengaturan field data siswa berhasil disimpan', 'success');
         } else {
-            Flasher::setFlash('Gagal menyimpan beberapa pengaturan', 'warning');
+            Flasher::setFlash('Gagal menyimpan pengaturan', 'danger');
         }
 
-        header('Location: ' . BASEURL . '/admin/pengaturanMobileApp');
+        header('Location: ' . BASEURL . '/admin/pengaturanFieldSiswa');
         exit;
     }
 
-    /**
-     * Import Service Account JSON
-     */
-    public function importServiceAccount()
-    {
-        header('Content-Type: application/json');
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(['success' => false, 'message' => 'Method tidak diizinkan']);
-            exit;
-        }
-
-        $json = $_POST['service_account_json'] ?? '';
-
-        if (empty($json)) {
-            echo json_encode(['success' => false, 'message' => 'JSON tidak boleh kosong']);
-            exit;
-        }
-
-        $data = json_decode($json, true);
-
-        if (!$data) {
-            echo json_encode(['success' => false, 'message' => 'JSON tidak valid']);
-            exit;
-        }
-
-        // Extract required fields
-        $projectId = $data['project_id'] ?? '';
-        $clientEmail = $data['client_email'] ?? '';
-        $privateKey = $data['private_key'] ?? '';
-
-        if (empty($projectId) || empty($clientEmail) || empty($privateKey)) {
-            echo json_encode(['success' => false, 'message' => 'JSON tidak lengkap. Pastikan ada project_id, client_email, dan private_key']);
-            exit;
-        }
-
-        echo json_encode([
-            'success' => true,
-            'data' => [
-                'project_id' => $projectId,
-                'client_email' => $clientEmail,
-                'private_key' => $privateKey
-            ]
-        ]);
-        exit;
-    }
 }
 
 

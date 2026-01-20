@@ -420,6 +420,10 @@ class SiswaController extends Controller
         // Ambil data siswa lengkap
         $this->data['siswa'] = $this->model('Siswa_model')->getSiswaById($id_siswa);
 
+        // Load field configuration
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $this->data['fieldConfig'] = $pengaturanModel->getFieldSiswaConfig();
+
         $this->view('templates/header', $this->data);
         $this->view('templates/sidebar_siswa', $this->data);
         $this->view('siswa/edit_identitas', $this->data);

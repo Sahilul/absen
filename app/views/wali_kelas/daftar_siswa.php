@@ -3,6 +3,7 @@
 ?>
 
 <div class="container-fluid">
+    <?php $fc = $data['fieldConfig'] ?? []; ?>
     <!-- Page Header -->
     <div class="mb-6">
         <div class="flex items-center justify-between">
@@ -410,14 +411,18 @@
                         <p class="text-xs text-gray-600 mb-1">Jenis Kelamin</p>
                         <p class="font-semibold text-gray-900" id="detailJK">-</p>
                     </div>
+                    <?php if ($fc['tempat_lahir'] ?? true): ?>
                     <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
                         <p class="text-xs text-gray-600 mb-1">Tempat Lahir</p>
                         <p class="font-semibold text-gray-900" id="detailTempatLahir">-</p>
                     </div>
+                    <?php endif; ?>
+                    <?php if ($fc['tgl_lahir'] ?? true): ?>
                     <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
                         <p class="text-xs text-gray-600 mb-1">Tanggal Lahir</p>
                         <p class="font-semibold text-gray-900" id="detailTglLahir">-</p>
                     </div>
+                    <?php endif; ?>
                     <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
                         <p class="text-xs text-gray-600 mb-1">Status</p>
                         <p class="font-semibold text-gray-900" id="detailStatus">-</p>
@@ -426,6 +431,7 @@
             </div>
 
             <!-- Kontak -->
+            <?php if (($fc['no_wa'] ?? true) || ($fc['email'] ?? true)): ?>
             <div>
                 <h5
                     class="font-bold text-sm text-secondary-800 flex items-center gap-2 mb-3 pb-2 border-b-2 border-indigo-200">
@@ -433,18 +439,24 @@
                     Informasi Kontak
                 </h5>
                 <div class="grid grid-cols-2 gap-3">
+                    <?php if ($fc['no_wa'] ?? true): ?>
                     <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
                         <p class="text-xs text-gray-600 mb-1">No. WhatsApp</p>
                         <p class="font-semibold text-gray-900" id="detailNoWa">-</p>
                     </div>
+                    <?php endif; ?>
+                    <?php if ($fc['email'] ?? true): ?>
                     <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
                         <p class="text-xs text-gray-600 mb-1">Email</p>
                         <p class="font-semibold text-gray-900 break-all" id="detailEmail">-</p>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- Alamat Lengkap -->
+            <?php if ($fc['alamat'] ?? true): ?>
             <div>
                 <h5
                     class="font-bold text-sm text-secondary-800 flex items-center gap-2 mb-3 pb-2 border-b-2 border-green-200">
@@ -457,14 +469,18 @@
                         <p class="font-semibold text-gray-900" id="detailAlamat">-</p>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
+                        <?php if (($fc['rt'] ?? true) || ($fc['rw'] ?? true)): ?>
                         <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
                             <p class="text-xs text-gray-600 mb-1">RT / RW</p>
                             <p class="font-semibold text-gray-900" id="detailRtRw">-</p>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($fc['dusun'] ?? true): ?>
                         <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
                             <p class="text-xs text-gray-600 mb-1">Dusun</p>
                             <p class="font-semibold text-gray-900" id="detailDusun">-</p>
                         </div>
+                        <?php endif; ?>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
@@ -486,14 +502,18 @@
                             <p class="font-semibold text-gray-900" id="detailProvinsi">-</p>
                         </div>
                     </div>
+                    <?php if ($fc['kode_pos'] ?? true): ?>
                     <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
                         <p class="text-xs text-gray-600 mb-1">Kode Pos</p>
                         <p class="font-semibold text-gray-900" id="detailKodePos">-</p>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- Data Ayah -->
+            <?php if ($fc['ayah_nama'] ?? true): ?>
             <div>
                 <h5
                     class="font-bold text-sm text-secondary-800 flex items-center gap-2 mb-3 pb-2 border-b-2 border-blue-200">
@@ -506,43 +526,59 @@
                             <p class="text-xs text-blue-700 mb-1">Nama Ayah</p>
                             <p class="font-semibold text-blue-900" id="detailAyah">-</p>
                         </div>
+                        <?php if ($fc['ayah_nik'] ?? true): ?>
                         <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                             <p class="text-xs text-blue-700 mb-1">NIK Ayah</p>
                             <p class="font-semibold text-blue-900" id="detailAyahNik">-</p>
                         </div>
+                        <?php endif; ?>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
+                        <?php if (($fc['ayah_tempat_lahir'] ?? true) || ($fc['ayah_tanggal_lahir'] ?? true)): ?>
                         <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                             <p class="text-xs text-blue-700 mb-1">Tempat, Tgl Lahir</p>
                             <p class="font-semibold text-blue-900" id="detailAyahTtl">-</p>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($fc['ayah_status'] ?? true): ?>
                         <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                             <p class="text-xs text-blue-700 mb-1">Status</p>
                             <p class="font-semibold text-blue-900" id="detailAyahStatus">-</p>
                         </div>
+                        <?php endif; ?>
                     </div>
                     <div class="grid grid-cols-3 gap-3">
+                        <?php if ($fc['ayah_pendidikan'] ?? true): ?>
                         <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                             <p class="text-xs text-blue-700 mb-1">Pendidikan</p>
                             <p class="font-semibold text-blue-900" id="detailAyahPendidikan">-</p>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($fc['ayah_pekerjaan'] ?? true): ?>
                         <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                             <p class="text-xs text-blue-700 mb-1">Pekerjaan</p>
                             <p class="font-semibold text-blue-900" id="detailAyahPekerjaan">-</p>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($fc['ayah_penghasilan'] ?? true): ?>
                         <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                             <p class="text-xs text-blue-700 mb-1">Penghasilan</p>
                             <p class="font-semibold text-blue-900" id="detailAyahPenghasilan">-</p>
                         </div>
+                        <?php endif; ?>
                     </div>
+                    <?php if ($fc['ayah_no_hp'] ?? true): ?>
                     <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                         <p class="text-xs text-blue-700 mb-1">No. HP Ayah</p>
                         <p class="font-semibold text-blue-900" id="detailAyahHp">-</p>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- Data Ibu -->
+            <?php if ($fc['ibu_nama'] ?? true): ?>
             <div>
                 <h5
                     class="font-bold text-sm text-secondary-800 flex items-center gap-2 mb-3 pb-2 border-b-2 border-pink-200">
@@ -555,43 +591,59 @@
                             <p class="text-xs text-pink-700 mb-1">Nama Ibu</p>
                             <p class="font-semibold text-pink-900" id="detailIbu">-</p>
                         </div>
+                        <?php if ($fc['ibu_nik'] ?? true): ?>
                         <div class="bg-pink-50 border border-pink-200 p-3 rounded-lg">
                             <p class="text-xs text-pink-700 mb-1">NIK Ibu</p>
                             <p class="font-semibold text-pink-900" id="detailIbuNik">-</p>
                         </div>
+                        <?php endif; ?>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
+                        <?php if (($fc['ibu_tempat_lahir'] ?? true) || ($fc['ibu_tanggal_lahir'] ?? true)): ?>
                         <div class="bg-pink-50 border border-pink-200 p-3 rounded-lg">
                             <p class="text-xs text-pink-700 mb-1">Tempat, Tgl Lahir</p>
                             <p class="font-semibold text-pink-900" id="detailIbuTtl">-</p>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($fc['ibu_status'] ?? true): ?>
                         <div class="bg-pink-50 border border-pink-200 p-3 rounded-lg">
                             <p class="text-xs text-pink-700 mb-1">Status</p>
                             <p class="font-semibold text-pink-900" id="detailIbuStatus">-</p>
                         </div>
+                        <?php endif; ?>
                     </div>
                     <div class="grid grid-cols-3 gap-3">
+                        <?php if ($fc['ibu_pendidikan'] ?? true): ?>
                         <div class="bg-pink-50 border border-pink-200 p-3 rounded-lg">
                             <p class="text-xs text-pink-700 mb-1">Pendidikan</p>
                             <p class="font-semibold text-pink-900" id="detailIbuPendidikan">-</p>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($fc['ibu_pekerjaan'] ?? true): ?>
                         <div class="bg-pink-50 border border-pink-200 p-3 rounded-lg">
                             <p class="text-xs text-pink-700 mb-1">Pekerjaan</p>
                             <p class="font-semibold text-pink-900" id="detailIbuPekerjaan">-</p>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($fc['ibu_penghasilan'] ?? true): ?>
                         <div class="bg-pink-50 border border-pink-200 p-3 rounded-lg">
                             <p class="text-xs text-pink-700 mb-1">Penghasilan</p>
                             <p class="font-semibold text-pink-900" id="detailIbuPenghasilan">-</p>
                         </div>
+                        <?php endif; ?>
                     </div>
+                    <?php if ($fc['ibu_no_hp'] ?? true): ?>
                     <div class="bg-pink-50 border border-pink-200 p-3 rounded-lg">
                         <p class="text-xs text-pink-700 mb-1">No. HP Ibu</p>
                         <p class="font-semibold text-pink-900" id="detailIbuHp">-</p>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- Data Wali -->
+            <?php if ($fc['wali_nama'] ?? true): ?>
             <div>
                 <h5
                     class="font-bold text-sm text-secondary-800 flex items-center gap-2 mb-3 pb-2 border-b-2 border-amber-200">
@@ -604,37 +656,50 @@
                             <p class="text-xs text-amber-700 mb-1">Nama Wali</p>
                             <p class="font-semibold text-amber-900" id="detailWali">-</p>
                         </div>
+                        <?php if ($fc['wali_hubungan'] ?? true): ?>
                         <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg">
                             <p class="text-xs text-amber-700 mb-1">Hubungan</p>
                             <p class="font-semibold text-amber-900" id="detailWaliHubungan">-</p>
                         </div>
+                        <?php endif; ?>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
+                        <?php if ($fc['wali_nik'] ?? true): ?>
                         <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg">
                             <p class="text-xs text-amber-700 mb-1">NIK Wali</p>
                             <p class="font-semibold text-amber-900" id="detailWaliNik">-</p>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($fc['wali_no_hp'] ?? true): ?>
                         <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg">
                             <p class="text-xs text-amber-700 mb-1">No. HP Wali</p>
                             <p class="font-semibold text-amber-900" id="detailWaliHp">-</p>
                         </div>
+                        <?php endif; ?>
                     </div>
                     <div class="grid grid-cols-3 gap-3">
+                        <?php if ($fc['wali_pendidikan'] ?? true): ?>
                         <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg">
                             <p class="text-xs text-amber-700 mb-1">Pendidikan</p>
                             <p class="font-semibold text-amber-900" id="detailWaliPendidikan">-</p>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($fc['wali_pekerjaan'] ?? true): ?>
                         <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg">
                             <p class="text-xs text-amber-700 mb-1">Pekerjaan</p>
                             <p class="font-semibold text-amber-900" id="detailWaliPekerjaan">-</p>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($fc['wali_penghasilan'] ?? true): ?>
                         <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg">
                             <p class="text-xs text-amber-700 mb-1">Penghasilan</p>
                             <p class="font-semibold text-amber-900" id="detailWaliPenghasilan">-</p>
                         </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- Akun Login -->
             <div>
@@ -715,18 +780,24 @@
     });
 
     function showDetailSiswa(siswa) {
+        // Helper to safely set text content
+        const setText = (id, text) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        };
+
         // Update avatar
         const initial = siswa.nama_siswa ? siswa.nama_siswa.charAt(0).toUpperCase() : 'A';
-        document.getElementById('detailAvatar').textContent = initial;
+        setText('detailAvatar', initial);
 
         // Update nama dan NISN
-        document.getElementById('detailNama').textContent = siswa.nama_siswa || '-';
-        document.getElementById('detailNisn').textContent = 'NISN: ' + (siswa.nisn || '-');
+        setText('detailNama', siswa.nama_siswa || '-');
+        setText('detailNisn', 'NISN: ' + (siswa.nisn || '-'));
 
         // Data Pribadi
         const jk = siswa.jenis_kelamin === 'L' ? 'Laki-laki' : siswa.jenis_kelamin === 'P' ? 'Perempuan' : '-';
-        document.getElementById('detailJK').textContent = jk;
-        document.getElementById('detailTempatLahir').textContent = siswa.tempat_lahir || '-';
+        setText('detailJK', jk);
+        setText('detailTempatLahir', siswa.tempat_lahir || '-');
 
         // Format tanggal lahir
         let tglLahir = '-';
@@ -735,29 +806,29 @@
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             tglLahir = date.toLocaleDateString('id-ID', options);
         }
-        document.getElementById('detailTglLahir').textContent = tglLahir;
+        setText('detailTglLahir', tglLahir);
 
         const status = siswa.status_siswa ? siswa.status_siswa.charAt(0).toUpperCase() + siswa.status_siswa.slice(1) : 'Aktif';
-        document.getElementById('detailStatus').textContent = status;
+        setText('detailStatus', status);
 
         // Kontak
-        document.getElementById('detailNoWa').textContent = siswa.no_wa || '-';
-        document.getElementById('detailEmail').textContent = siswa.email || '-';
+        setText('detailNoWa', siswa.no_wa || '-');
+        setText('detailEmail', siswa.email || '-');
 
         // Alamat Lengkap
-        document.getElementById('detailAlamat').textContent = siswa.alamat || '-';
+        setText('detailAlamat', siswa.alamat || '-');
         const rtRw = (siswa.rt || siswa.rw) ? `${siswa.rt || '-'} / ${siswa.rw || '-'}` : '-';
-        document.getElementById('detailRtRw').textContent = rtRw;
-        document.getElementById('detailDusun').textContent = siswa.dusun || '-';
-        document.getElementById('detailKelurahan').textContent = siswa.kelurahan || '-';
-        document.getElementById('detailKecamatan').textContent = siswa.kecamatan || '-';
-        document.getElementById('detailKabupaten').textContent = siswa.kabupaten || '-';
-        document.getElementById('detailProvinsi').textContent = siswa.provinsi || '-';
-        document.getElementById('detailKodePos').textContent = siswa.kode_pos || '-';
+        setText('detailRtRw', rtRw);
+        setText('detailDusun', siswa.dusun || '-');
+        setText('detailKelurahan', siswa.kelurahan || '-');
+        setText('detailKecamatan', siswa.kecamatan || '-');
+        setText('detailKabupaten', siswa.kabupaten || '-');
+        setText('detailProvinsi', siswa.provinsi || '-');
+        setText('detailKodePos', siswa.kode_pos || '-');
 
         // Data Ayah
-        document.getElementById('detailAyah').textContent = siswa.ayah_kandung || '-';
-        document.getElementById('detailAyahNik').textContent = siswa.ayah_nik || '-';
+        setText('detailAyah', siswa.ayah_kandung || '-');
+        setText('detailAyahNik', siswa.ayah_nik || '-');
         let ayahTtl = '-';
         if (siswa.ayah_tempat_lahir || siswa.ayah_tanggal_lahir) {
             const tgl = siswa.ayah_tanggal_lahir && siswa.ayah_tanggal_lahir !== '0000-00-00'
@@ -765,16 +836,16 @@
                 : '';
             ayahTtl = `${siswa.ayah_tempat_lahir || '-'}${tgl ? ', ' + tgl : ''}`;
         }
-        document.getElementById('detailAyahTtl').textContent = ayahTtl;
-        document.getElementById('detailAyahStatus').textContent = siswa.ayah_status || '-';
-        document.getElementById('detailAyahPendidikan').textContent = siswa.ayah_pendidikan || '-';
-        document.getElementById('detailAyahPekerjaan').textContent = siswa.ayah_pekerjaan || '-';
-        document.getElementById('detailAyahPenghasilan').textContent = siswa.ayah_penghasilan || '-';
-        document.getElementById('detailAyahHp').textContent = siswa.ayah_no_hp || '-';
+        setText('detailAyahTtl', ayahTtl);
+        setText('detailAyahStatus', siswa.ayah_status || '-');
+        setText('detailAyahPendidikan', siswa.ayah_pendidikan || '-');
+        setText('detailAyahPekerjaan', siswa.ayah_pekerjaan || '-');
+        setText('detailAyahPenghasilan', siswa.ayah_penghasilan || '-');
+        setText('detailAyahHp', siswa.ayah_no_hp || '-');
 
         // Data Ibu
-        document.getElementById('detailIbu').textContent = siswa.ibu_kandung || '-';
-        document.getElementById('detailIbuNik').textContent = siswa.ibu_nik || '-';
+        setText('detailIbu', siswa.ibu_kandung || '-');
+        setText('detailIbuNik', siswa.ibu_nik || '-');
         let ibuTtl = '-';
         if (siswa.ibu_tempat_lahir || siswa.ibu_tanggal_lahir) {
             const tgl = siswa.ibu_tanggal_lahir && siswa.ibu_tanggal_lahir !== '0000-00-00'
@@ -782,21 +853,21 @@
                 : '';
             ibuTtl = `${siswa.ibu_tempat_lahir || '-'}${tgl ? ', ' + tgl : ''}`;
         }
-        document.getElementById('detailIbuTtl').textContent = ibuTtl;
-        document.getElementById('detailIbuStatus').textContent = siswa.ibu_status || '-';
-        document.getElementById('detailIbuPendidikan').textContent = siswa.ibu_pendidikan || '-';
-        document.getElementById('detailIbuPekerjaan').textContent = siswa.ibu_pekerjaan || '-';
-        document.getElementById('detailIbuPenghasilan').textContent = siswa.ibu_penghasilan || '-';
-        document.getElementById('detailIbuHp').textContent = siswa.ibu_no_hp || '-';
+        setText('detailIbuTtl', ibuTtl);
+        setText('detailIbuStatus', siswa.ibu_status || '-');
+        setText('detailIbuPendidikan', siswa.ibu_pendidikan || '-');
+        setText('detailIbuPekerjaan', siswa.ibu_pekerjaan || '-');
+        setText('detailIbuPenghasilan', siswa.ibu_penghasilan || '-');
+        setText('detailIbuHp', siswa.ibu_no_hp || '-');
 
         // Data Wali
-        document.getElementById('detailWali').textContent = siswa.wali_nama || '-';
-        document.getElementById('detailWaliHubungan').textContent = siswa.wali_hubungan || '-';
-        document.getElementById('detailWaliNik').textContent = siswa.wali_nik || '-';
-        document.getElementById('detailWaliHp').textContent = siswa.wali_no_hp || '-';
-        document.getElementById('detailWaliPendidikan').textContent = siswa.wali_pendidikan || '-';
-        document.getElementById('detailWaliPekerjaan').textContent = siswa.wali_pekerjaan || '-';
-        document.getElementById('detailWaliPenghasilan').textContent = siswa.wali_penghasilan || '-';
+        setText('detailWali', siswa.wali_nama || '-');
+        setText('detailWaliHubungan', siswa.wali_hubungan || '-');
+        setText('detailWaliNik', siswa.wali_nik || '-');
+        setText('detailWaliHp', siswa.wali_no_hp || '-');
+        setText('detailWaliPendidikan', siswa.wali_pendidikan || '-');
+        setText('detailWaliPekerjaan', siswa.wali_pekerjaan || '-');
+        setText('detailWaliPenghasilan', siswa.wali_penghasilan || '-');
 
         // Akun Login
         document.getElementById('detailUsername').textContent = siswa.nisn || '-';

@@ -73,13 +73,6 @@ class PengaturanAplikasi_model
                 $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `wa_gateway_password` varchar(100) DEFAULT '' AFTER `wa_gateway_username`");
                 $this->db->execute();
             }
-
-            // Add cron_secret column if missing
-            $this->db->query("SHOW COLUMNS FROM `{$this->table}` LIKE 'cron_secret'");
-            if (!$this->db->single()) {
-                $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `cron_secret` varchar(100) DEFAULT 'wa_queue_secret_2026' AFTER `wa_gateway_password`");
-                $this->db->execute();
-            }
         } catch (Exception $e) {
             // Ignore error
         }
@@ -107,7 +100,6 @@ class PengaturanAplikasi_model
                     'wa_gateway_token' => '',
                     'wa_gateway_username' => '',
                     'wa_gateway_password' => '',
-                    'cron_secret' => 'wa_queue_secret_2026',
                     'created_at' => date('Y-m-d H:i:s'),
                     'updated_at' => date('Y-m-d H:i:s')
                 ];
@@ -126,7 +118,6 @@ class PengaturanAplikasi_model
                 'wa_gateway_token' => '',
                 'wa_gateway_username' => '',
                 'wa_gateway_password' => '',
-                'cron_secret' => 'wa_queue_secret_2026',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
@@ -139,8 +130,8 @@ class PengaturanAplikasi_model
     private function insertDefault()
     {
         try {
-            $this->db->query("INSERT INTO {$this->table} (id, nama_aplikasi, url_web, logo, cron_secret) 
-                              VALUES (1, 'Smart Absensi', 'http://localhost/absen', '', 'wa_queue_secret_2026')
+            $this->db->query("INSERT INTO {$this->table} (id, nama_aplikasi, url_web, logo) 
+                              VALUES (1, 'Smart Absensi', 'http://localhost/absen', '')
                               ON DUPLICATE KEY UPDATE id = id");
             $this->db->execute();
         } catch (Exception $e) {
@@ -156,7 +147,7 @@ class PengaturanAplikasi_model
         // Cek apakah sudah ada data
         $existing = $this->getPengaturan();
 
-        if ($existing && isset($existing['id'])) {
+        if ($existing && isset($existing['id']) && $this->cekDataExists()) {
             return $this->update($data);
         } else {
             return $this->insert($data);
@@ -177,21 +168,11 @@ class PengaturanAplikasi_model
         }
     }
 
-    /**
-     * Update cron secret saja
-     */
-    public function updateCronSecret($secret)
-    {
-        $this->db->query("UPDATE {$this->table} SET cron_secret = :secret WHERE id = 1");
-        $this->db->bind(':secret', $secret);
-        return $this->db->execute();
-    }
-
     private function insert($data)
     {
         $this->db->query("INSERT INTO {$this->table} 
-            (id, nama_aplikasi, url_web, logo, wa_gateway_provider, wa_gateway_url, wa_gateway_token, wa_gateway_username, wa_gateway_password, cron_secret, created_at, updated_at) 
-            VALUES (1, :nama_aplikasi, :url_web, :logo, :wa_provider, :wa_url, :wa_token, :wa_username, :wa_password, :cron_secret, NOW(), NOW())");
+            (id, nama_aplikasi, url_web, logo, wa_gateway_provider, wa_gateway_url, wa_gateway_token, wa_gateway_username, wa_gateway_password, created_at, updated_at) 
+            VALUES (1, :nama_aplikasi, :url_web, :logo, :wa_provider, :wa_url, :wa_token, :wa_username, :wa_password, NOW(), NOW())");
 
         $this->db->bind(':nama_aplikasi', $data['nama_aplikasi']);
         $this->db->bind(':url_web', $data['url_web'] ?? 'http://localhost/absen');
@@ -201,7 +182,6 @@ class PengaturanAplikasi_model
         $this->db->bind(':wa_token', $data['wa_gateway_token'] ?? '');
         $this->db->bind(':wa_username', $data['wa_gateway_username'] ?? '');
         $this->db->bind(':wa_password', $data['wa_gateway_password'] ?? '');
-        $this->db->bind(':cron_secret', $data['cron_secret'] ?? 'wa_queue_secret_2026');
 
         return $this->db->execute();
     }
@@ -228,86 +208,49 @@ class PengaturanAplikasi_model
         $this->db->bind(':wa_token', $data['wa_gateway_token'] ?? '');
         $this->db->bind(':wa_username', $data['wa_gateway_username'] ?? '');
         $this->db->bind(':wa_password', $data['wa_gateway_password'] ?? '');
-        // Note: cron_secret not updated here via general settings, only explicitly via updateCronSecret or initial insert
 
         return $this->db->execute();
     }
 
     /**
-     * Update single setting by column name
+     * Get konfigurasi field siswa
+     * @return array
      */
-    public function updateSetting($column, $value)
+    public function getFieldSiswaConfig()
     {
-        // Whitelist allowed columns for security
-        $allowedColumns = [
-            'wa_rotation_enabled',
-            'wa_rotation_mode',
-            'wa_last_account_id',
-            'admin_wa_number',
-            'cron_secret',
-            'wa_gateway_provider',
-            'wa_gateway_url',
-            'wa_gateway_token'
-        ];
+        // Ensure column exists
+        $this->ensureFieldSiswaConfigColumn();
 
-        if (!in_array($column, $allowedColumns)) {
-            return false;
-        }
-
-        $this->db->query("UPDATE {$this->table} SET {$column} = :value, updated_at = NOW() WHERE id = 1");
-        $this->db->bind(':value', $value);
-        return $this->db->execute();
-    }
-
-    /**
-     * Get single setting value by name (key-value style)
-     * Uses a separate key-value storage approach for dynamic settings
-     */
-    public function getValue($name)
-    {
-        // First check if it's a column in the main table
-        $pengaturan = $this->getPengaturan();
-        if (isset($pengaturan[$name])) {
-            return $pengaturan[$name];
-        }
-
-        // Otherwise check key-value style storage in app_settings table
         try {
-            $this->db->query("SELECT value FROM app_settings WHERE name = :name LIMIT 1");
-            $this->db->bind(':name', $name);
+            $this->db->query("SELECT field_siswa_config FROM {$this->table} WHERE id = 1");
             $result = $this->db->single();
-            return $result ? $result['value'] : null;
+
+            if ($result && !empty($result['field_siswa_config'])) {
+                $config = json_decode($result['field_siswa_config'], true);
+                if (is_array($config)) {
+                    return array_merge($this->getDefaultFieldConfig(), $config);
+                }
+            }
         } catch (Exception $e) {
-            // Table might not exist, try to create it
-            $this->ensureAppSettingsTable();
-            return null;
+            // Ignore
         }
+
+        return $this->getDefaultFieldConfig();
     }
 
     /**
-     * Set or update a setting by name (key-value style)
+     * Save konfigurasi field siswa
+     * @param array $config
+     * @return bool
      */
-    public function setOrUpdate($name, $value)
+    public function saveFieldSiswaConfig($config)
     {
+        $this->ensureFieldSiswaConfigColumn();
+
         try {
-            // Ensure table exists
-            $this->ensureAppSettingsTable();
-
-            // Check if exists
-            $this->db->query("SELECT id FROM app_settings WHERE name = :name LIMIT 1");
-            $this->db->bind(':name', $name);
-            $existing = $this->db->single();
-
-            if ($existing) {
-                // Update
-                $this->db->query("UPDATE app_settings SET value = :value, updated_at = NOW() WHERE name = :name");
-            } else {
-                // Insert
-                $this->db->query("INSERT INTO app_settings (name, value, created_at) VALUES (:name, :value, NOW())");
-            }
-
-            $this->db->bind(':name', $name);
-            $this->db->bind(':value', $value);
+            $jsonConfig = json_encode($config);
+            $this->db->query("UPDATE {$this->table} SET field_siswa_config = :config WHERE id = 1");
+            $this->db->bind(':config', $jsonConfig);
             return $this->db->execute();
         } catch (Exception $e) {
             return false;
@@ -315,19 +258,107 @@ class PengaturanAplikasi_model
     }
 
     /**
-     * Ensure app_settings table exists
+     * Ensure field_siswa_config column exists
      */
-    private function ensureAppSettingsTable()
+    private function ensureFieldSiswaConfigColumn()
     {
-        $this->db->query("CREATE TABLE IF NOT EXISTS `app_settings` (
-            `id` int(11) NOT NULL AUTO_INCREMENT,
-            `name` varchar(100) NOT NULL,
-            `value` text,
-            `created_at` datetime DEFAULT NULL,
-            `updated_at` datetime DEFAULT NULL,
-            PRIMARY KEY (`id`),
-            UNIQUE KEY `name` (`name`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        $this->db->execute();
+        try {
+            $this->db->query("SHOW COLUMNS FROM `{$this->table}` LIKE 'field_siswa_config'");
+            if (!$this->db->single()) {
+                $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `field_siswa_config` TEXT DEFAULT NULL");
+                $this->db->execute();
+            }
+        } catch (Exception $e) {
+            // Ignore
+        }
+    }
+
+    /**
+     * Get default field configuration (all enabled)
+     * @return array
+     */
+    public function getDefaultFieldConfig()
+    {
+        return [
+            // Data Identitas - WAJIB (always true)
+            'nisn' => true,
+            'nama' => true,
+            'jenis_kelamin' => true,
+            'tempat_lahir' => true,
+            'tanggal_lahir' => true,
+            // Data Identitas - OPSIONAL
+            'nik' => true,
+            'password' => true,
+            'agama' => true,
+            'anak_ke' => true,
+            'jumlah_saudara' => true,
+            'hobi' => true,
+            'cita_cita' => true,
+            'no_wa' => true,
+            'email' => true,
+            'no_kip' => false,
+            'yang_membiayai' => false,
+            'kebutuhan_khusus' => false,
+            // Alamat
+            'alamat' => true,
+            'rt' => false,
+            'rw' => false,
+            'dusun' => false,
+            'kode_pos' => false,
+            'provinsi' => false,
+            'kabupaten' => false,
+            'kecamatan' => false,
+            'kelurahan' => false,
+            'status_tempat_tinggal' => false,
+            'jarak_sekolah' => false,
+            'transportasi' => false,
+            // Data Ayah - WAJIB
+            'ayah_no_hp' => true,
+            // Data Ayah - OPSIONAL
+            'ayah_nama' => true,
+            'ayah_nik' => false,
+            'ayah_tempat_lahir' => false,
+            'ayah_tanggal_lahir' => false,
+            'ayah_status' => false,
+            'ayah_pendidikan' => false,
+            'ayah_pekerjaan' => false,
+            'ayah_penghasilan' => false,
+            // Data Ibu - WAJIB
+            'ibu_no_hp' => true,
+            // Data Ibu - OPSIONAL
+            'ibu_nama' => true,
+            'ibu_nik' => false,
+            'ibu_tempat_lahir' => false,
+            'ibu_tanggal_lahir' => false,
+            'ibu_status' => false,
+            'ibu_pendidikan' => false,
+            'ibu_pekerjaan' => false,
+            'ibu_penghasilan' => false,
+            // Data Wali
+            'wali_nama' => false,
+            'wali_hubungan' => false,
+            'wali_nik' => false,
+            'wali_no_hp' => false,
+            'wali_pendidikan' => false,
+            'wali_pekerjaan' => false,
+            'wali_penghasilan' => false,
+        ];
+    }
+
+    /**
+     * Get list of mandatory fields (cannot be disabled)
+     * @return array
+     */
+    public function getMandatoryFields()
+    {
+        return [
+            'nisn',
+            'nama',
+            'jenis_kelamin',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'ayah_no_hp',
+            'ibu_no_hp'
+        ];
     }
 }

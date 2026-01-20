@@ -701,6 +701,10 @@ class WaliKelasController extends Controller
         $this->data['wali_kelas_info'] = $waliKelasInfo;
         $this->data['siswa_list'] = $this->model('Siswa_model')->getSiswaByKelas($waliKelasInfo['id_kelas'], $id_tp_aktif);
 
+        // Load field configuration
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $this->data['fieldConfig'] = $pengaturanModel->getFieldSiswaConfig();
+
         $this->view('templates/header', $this->data);
         // Sidebar handled by header.php
         $this->view('wali_kelas/daftar_siswa', $this->data);
@@ -743,6 +747,10 @@ class WaliKelasController extends Controller
         $this->data['dokumen'] = $this->model('Siswa_model')->getDokumenSiswa($id_siswa);
         $this->data['wali_kelas_info'] = $waliKelasInfo;
         $this->data['back_url'] = BASEURL . '/waliKelas/daftarSiswa';
+
+        // Load field configuration (optional but good for consistency)
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $this->data['fieldConfig'] = $pengaturanModel->getFieldSiswaConfig();
 
         $this->view('templates/header', $this->data);
         // Sidebar handled by header.php
@@ -798,6 +806,7 @@ class WaliKelasController extends Controller
             $respond(false, 'Modul Google Drive tidak tersedia di server');
         }
 
+
         try {
             require_once APPROOT . '/app/core/GoogleDrive.php';
             $drive = new GoogleDrive();
@@ -836,6 +845,54 @@ class WaliKelasController extends Controller
             error_log("Google Drive upload error: " . $e->getMessage());
             $respond(false, 'Google Drive Error: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Edit Siswa (Wali Kelas)
+     */
+    public function editSiswa($id_siswa)
+    {
+        if ($_SESSION['role'] !== 'wali_kelas') {
+            header('Location: ' . BASEURL . '/waliKelas');
+            exit;
+        }
+
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+
+        // Verifikasi siswa ada di kelas wali kelas
+        $waliKelasInfo = $this->model('WaliKelas_model')->getWaliKelasByGuru($id_guru, $id_tp_aktif);
+        $siswa = $this->model('Siswa_model')->getSiswaById($id_siswa);
+
+        if (!$siswa) {
+            Flasher::setFlash('Siswa tidak ditemukan', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/daftarSiswa');
+            exit;
+        }
+
+        // Cek apakah siswa ada di kelas wali kelas
+        $siswaKelas = $this->model('Keanggotaan_model')->getKeanggotaanSiswa($id_siswa, $id_tp_aktif);
+        if (!$siswaKelas || $siswaKelas['id_kelas'] != $waliKelasInfo['id_kelas']) {
+            Flasher::setFlash('Anda tidak memiliki akses untuk mengedit siswa ini', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/daftarSiswa');
+            exit;
+        }
+
+        $this->data['judul'] = 'Edit Data Siswa';
+        $this->data['wali_kelas_info'] = $waliKelasInfo;
+        $this->data['siswa'] = $siswa;
+        $this->data['session_info'] = [
+            'nama_semester' => $_SESSION['nama_semester_aktif'] ?? 'Semester Tidak Diketahui'
+        ];
+
+        // Load field configuration
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $this->data['fieldConfig'] = $pengaturanModel->getFieldSiswaConfig();
+
+        $this->view('templates/header', $this->data);
+        // Sidebar handled by header.php
+        $this->view('wali_kelas/edit_siswa', $this->data);
+        $this->view('templates/footer');
     }
 
     /**
@@ -1286,49 +1343,7 @@ class WaliKelasController extends Controller
         }
     }
 
-    /**
-     * Edit Siswa (Wali Kelas)
-     */
-    public function editSiswa($id_siswa)
-    {
-        if ($_SESSION['role'] !== 'wali_kelas') {
-            header('Location: ' . BASEURL . '/waliKelas');
-            exit;
-        }
 
-        $id_guru = $_SESSION['id_ref'] ?? 0;
-        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
-
-        // Verifikasi siswa ada di kelas wali kelas
-        $waliKelasInfo = $this->model('WaliKelas_model')->getWaliKelasByGuru($id_guru, $id_tp_aktif);
-        $siswa = $this->model('Siswa_model')->getSiswaById($id_siswa);
-
-        if (!$siswa) {
-            Flasher::setFlash('Siswa tidak ditemukan', 'danger');
-            header('Location: ' . BASEURL . '/waliKelas/daftarSiswa');
-            exit;
-        }
-
-        // Cek apakah siswa ada di kelas wali kelas
-        $siswaKelas = $this->model('Keanggotaan_model')->getKeanggotaanSiswa($id_siswa, $id_tp_aktif);
-        if (!$siswaKelas || $siswaKelas['id_kelas'] != $waliKelasInfo['id_kelas']) {
-            Flasher::setFlash('Anda tidak memiliki akses untuk mengedit siswa ini', 'danger');
-            header('Location: ' . BASEURL . '/waliKelas/daftarSiswa');
-            exit;
-        }
-
-        $this->data['judul'] = 'Edit Data Siswa';
-        $this->data['wali_kelas_info'] = $waliKelasInfo;
-        $this->data['siswa'] = $siswa;
-        $this->data['session_info'] = [
-            'nama_semester' => $_SESSION['nama_semester_aktif'] ?? 'Semester Tidak Diketahui'
-        ];
-
-        $this->view('templates/header', $this->data);
-        // Sidebar handled by header.php
-        $this->view('wali_kelas/edit_siswa', $this->data);
-        $this->view('templates/footer');
-    }
 
     /**
      * Update Siswa (Wali Kelas)

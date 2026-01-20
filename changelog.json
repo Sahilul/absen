@@ -1,82 +1,48 @@
 {
     "versions": [
         {
-            "version": "1.13.8",
-            "date": "2026-01-16",
+            "version": "1.14.0",
+            "date": "2026-01-20",
             "type": "feature",
             "changes": [
                 {
                     "type": "feature",
-                    "description": "Pengaturan Mobile App - UI untuk konfigurasi Firebase & Google Sign-In di Admin Panel"
+                    "description": "Implementasi Field Config pada modul Wali Kelas (Detail Siswa & Edit Siswa) - field menyesuaikan pengaturan admin"
                 },
                 {
                     "type": "feature",
-                    "description": "Import Service Account JSON - import credential Firebase dengan mudah"
+                    "description": "Implementasi Field Config pada modul Siswa (Edit Identitas) - field menyesuaikan pengaturan admin"
                 },
                 {
                     "type": "improvement",
-                    "description": "FCM sekarang membaca credential dari database (lebih aman)"
+                    "description": "Layout Form Responsif: Field otomatis menyesuaikan lebar (auto-fill) saat field lain disembunyikan"
                 },
                 {
-                    "type": "new",
-                    "description": "Database: app_settings table untuk menyimpan konfigurasi dinamis"
-                }
-            ]
-        },
-        {
-            "version": "1.13.7",
-            "date": "2026-01-16",
-            "type": "improvement",
-            "changes": [
-                {
-                    "type": "improvement",
-                    "description": "FCM upgrade ke V1 API - menggunakan Service Account authentication (OAuth2)"
-                },
-                {
-                    "type": "new",
-                    "description": "Database: firebase_project_id setting untuk konfigurasi FCM"
-                }
-            ]
-        },
-        {
-            "version": "1.13.6",
-            "date": "2026-01-16",
-            "type": "feature",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "REST API untuk Mobile App - endpoint auth, guru, siswa, wali kelas"
-                },
-                {
-                    "type": "feature",
-                    "description": "FCM Push Notification - kirim notifikasi ke device mobile"
-                },
-                {
-                    "type": "feature",
-                    "description": "Google Sign-In - login dengan akun Google"
-                },
-                {
-                    "type": "feature",
-                    "description": "FCM.php - class untuk mengirim push notification dari server"
-                },
-                {
-                    "type": "new",
-                    "description": "Database: user_devices table untuk menyimpan FCM token"
-                },
-                {
-                    "type": "new",
-                    "description": "Database: google_id dan avatar kolom di users table"
+                    "type": "fix",
+                    "description": "Perbaikan logika visibility field alamat detail (Kelurahan, Kecamatan, Kab/Kota, Prov) pada form edit identitas"
                 }
             ]
         },
         {
             "version": "1.13.5",
-            "date": "2026-01-16",
-            "type": "feature",
+            "date": "2026-01-17",
+            "type": "maintenance",
             "changes": [
                 {
-                    "type": "new",
-                    "description": "Database: user_devices table untuk FCM token storage"
+                    "type": "removed",
+                    "description": "Hapus REST API untuk Mobile App (folder api/)"
+                },
+                {
+                    "type": "removed",
+                    "description": "Hapus FCM.php - tidak digunakan"
+                },
+                {
+                    "type": "removed",
+                    "description": "Hapus menu 'Pengaturan Mobile App' di Admin Panel"
+                },
+                {
+                    "type": "cleanup",
+                    "description": "Pembersihan kode - fitur Mobile App yang tidak jadi dihapus"
                 }
             ]
         },
