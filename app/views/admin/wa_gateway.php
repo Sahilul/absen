@@ -179,6 +179,52 @@
         </form>
     </div>
 
+    <!-- Test Gateway -->
+    <div class="wa-card mb-8">
+        <div class="p-5 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <i data-lucide="send" class="w-5 h-5 text-indigo-600"></i>
+                Test Koneksi Gateway
+            </h2>
+        </div>
+        <form action="<?= BASEURL; ?>/admin/processTestWaGateway" method="POST" class="p-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Akun Pengirim</label>
+                    <select name="account_id" class="wa-select">
+                        <option value="auto">Otomatiss (Sesuai Rotasi)</option>
+                        <?php if (!empty($data['accounts'])): ?>
+                            <optgroup label="Pilih Akun Spesifik">
+                                <?php foreach ($data['accounts'] as $acc): ?>
+                                    <option value="<?= $acc['id'] ?>">
+                                        <?= htmlspecialchars($acc['nama']) ?> (<?= $acc['provider'] ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        <?php endif; ?>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">
+                        Pilih "Otomatis" untuk mengetes logika rotasi sistem
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Tujuan</label>
+                    <input type="text" name="target" required class="wa-input" placeholder="08xxxxxxxxxx" value="<?= $data['admin_wa_number'] ?? '' ?>">
+                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pesan Test</label>
+                <textarea name="message" rows="2" class="wa-input" placeholder="Ketik pesan test di sini...">Test Koneksi WA Gateway dari SuperApp</textarea>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button type="submit" class="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 font-medium">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    Kirim Pesan Test
+                </button>
+            </div>
+        </form>
+    </div>
+
     <!-- Accounts List -->
     <div class="wa-card">
         <div class="p-5 border-b border-gray-200 flex flex-wrap justify-between items-center gap-3">

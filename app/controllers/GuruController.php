@@ -725,7 +725,8 @@ class GuruController extends Controller
     }
 
     /**
-     * Kirim notifikasi WA untuk absensi yang tidak hadir (A/I/S/D) - VIA ANTRIAN
+     * Kirim notifikasi WA untuk absensi yang tidak hadir (A/I/S/D)
+     * Mendukung mode: personal, grup, both, off
      */
     private function sendAbsensiNotifications($postData)
     {
@@ -753,11 +754,20 @@ class GuruController extends Controller
             $namaSekolah = $pengaturan['nama_aplikasi'] ?? '';
             error_log("namaSekolah: " . $namaSekolah);
 
-            // Cek setting notifikasi absensi (default: AKTIF jika tidak ada di database)
-            $notifEnabled = $pengaturan['wa_notif_absensi_enabled'] ?? 1;
+            // Cek setting notifikasi absensi (master toggle)
+            $pengaturanSistemModel = $this->model('PengaturanSistem_model');
+            $notifEnabled = $pengaturanSistemModel->get('wa_notif_absensi_enabled') ?? '1';
             error_log("notifEnabled: " . $notifEnabled);
-            if ($notifEnabled == 0) {
+            if ($notifEnabled == '0') {
                 error_log("EXIT: Notifikasi absensi dinonaktifkan di pengaturan.");
+                return;
+            }
+
+            // Cek mode notifikasi: personal, grup, both, off
+            $notifMode = $pengaturanSistemModel->get('wa_notif_absensi_mode') ?? 'personal';
+            error_log("notifMode: " . $notifMode);
+            if ($notifMode === 'off') {
+                error_log("EXIT: Mode notifikasi = off");
                 return;
             }
 
@@ -767,12 +777,15 @@ class GuruController extends Controller
             // Kumpulkan siswa yang tidak hadir
             $siswaNotHadir = [];
             $statusSiswa = $postData['absensi'] ?? [];
+            $keteranganSiswa = $postData['keterangan'] ?? [];
             error_log("statusSiswa count: " . count($statusSiswa));
-            error_log("statusSiswa data: " . json_encode($statusSiswa));
 
             foreach ($statusSiswa as $id_siswa => $status) {
                 if (in_array($status, $statusNotif)) {
-                    $siswaNotHadir[$id_siswa] = $status;
+                    $siswaNotHadir[$id_siswa] = [
+                        'status' => $status,
+                        'keterangan' => $keteranganSiswa[$id_siswa] ?? ''
+                    ];
                 }
             }
 
@@ -785,7 +798,7 @@ class GuruController extends Controller
             // Ambil data siswa dan orang tua
             $siswaModel = $this->model('Siswa_model');
 
-            // Load Queue Model dan Fonnte (untuk format nomor & template)
+            // Load Queue Model dan Fonnte
             require_once APPROOT . '/app/models/WaQueue_model.php';
             require_once APPROOT . '/app/core/Fonnte.php';
             $queueModel = new WaQueue_model();
@@ -796,6 +809,8 @@ class GuruController extends Controller
             $tanggal = date('d F Y', strtotime($jurnal['tanggal']));
             $namaKelas = $jurnal['nama_kelas'] ?? '-';
             $namaMapel = $jurnal['nama_mapel'] ?? '-';
+            $namaGuru = $jurnal['nama_guru'] ?? '';
+            $id_kelas = $jurnal['id_kelas'] ?? null;
 
             // Status text mapping
             $statusText = [
@@ -807,57 +822,107 @@ class GuruController extends Controller
 
             $queued = 0;
 
-            foreach ($siswaNotHadir as $id_siswa => $status) {
-                $siswa = $siswaModel->getSiswaById($id_siswa);
-                error_log("Processing siswa id: {$id_siswa}, status: {$status}");
+            // === MODE GRUP atau BOTH: Kirim ke grup kelas ===
+            if (in_array($notifMode, ['grup', 'both']) && $id_kelas) {
+                error_log("Processing GROUP notification for kelas: " . $id_kelas);
 
-                if (!$siswa) {
-                    error_log("SKIP: siswa not found for id: {$id_siswa}");
-                    continue;
+                // Load grup WA model
+                require_once APPROOT . '/app/models/KelasGrupWa_model.php';
+                $grupModel = new KelasGrupWa_model();
+                $grupList = $grupModel->getActiveGrupByKelas($id_kelas);
+
+                error_log("Active groups found: " . count($grupList));
+
+                if (!empty($grupList)) {
+                    // Build daftar absen untuk grup
+                    $daftarAbsen = [];
+                    foreach ($siswaNotHadir as $id_siswa => $data) {
+                        $siswa = $siswaModel->getSiswaById($id_siswa);
+                        if ($siswa) {
+                            $daftarAbsen[] = [
+                                'nama' => $siswa['nama_siswa'] ?? '-',
+                                'status' => $data['status'],
+                                'keterangan' => $data['keterangan']
+                            ];
+                        }
+                    }
+
+                    // Kirim ke setiap grup aktif
+                    foreach ($grupList as $grup) {
+                        $grupId = $grup['grup_wa_id'];
+                        $namaGrup = $grup['nama_grup'];
+
+                        // Build message menggunakan Fonnte helper
+                        $pesan = $fonnte->buildGrupAbsensiMessage($namaKelas, $namaMapel, $tanggal, $namaGuru, $daftarAbsen, 0, $namaSekolah);
+
+                        // Masukkan ke antrian
+                        $queueModel->addToQueue(
+                            $grupId,
+                            $pesan,
+                            'notif_absensi_grup',
+                            ['kelas' => $namaKelas, 'mapel' => $namaMapel, 'grup' => $namaGrup, 'jumlah_absen' => count($daftarAbsen)]
+                        );
+                        $queued++;
+                        error_log("Queued group message to: {$namaGrup} ({$grupId})");
+                    }
+                } else {
+                    error_log("No active groups for kelas: " . $id_kelas);
                 }
+            }
 
-                $namaSiswa = $siswa['nama_siswa'] ?? '-';
-                $statusLabel = $statusText[$status] ?? $status;
+            // === MODE PERSONAL atau BOTH: Kirim ke orang tua per siswa ===
+            if (in_array($notifMode, ['personal', 'both'])) {
+                error_log("Processing PERSONAL notification");
 
-                // Helper cleaning number
-                $cleanNumber = function ($num) use ($fonnte) {
-                    $num = preg_replace('/[^0-9]/', '', $num);
-                    return (strlen($num) > 7) ? $fonnte->formatNumber($num) : '';
-                };
+                foreach ($siswaNotHadir as $id_siswa => $data) {
+                    $status = $data['status'];
+                    $siswa = $siswaModel->getSiswaById($id_siswa);
+                    error_log("Processing siswa id: {$id_siswa}, status: {$status}");
 
-                $ayahNo = $cleanNumber($siswa['ayah_no_hp'] ?? '');
-                $ibuNo = $cleanNumber($siswa['ibu_no_hp'] ?? '');
+                    if (!$siswa) {
+                        error_log("SKIP: siswa not found for id: {$id_siswa}");
+                        continue;
+                    }
 
-                // Prioritas: Kirim ke Ibu dulu, jika tidak ada baru ke Ayah
-                // Hanya 1 pesan per siswa untuk mengurangi beban
-                if ($ibuNo) {
-                    // Kirim ke Ibu
-                    $namaIbu = $siswa['ibu_kandung'] ?? 'Ibu';
-                    $pesan = $fonnte->buildAbsensiMessage($namaIbu, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
-                    $queueModel->addToQueue(
-                        $ibuNo,
-                        $pesan,
-                        'notif_absensi',
-                        ['siswa' => $namaSiswa, 'target' => 'Ibu', 'status' => $status]
-                    );
-                    $queued++;
-                } elseif ($ayahNo) {
-                    // Fallback ke Ayah jika nomor Ibu tidak ada
-                    $namaAyah = $siswa['ayah_kandung'] ?? 'Bapak';
-                    $pesan = $fonnte->buildAbsensiMessage($namaAyah, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
-                    $queueModel->addToQueue(
-                        $ayahNo,
-                        $pesan,
-                        'notif_absensi',
-                        ['siswa' => $namaSiswa, 'target' => 'Ayah', 'status' => $status]
-                    );
-                    $queued++;
+                    $namaSiswa = $siswa['nama_siswa'] ?? '-';
+                    $statusLabel = $statusText[$status] ?? $status;
+
+                    // Helper cleaning number
+                    $cleanNumber = function ($num) use ($fonnte) {
+                        $num = preg_replace('/[^0-9]/', '', $num);
+                        return (strlen($num) > 7) ? $fonnte->formatNumber($num) : '';
+                    };
+
+                    $ayahNo = $cleanNumber($siswa['ayah_no_hp'] ?? '');
+                    $ibuNo = $cleanNumber($siswa['ibu_no_hp'] ?? '');
+
+                    // Prioritas: Kirim ke Ibu dulu, jika tidak ada baru ke Ayah
+                    if ($ibuNo) {
+                        $namaIbu = $siswa['ibu_kandung'] ?? 'Ibu';
+                        $pesan = $fonnte->buildAbsensiMessage($namaIbu, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
+                        $queueModel->addToQueue(
+                            $ibuNo,
+                            $pesan,
+                            'notif_absensi',
+                            ['siswa' => $namaSiswa, 'target' => 'Ibu', 'status' => $status]
+                        );
+                        $queued++;
+                    } elseif ($ayahNo) {
+                        $namaAyah = $siswa['ayah_kandung'] ?? 'Bapak';
+                        $pesan = $fonnte->buildAbsensiMessage($namaAyah, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
+                        $queueModel->addToQueue(
+                            $ayahNo,
+                            $pesan,
+                            'notif_absensi',
+                            ['siswa' => $namaSiswa, 'target' => 'Ayah', 'status' => $status]
+                        );
+                        $queued++;
+                    }
                 }
-                // Wali tidak dikirim untuk mengurangi jumlah pesan
             }
 
             // Log hasil
-            error_log("Notifikasi absensi masuk antrian: {$queued} pesan");
+            error_log("Notifikasi absensi masuk antrian: {$queued} pesan (mode: {$notifMode})");
 
         } catch (Exception $e) {
             error_log("Error queuing absensi notifications: " . $e->getMessage());

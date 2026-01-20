@@ -370,17 +370,35 @@ class Fonnte
 
     /**
      * Format nomor HP ke format internasional
+     * Mendukung auto-detect Group ID WhatsApp
      */
     public function formatNumber($number)
     {
-        $number = preg_replace('/[^0-9]/', '', $number);
-        if (substr($number, 0, 1) === '0') {
-            $number = '62' . substr($number, 1);
+        $number = trim($number);
+
+        // 1. Jika mengandung '@', asumsikan JID valid (Group/Personal), kembalikan as-is
+        if (strpos($number, '@') !== false) {
+            return $number;
         }
-        if (substr($number, 0, 2) !== '62') {
-            $number = '62' . $number;
+
+        // Bersihkan karakter non-numeric
+        $cleanNumber = preg_replace('/[^0-9]/', '', $number);
+
+        // 2. Deteksi Group ID (biasanya panjang > 15 digit)
+        // Contoh: 120363287671196238 (18 digit)
+        if (strlen($cleanNumber) > 15) {
+            // Auto-append @g.us jika belum ada
+            return $cleanNumber . '@g.us';
         }
-        return $number;
+
+        // 3. Format Nomor HP Indonesia (Standard)
+        if (substr($cleanNumber, 0, 1) === '0') {
+            $cleanNumber = '62' . substr($cleanNumber, 1);
+        } elseif (substr($cleanNumber, 0, 2) !== '62') {
+            $cleanNumber = '62' . $cleanNumber;
+        }
+
+        return $cleanNumber;
     }
 
 
@@ -786,6 +804,92 @@ class Fonnte
         }
         return $results;
     }
+
+    /**
+     * Kirim notifikasi absensi ke grup (rangkuman per mapel)
+     * @param string $grupId ID grup WA (format: 628xxx atau xxx@g.us)
+     * @param string $namaKelas Nama kelas
+     * @param string $mapel Nama mata pelajaran
+     * @param string $tanggal Tanggal absensi (format readable)
+     * @param string $namaGuru Nama guru pengajar
+     * @param array $daftarAbsen Array siswa tidak hadir [{nama, status, keterangan}]
+     * @param int $totalSiswa Total siswa di kelas
+     * @param string $namaSekolah Nama sekolah
+     * @return array Response
+     */
+    public function sendNotifikasiAbsensiGrup($grupId, $namaKelas, $mapel, $tanggal, $namaGuru, $daftarAbsen, $totalSiswa = 0, $namaSekolah = '')
+    {
+        // Cek setting wa_notif_absensi_enabled
+        if (!$this->isNotificationEnabled('wa_notif_absensi_enabled')) {
+            return ['status' => false, 'reason' => 'Absence notification disabled by setting'];
+        }
+
+        if (empty($daftarAbsen)) {
+            return ['status' => false, 'reason' => 'Tidak ada siswa tidak hadir'];
+        }
+
+        // Build message
+        $message = $this->buildGrupAbsensiMessage($namaKelas, $mapel, $tanggal, $namaGuru, $daftarAbsen, $totalSiswa, $namaSekolah);
+
+        return $this->send($grupId, $message);
+    }
+
+    /**
+     * Build pesan rangkuman absensi untuk grup
+     * @param string $namaKelas
+     * @param string $mapel
+     * @param string $tanggal
+     * @param string $namaGuru
+     * @param array $daftarAbsen [{nama, status, keterangan}]
+     * @param int $totalSiswa
+     * @param string $namaSekolah
+     * @return string
+     */
+    public function buildGrupAbsensiMessage($namaKelas, $mapel, $tanggal, $namaGuru, $daftarAbsen, $totalSiswa, $namaSekolah)
+    {
+        $statusLabels = [
+            'A' => 'ALPHA',
+            'I' => 'IZIN',
+            'S' => 'SAKIT',
+            'D' => 'DISPENSASI'
+        ];
+
+        $msg = "📢 *LAPORAN ABSENSI KELAS {$namaKelas}*\n";
+        $msg .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        $msg .= "📚 Mata Pelajaran: *{$mapel}*\n";
+        $msg .= "📅 Tanggal: {$tanggal}\n";
+        if ($namaGuru) {
+            $msg .= "👨‍🏫 Guru: {$namaGuru}\n";
+        }
+        $msg .= "\n*Siswa Tidak Hadir:*\n";
+        $msg .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+
+        $no = 1;
+        foreach ($daftarAbsen as $siswa) {
+            $statusCode = $siswa['status'] ?? 'A';
+            $statusLabel = $statusLabels[$statusCode] ?? $statusCode;
+            $keterangan = !empty($siswa['keterangan']) ? " ({$siswa['keterangan']})" : "";
+
+            $msg .= "{$no}. {$siswa['nama']} - *{$statusLabel}*{$keterangan}\n";
+            $no++;
+        }
+
+        $jumlahAbsen = count($daftarAbsen);
+        $msg .= "\n";
+        if ($totalSiswa > 0) {
+            $msg .= "Total: {$jumlahAbsen} siswa tidak hadir dari {$totalSiswa} siswa\n";
+        } else {
+            $msg .= "Total: {$jumlahAbsen} siswa tidak hadir\n";
+        }
+        $msg .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        $msg .= "Mohon perhatian orang tua/wali.\n";
+        if ($namaSekolah) {
+            $msg .= "*{$namaSekolah}*";
+        }
+
+        return $msg;
+    }
+
 
     /**
      * Kirim notifikasi pembayaran ke orang tua

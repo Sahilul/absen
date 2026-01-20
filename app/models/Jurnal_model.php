@@ -1,13 +1,14 @@
 <?php
 // File: app/models/Jurnal_model.php - VERSI BERSIH TANPA DUPLICATE
 
-class Jurnal_model {
+class Jurnal_model
+{
     private $db;
     private $table = 'jurnal';
 
     public function __construct()
     {
-        require_once APPROOT . '/app/core/Database.php'; 
+        require_once APPROOT . '/app/core/Database.php';
         $this->db = new Database;
     }
 
@@ -28,7 +29,7 @@ class Jurnal_model {
                   JOIN kelas ON penugasan.id_kelas = kelas.id_kelas
                   WHERE penugasan.id_guru = :id_guru AND penugasan.id_semester = :id_semester
                   ORDER BY jurnal.tanggal DESC, jurnal.pertemuan_ke DESC";
-        
+
         $this->db->query($query);
         $this->db->bind('id_guru', $id_guru);
         $this->db->bind('id_semester', $id_semester);
@@ -62,7 +63,7 @@ class Jurnal_model {
                   GROUP BY mapel.id_mapel, mapel.nama_mapel, kelas.nama_kelas
                   HAVING total_pertemuan > 0
                   ORDER BY mapel.nama_mapel";
-        
+
         $this->db->query($query);
         $this->db->bind('id_guru', $id_guru);
         $this->db->bind('id_semester', $id_semester);
@@ -79,6 +80,7 @@ class Jurnal_model {
                             mapel.nama_mapel, 
                             kelas.nama_kelas, 
                             penugasan.id_penugasan,
+                            kelas.id_kelas,
                             mapel.id_mapel
                           FROM ' . $this->table . '
                           JOIN penugasan ON jurnal.id_penugasan = penugasan.id_penugasan
@@ -117,14 +119,14 @@ class Jurnal_model {
     {
         $query = "INSERT INTO " . $this->table . " (id_penugasan, pertemuan_ke, tanggal, topik_materi, catatan) 
                   VALUES (:id_penugasan, :pertemuan_ke, :tanggal, :topik_materi, :catatan)";
-        
+
         $this->db->query($query);
         $this->db->bind('id_penugasan', $data['id_penugasan']);
         $this->db->bind('pertemuan_ke', $data['pertemuan_ke']);
         $this->db->bind('tanggal', $data['tanggal']);
         $this->db->bind('topik_materi', $data['topik_materi']);
         $this->db->bind('catatan', $data['catatan']);
-        
+
         $this->db->execute();
         return $this->db->lastInsertId();
     }
@@ -136,13 +138,13 @@ class Jurnal_model {
     {
         $query = "UPDATE " . $this->table . " SET tanggal = :tanggal, topik_materi = :topik_materi, catatan = :catatan 
                   WHERE id_jurnal = :id_jurnal";
-        
+
         $this->db->query($query);
         $this->db->bind('tanggal', $data['tanggal']);
         $this->db->bind('topik_materi', $data['topik_materi']);
         $this->db->bind('catatan', $data['catatan']);
         $this->db->bind('id_jurnal', $data['id_jurnal']);
-        
+
         $this->db->execute();
         return $this->db->rowCount();
     }
@@ -159,10 +161,10 @@ class Jurnal_model {
 
         // Kemudian hapus jurnal
         $query = "DELETE FROM " . $this->table . " WHERE id_jurnal = :id_jurnal";
-        
+
         $this->db->query($query);
         $this->db->bind('id_jurnal', $id_jurnal);
-        
+
         $this->db->execute();
         return $this->db->rowCount();
     }
@@ -196,14 +198,14 @@ class Jurnal_model {
             GROUP BY j.id_jurnal, j.tanggal, j.pertemuan_ke, j.topik_materi, j.catatan, j.timestamp, m.nama_mapel, g.nama_guru, k.nama_kelas
             ORDER BY j.tanggal DESC, j.pertemuan_ke DESC
         ";
-        
+
         $this->db->query($sql);
         $this->db->bind('id_guru', $id_guru);
         $this->db->bind('id_semester', $id_semester);
         $this->db->bind('id_mapel', $id_mapel);
-        
+
         $results = $this->db->resultSet();
-        
+
         // MAP KOLOM DATABASE KE FORMAT YANG DIHARAPKAN VIEW
         $mapped_results = [];
         foreach ($results as $row) {
@@ -222,7 +224,7 @@ class Jurnal_model {
                 'nama_kelas' => $row['nama_kelas']
             ];
         }
-        
+
         return $mapped_results;
     }
 
@@ -250,12 +252,12 @@ class Jurnal_model {
             GROUP BY s.id_siswa, s.nama_siswa
             ORDER BY s.nama_siswa
         ";
-        
+
         $this->db->query($sql);
         $this->db->bind('id_guru', $id_guru);
         $this->db->bind('id_semester', $id_semester);
         $this->db->bind('id_mapel', $id_mapel);
-        
+
         return $this->db->resultSet();
     }
 
@@ -283,12 +285,12 @@ class Jurnal_model {
             WHERE p.id_semester = :id_semester
             ORDER BY j.tanggal DESC, j.timestamp DESC
         ";
-        
+
         $this->db->query($sql);
         $this->db->bind('id_semester', $id_semester);
-        
+
         $results = $this->db->resultSet();
-        
+
         // MAP KOLOM DATABASE KE FORMAT YANG DIHARAPKAN
         $mapped_results = [];
         foreach ($results as $row) {
@@ -304,7 +306,7 @@ class Jurnal_model {
                 'nama_kelas' => $row['nama_kelas']
             ];
         }
-        
+
         return $mapped_results;
     }
 
@@ -317,7 +319,7 @@ class Jurnal_model {
     public function getJurnalHariIniByKelas($id_kelas)
     {
         $tanggal_hari_ini = date('Y-m-d');
-        
+
         $query = "SELECT 
                     jurnal.*,
                     mapel.nama_mapel,
@@ -332,11 +334,11 @@ class Jurnal_model {
                   WHERE penugasan.id_kelas = :id_kelas
                   AND DATE(jurnal.tanggal) = :tanggal
                   ORDER BY jurnal.pertemuan_ke ASC";
-        
+
         $this->db->query($query);
         $this->db->bind('id_kelas', $id_kelas);
         $this->db->bind('tanggal', $tanggal_hari_ini);
-        
+
         return $this->db->resultSet();
     }
 
@@ -357,10 +359,10 @@ class Jurnal_model {
                   JOIN kelas ON penugasan.id_kelas = kelas.id_kelas
                   WHERE jurnal.id_penugasan = :id_penugasan
                   ORDER BY jurnal.tanggal DESC, jurnal.pertemuan_ke DESC";
-        
+
         $this->db->query($query);
         $this->db->bind('id_penugasan', $id_penugasan);
-        
+
         return $this->db->resultSet();
     }
 }

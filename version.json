@@ -1,6 +1,6 @@
 {
-    "version": "1.14.0",
+    "version": "1.15.0",
     "build": 20260120,
     "release_date": "2026-01-20",
-    "description": "Implementasi Dynamic Field Config pada modul Wali Kelas dan Siswa"
+    "description": "Major Fixes: Notifikasi Absensi, Group ID, Queue Mode"
 }

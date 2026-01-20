@@ -3720,29 +3720,54 @@ class AdminController extends Controller
     public function exportSiswaExcel()
     {
         try {
-            $dataSiswa = $this->model('Siswa_model')->getAllSiswa();
+            $kelasFilter = isset($_GET['kelas']) ? trim($_GET['kelas']) : '';
+            $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+
+            if (!empty($kelasFilter)) {
+                // Get class ID by name
+                $kelasData = $this->model('Kelas_model')->getKelasByName($kelasFilter, $id_tp);
+                if ($kelasData) {
+                    $dataSiswa = $this->model('Siswa_model')->getSiswaByKelas($kelasData['id_kelas'], $id_tp);
+                    $classNameSlug = preg_replace('/[^A-Za-z0-9]+/', '_', $kelasFilter);
+                    $filename = "Export_Data_Siswa_Kelas_" . $classNameSlug . "_" . date('Y-m-d') . ".csv";
+                } else {
+                    $dataSiswa = [];
+                    $filename = "Export_Data_Siswa_" . date('Y-m-d') . ".csv";
+                }
+            } else {
+                $dataSiswa = $this->model('Siswa_model')->getAllSiswa();
+                $filename = "Export_Data_Siswa_Semua_" . date('Y-m-d') . ".csv";
+            }
+
             // Set headers untuk download CSV
             header('Content-Type: text/csv; charset=utf-8');
-            header('Content-Disposition: attachment; filename="Export_Data_Siswa_' . date('Y-m-d') . '.csv"');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
             header('Cache-Control: max-age=0');
+
             $output = fopen('php://output', 'w');
+
             // Add BOM untuk Excel UTF-8 support
             fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
             // Header
-            fputcsv($output, ['NISN', 'Nama Siswa', 'Jenis Kelamin', 'Tanggal Lahir', 'Status', 'Password', 'ID Siswa'], ';');
+            fputcsv($output, ['NISN', 'Nama Siswa', 'Kelas', 'Jenis Kelamin', 'Tanggal Lahir', 'Status', 'Password', 'No HP Ayah', 'No HP Ibu'], ';');
+
             // Data
             foreach ($dataSiswa as $siswa) {
                 $row = [
                     $siswa['nisn'],
                     $siswa['nama_siswa'],
+                    $siswa['nama_kelas'] ?? '-',
                     $siswa['jenis_kelamin'] === 'L' ? 'Laki-laki' : 'Perempuan',
                     $siswa['tgl_lahir'] ?? '',
                     $siswa['status_siswa'],
                     $siswa['password_plain'] ?? '',
-                    $siswa['id_siswa']
+                    $siswa['ayah_no_hp'] ?? '-',
+                    $siswa['ibu_no_hp'] ?? '-'
                 ];
                 fputcsv($output, $row, ';');
             }
+
             fclose($output);
             exit;
         } catch (Exception $e) {
@@ -6607,11 +6632,17 @@ Waktu: ' . date('d/m/Y H:i:s');
         $this->data['judul'] = 'Antrian Pesan WhatsApp';
 
         $queueModel = $this->model('WaQueue_model');
+        $pengaturanSistemModel = $this->model('PengaturanSistem_model');
 
         // Statistik
         $this->data['stats'] = $queueModel->getQueueStats();
         $this->data['stats_by_jenis'] = $queueModel->getStatsByJenis();
         $this->data['today_count'] = $queueModel->getTodayCount();
+
+        // Notifikasi Absensi Status
+        $this->data['notif_enabled'] = ($pengaturanSistemModel->get('wa_notif_absensi_enabled') ?? '1') === '1';
+        $this->data['notif_mode'] = $pengaturanSistemModel->get('wa_notif_absensi_mode') ?? 'personal';
+        $this->data['queue_enabled'] = ($pengaturanSistemModel->get('wa_queue_enabled') ?? '1') === '1';
 
         // Filter & Pagination
         $status = $_GET['status'] ?? 'all';
@@ -6634,6 +6665,54 @@ Waktu: ' . date('d/m/Y H:i:s');
         $this->view('templates/sidebar_admin', $this->data);
         $this->view('admin/antrian_wa', $this->data);
         $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Toggle aktif/nonaktif notifikasi absensi (quick toggle)
+     */
+    public function toggleNotifikasiAbsensi()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/antrianWa');
+            exit;
+        }
+
+        $pengaturanSistemModel = $this->model('PengaturanSistem_model');
+        $currentValue = $pengaturanSistemModel->get('wa_notif_absensi_enabled') ?? '1';
+        $newValue = $currentValue === '1' ? '0' : '1';
+
+        $pengaturanSistemModel->set('wa_notif_absensi_enabled', $newValue);
+
+        $status = $newValue === '1' ? 'diaktifkan' : 'dinonaktifkan';
+        Flasher::setFlash("Notifikasi absensi berhasil {$status}", 'success');
+
+        header('Location: ' . BASEURL . '/admin/antrianWa');
+        exit;
+    }
+
+    /**
+     * Toggle mode antrian WA: queue vs direct
+     * Queue = kirim via cron job (async)
+     * Direct = kirim langsung tanpa antrian (sync)
+     */
+    public function toggleQueueMode()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/antrianWa');
+            exit;
+        }
+
+        $pengaturanSistemModel = $this->model('PengaturanSistem_model');
+        $currentValue = $pengaturanSistemModel->get('wa_queue_enabled') ?? '1';
+        $newValue = $currentValue === '1' ? '0' : '1';
+
+        $pengaturanSistemModel->set('wa_queue_enabled', $newValue);
+
+        $mode = $newValue === '1' ? 'ANTRIAN (Queue)' : 'LANGSUNG (Direct)';
+        Flasher::setFlash("Mode pengiriman WA diubah ke {$mode}", 'success');
+
+        header('Location: ' . BASEURL . '/admin/antrianWa');
+        exit;
     }
 
     /**
@@ -6893,6 +6972,80 @@ Waktu: ' . date('d/m/Y H:i:s');
     }
 
     /**
+     * Test Koneksi WA Gateway (Form Submit)
+     */
+    public function processTestWaGateway()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/waGateway');
+            exit;
+        }
+
+        $target = trim($_POST['target'] ?? '');
+        $message = trim($_POST['message'] ?? '');
+        $accountId = $_POST['account_id'] ?? 'auto';
+
+        if (empty($target) || empty($message)) {
+            Flasher::setFlash('Nomor tujuan dan pesan tidak boleh kosong', 'danger');
+            header('Location: ' . BASEURL . '/admin/waGateway');
+            exit;
+        }
+
+        require_once APPROOT . '/app/core/Fonnte.php';
+        $fonnte = new Fonnte();
+
+        // Jika pilih akun spesifik
+        if ($accountId !== 'auto') {
+            $accountModel = $this->model('WaAccount_model');
+            $account = $accountModel->getById($accountId);
+
+            if ($account) {
+                // Configure Fonnte to use this specific account
+                $fonnte->configureFromAccount($account);
+            } else {
+                Flasher::setFlash('Akun yang dipilih tidak ditemukan', 'danger');
+                header('Location: ' . BASEURL . '/admin/waGateway');
+                exit;
+            }
+        }
+
+        // Kirim pesan
+        $result = $fonnte->send($target, $message);
+
+        // Parse result
+        // Fonnte helper returns ['status' => bool, 'reason' => string] or raw AP response
+        $isSuccess = isset($result['status']) && ($result['status'] === true || $result['status'] === 'true');
+
+        // Determine reason/message
+        $reason = 'Unknown response from server';
+        if (isset($result['reason'])) {
+            $reason = $result['reason'];
+        } elseif (isset($result['message'])) {
+            $reason = $result['message'];
+        } elseif (isset($result['detail'])) {
+            $reason = $result['detail'];
+        } elseif ($isSuccess) {
+            $reason = 'Pesan berhasil dikirim (No detail)';
+        }
+
+        // Detailed feedback
+        if ($isSuccess) {
+            $msg = "<strong>Sukses!</strong> Pesan berhasil dikirim ke {$target}.<br><small>Response: {$reason}</small>";
+            Flasher::setFlash($msg, 'success');
+        } else {
+            $msg = "<strong>Gagal!</strong> Tidak dapat mengirim pesan.<br><small><strong>Reason:</strong> {$reason}</small>";
+            // Jika ada debug info tambahan dari result
+            if (isset($result['debug'])) {
+                $msg .= "<br><small>Debug: " . htmlspecialchars($result['debug']) . "</small>";
+            }
+            Flasher::setFlash($msg, 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/waGateway');
+        exit;
+    }
+
+    /**
      * Simpan pengaturan rotasi
      */
     public function prosesWaGateway()
@@ -7074,6 +7227,203 @@ Waktu: ' . date('d/m/Y H:i:s');
         }
 
         header('Location: ' . BASEURL . '/admin/pengaturanFieldSiswa');
+        exit;
+    }
+
+    // =================================================================
+    // PENGATURAN NOTIFIKASI ABSENSI
+    // =================================================================
+
+    /**
+     * Halaman pengaturan notifikasi absensi
+     */
+    public function pengaturanNotifikasiAbsensi()
+    {
+        $this->data['judul'] = 'Pengaturan Notifikasi Absensi';
+
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+        $pengaturanSistemModel = $this->model('PengaturanSistem_model');
+        $kelasModel = $this->model('Kelas_model');
+        $grupModel = $this->model('KelasGrupWa_model');
+
+        $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+
+        $this->data['pengaturan'] = $pengaturanModel->getPengaturan();
+        $this->data['notif_mode'] = $pengaturanSistemModel->get('wa_notif_absensi_mode') ?? 'personal';
+        $this->data['notif_enabled'] = ($pengaturanSistemModel->get('wa_notif_absensi_enabled') ?? '1') === '1';
+        $this->data['kelas_list'] = $kelasModel->getKelasByTP($id_tp);
+        $this->data['grup_data'] = $grupModel->getAllGrupWithKelas();
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/pengaturan_notifikasi_absensi', $this->data);
+        $this->view('templates/footer');
+    }
+
+    /**
+     * Simpan pengaturan mode notifikasi
+     */
+    public function simpanPengaturanNotifikasiAbsensi()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+            exit;
+        }
+
+        $pengaturanSistemModel = $this->model('PengaturanSistem_model');
+
+        $mode = $_POST['notif_mode'] ?? 'personal';
+        $enabled = isset($_POST['notif_enabled']) ? '1' : '0';
+
+        // Validate mode
+        $allowedModes = ['personal', 'grup', 'both', 'off'];
+        if (!in_array($mode, $allowedModes)) {
+            $mode = 'personal';
+        }
+
+        $pengaturanSistemModel->set('wa_notif_absensi_mode', $mode);
+        $pengaturanSistemModel->set('wa_notif_absensi_enabled', $enabled);
+
+        Flasher::setFlash('Pengaturan notifikasi absensi berhasil disimpan', 'success');
+        header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+        exit;
+    }
+
+    /**
+     * Tambah grup WA untuk kelas
+     */
+    public function tambahGrupWaKelas()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+            exit;
+        }
+
+        $grupModel = $this->model('KelasGrupWa_model');
+
+        $id_kelas = intval($_POST['id_kelas'] ?? 0);
+        $nama_grup = trim($_POST['nama_grup'] ?? '');
+        $grup_wa_id = trim($_POST['grup_wa_id'] ?? '');
+
+        if ($id_kelas > 0 && !empty($nama_grup) && !empty($grup_wa_id)) {
+            if ($grupModel->addGrup($id_kelas, $nama_grup, $grup_wa_id)) {
+                Flasher::setFlash('Grup WhatsApp berhasil ditambahkan', 'success');
+            } else {
+                Flasher::setFlash('Gagal menambahkan grup WhatsApp', 'danger');
+            }
+        } else {
+            Flasher::setFlash('Data tidak lengkap', 'warning');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+        exit;
+    }
+
+    /**
+     * Edit grup WA
+     */
+    public function editGrupWaKelas()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+            exit;
+        }
+
+        $grupModel = $this->model('KelasGrupWa_model');
+
+        $id = intval($_POST['id'] ?? 0);
+        $nama_grup = trim($_POST['nama_grup'] ?? '');
+        $grup_wa_id = trim($_POST['grup_wa_id'] ?? '');
+
+        if ($id > 0 && !empty($nama_grup) && !empty($grup_wa_id)) {
+            if ($grupModel->updateGrup($id, $nama_grup, $grup_wa_id)) {
+                Flasher::setFlash('Grup WhatsApp berhasil diperbarui', 'success');
+            } else {
+                Flasher::setFlash('Gagal memperbarui grup WhatsApp', 'danger');
+            }
+        } else {
+            Flasher::setFlash('Data tidak lengkap', 'warning');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+        exit;
+    }
+
+    /**
+     * Toggle aktif/nonaktif grup WA
+     */
+    public function toggleGrupWaKelas($id)
+    {
+        $grupModel = $this->model('KelasGrupWa_model');
+
+        if ($grupModel->toggleActive(intval($id))) {
+            Flasher::setFlash('Status grup WhatsApp berhasil diubah', 'success');
+        } else {
+            Flasher::setFlash('Gagal mengubah status grup', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+        exit;
+    }
+
+    /**
+     * Test kirim pesan ke grup WA
+     */
+    public function testGrupWa($id)
+    {
+        $grupModel = $this->model('KelasGrupWa_model');
+        $grup = $grupModel->getGrupById($id);
+
+        if (!$grup) {
+            Flasher::setFlash('Grup tidak ditemukan', 'danger');
+            header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+            exit;
+        }
+
+        $queueModel = $this->model('WaQueue_model');
+        $namaGrup = $grup['nama_grup'];
+        $grupId = $grup['grup_wa_id'];
+
+        // Pesan Default
+        $pesan = "*TEST PESAN WA GRUP*\n\n";
+        $pesan .= "Halo grup *{$namaGrup}*,\n";
+        $pesan .= "Ini adalah pesan percobaan dari Sistem Notifikasi Absensi.\n";
+        $pesan .= "Jika pesan ini diterima, berarti ID Grup *{$grupId}* sudah benar.\n\n";
+        $pesan .= "Waktu kirim: " . date('d-m-Y H:i:s');
+
+        // Tambahkan ke antrian (akan otomatis cek mode queue/direct di model)
+        // Metadata: { "grup_id": "...", "nama_grup": "..." }
+        $queueId = $queueModel->addToQueue(
+            $grupId,
+            $pesan,
+            'test_grup',
+            ['grup_id' => $id, 'nama_grup' => $namaGrup]
+        );
+
+        if ($queueId) {
+            Flasher::setFlash("Pesan test berhasil dibuat/dikirim ke grup {$namaGrup}", 'success');
+        } else {
+            Flasher::setFlash("Gagal membuat/mengirim pesan test ke grup {$namaGrup}", 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+        exit;
+    }
+
+    /**
+     * Hapus grup WA
+     */
+    public function hapusGrupWaKelas($id)
+    {
+        $grupModel = $this->model('KelasGrupWa_model');
+
+        if ($grupModel->deleteGrup(intval($id))) {
+            Flasher::setFlash('Grup WhatsApp berhasil dihapus', 'success');
+        } else {
+            Flasher::setFlash('Gagal menghapus grup WhatsApp', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
         exit;
     }
 

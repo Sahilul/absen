@@ -374,7 +374,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: PENGATURAN -->
             <!-- ============================================== -->
-            <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru', 'Antrian Pesan WhatsApp', 'Riwayat Login', 'Pengaturan WA Gateway']); ?>
+            <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru', 'Antrian Pesan WhatsApp', 'Riwayat Login', 'Pengaturan WA Gateway', 'Pengaturan Notifikasi Absensi']); ?>
             <li class="pt-2" x-data="{ open: <?= $pengaturanActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $pengaturanActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -393,6 +393,13 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan WA Gateway') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-green-50 hover:text-green-700' ?>">
                             <i data-lucide="smartphone" class="w-4 h-4 mr-2"></i>
                             WA Gateway (Multi)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/pengaturanNotifikasiAbsensi"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan Notifikasi Absensi') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-orange-50 hover:text-orange-700' ?>">
+                            <i data-lucide="bell" class="w-4 h-4 mr-2"></i>
+                            Notifikasi Absensi
                         </a>
                     </li>
                     <li>

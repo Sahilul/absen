@@ -13,10 +13,21 @@ class WaQueue_model
     }
 
     /**
-     * Tambah pesan ke antrian
+     * Tambah pesan ke antrian atau kirim langsung tergantung setting
+     * Jika wa_queue_enabled = 1: masuk antrian (default)
+     * Jika wa_queue_enabled = 0: kirim langsung via Fonnte
      */
     public function addToQueue($noWa, $pesan, $jenis = 'general', $metadata = null, $scheduledAt = null)
     {
+        // Cek apakah mode antrian aktif
+        $queueEnabled = $this->isQueueEnabled();
+
+        if (!$queueEnabled) {
+            // Mode LANGSUNG: kirim langsung via Fonnte tanpa antrian
+            return $this->sendDirect($noWa, $pesan, $jenis, $metadata);
+        }
+
+        // Mode ANTRIAN: masukkan ke database queue
         $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, scheduled_at, status) 
                           VALUES (:no_wa, :pesan, :jenis, :metadata, :scheduled_at, "pending")');
         $this->db->bind(':no_wa', $noWa);
@@ -26,6 +37,63 @@ class WaQueue_model
         $this->db->bind(':scheduled_at', $scheduledAt ?? date('Y-m-d H:i:s'));
         $this->db->execute();
         return $this->db->lastInsertId();
+    }
+
+    /**
+     * Cek apakah mode antrian aktif
+     */
+    private function isQueueEnabled()
+    {
+        $this->db->query("SELECT value FROM pengaturan_sistem WHERE key_name = :key");
+        $this->db->bind(':key', 'wa_queue_enabled');
+        $result = $this->db->single();
+
+        // Default ke enabled (1) jika tidak ditemukan setting
+        // Gunakan false comparison agar lebih aman ( '1' == 1 )
+        return ($result['value'] ?? '1') == '1';
+    }
+
+    /**
+     * Kirim pesan langsung tanpa antrian
+     */
+    private function sendDirect($noWa, $pesan, $jenis, $metadata)
+    {
+        try {
+            require_once APPROOT . '/app/core/Fonnte.php';
+            $fonnte = new Fonnte();
+            $result = $fonnte->send($noWa, $pesan);
+
+            // Periksa status pengiriman
+            // Fonnte::send mengembalikan array ['status' => bool, 'reason' => string]
+            $isSuccess = isset($result['status']) && $result['status'] == true;
+            $status = $isSuccess ? 'sent' : 'failed';
+            $errorMessage = $isSuccess ? null : ($result['reason'] ?? 'Unknown error');
+
+            // Log ke database
+            $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, status, sent_at, attempts, error_message) 
+                              VALUES (:no_wa, :pesan, :jenis, :metadata, :status, NOW(), 1, :error_message)');
+            $this->db->bind(':no_wa', $noWa);
+            $this->db->bind(':pesan', $pesan);
+            $this->db->bind(':jenis', $jenis);
+            $this->db->bind(':metadata', $metadata ? json_encode($metadata) : null);
+            $this->db->bind(':status', $status);
+            $this->db->bind(':error_message', $errorMessage);
+            $this->db->execute();
+            $insertedId = $this->db->lastInsertId();
+
+            if ($isSuccess) {
+                // Log ke wa_message_log jika sukses (opsional, untuk konsistensi)
+                // $this->logMessage($insertedId, 'sent', json_encode($result));
+                error_log("WA Direct Send SUCCESS to {$noWa}");
+            } else {
+                error_log("WA Direct Send FAILED to {$noWa}: {$errorMessage}");
+            }
+
+            return $insertedId;
+        } catch (Exception $e) {
+            error_log("WA Direct Send Exception: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**

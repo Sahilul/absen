@@ -6,13 +6,16 @@ $stats_by_jenis = $data['stats_by_jenis'] ?? [];
 $messages = $data['messages'] ?? [];
 $filter_status = $data['filter_status'] ?? 'all';
 $pagination = $data['pagination'] ?? ['current' => 1, 'total_pages' => 1, 'total' => 0];
+$notif_enabled = $data['notif_enabled'] ?? true;
+$notif_mode = $data['notif_mode'] ?? 'personal';
+$queue_enabled = $data['queue_enabled'] ?? true;
 ?>
 
 <!-- Page Content -->
 <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 p-6">
 
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div class="flex items-center gap-4">
             <div class="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-xl shadow-lg">
                 <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
@@ -37,6 +40,63 @@ $pagination = $data['pagination'] ?? ['current' => 1, 'total_pages' => 1, 'total
                     Retry Gagal
                 </a>
             <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Mode & Settings Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <!-- Mode Antrian -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="flex items-center justify-between gap-4 p-5">
+                <div class="flex items-center gap-4">
+                    <div class="<?= $queue_enabled ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-orange-500 to-orange-600' ?> p-3 rounded-xl shadow-lg">
+                        <i data-lucide="<?= $queue_enabled ? 'layers' : 'zap' ?>" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">Mode Pengiriman</h3>
+                        <p class="text-sm text-gray-500">
+                            <?php if ($queue_enabled): ?>
+                                <span class="text-blue-600 font-semibold">Antrian (Queue)</span> - via Cron
+                            <?php else: ?>
+                                <span class="text-orange-600 font-semibold">Langsung (Direct)</span> - realtime
+                            <?php endif; ?>
+                        </p>
+                    </div>
+                </div>
+                <form action="<?= BASEURL ?>/admin/toggleQueueMode" method="POST" class="inline">
+                    <button type="submit" onclick="return confirm('<?= $queue_enabled ? 'Ubah ke mode LANGSUNG? WA dikirim langsung tanpa antrian.' : 'Ubah ke mode ANTRIAN? WA masuk antrian, dikirim via cron.' ?>')"
+                        class="px-4 py-2 <?= $queue_enabled ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700' ?> text-white rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-md whitespace-nowrap">
+                        <i data-lucide="<?= $queue_enabled ? 'zap' : 'layers' ?>" class="w-4 h-4"></i>
+                        <?= $queue_enabled ? 'Langsung' : 'Antrian' ?>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Notifikasi Absensi Status -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="flex items-center justify-between gap-4 p-5">
+                <div class="flex items-center gap-4">
+                    <div class="<?= $notif_enabled ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-gray-400 to-gray-500' ?> p-3 rounded-xl shadow-lg">
+                        <i data-lucide="bell" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">Notifikasi Absensi</h3>
+                        <p class="text-sm text-gray-500">
+                            <?php if ($notif_enabled): ?>
+                                <span class="text-green-600 font-semibold">Aktif</span> • <?= ucfirst($notif_mode) ?>
+                            <?php else: ?>
+                                <span class="text-gray-500 font-semibold">Nonaktif</span>
+                            <?php endif; ?>
+                        </p>
+                    </div>
+                </div>
+                <a href="<?= BASEURL ?>/admin/pengaturanNotifikasiAbsensi"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-md whitespace-nowrap">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    Setting
+                </a>
+            </div>
         </div>
     </div>
 
@@ -732,7 +792,8 @@ $pagination = $data['pagination'] ?? ['current' => 1, 'total_pages' => 1, 'total
 </main>
 
 <!-- Detail Message Modal -->
-<div id="detailModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
+<div id="detailModal"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
         <!-- Modal Header -->
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
@@ -748,7 +809,7 @@ $pagination = $data['pagination'] ?? ['current' => 1, 'total_pages' => 1, 'total
                 </button>
             </div>
         </div>
-        
+
         <!-- Modal Body -->
         <div class="p-6 overflow-y-auto max-h-[60vh]">
             <div class="space-y-4">
@@ -774,7 +835,8 @@ $pagination = $data['pagination'] ?? ['current' => 1, 'total_pages' => 1, 'total
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
                     <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Pesan</p>
-                    <pre id="detailPesan" class="text-sm text-gray-800 whitespace-pre-wrap bg-white p-4 rounded-lg border border-gray-200 max-h-60 overflow-y-auto"></pre>
+                    <pre id="detailPesan"
+                        class="text-sm text-gray-800 whitespace-pre-wrap bg-white p-4 rounded-lg border border-gray-200 max-h-60 overflow-y-auto"></pre>
                 </div>
                 <div id="detailErrorContainer" class="hidden bg-red-50 rounded-xl p-4 border border-red-200">
                     <p class="text-xs text-red-600 uppercase font-semibold mb-1">Error Message</p>
@@ -782,10 +844,11 @@ $pagination = $data['pagination'] ?? ['current' => 1, 'total_pages' => 1, 'total
                 </div>
             </div>
         </div>
-        
+
         <!-- Modal Footer -->
         <div class="p-4 border-t border-gray-200 bg-gray-50 flex justify-end">
-            <button onclick="closeDetailModal()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-sm font-medium transition">
+            <button onclick="closeDetailModal()"
+                class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-sm font-medium transition">
                 Tutup
             </button>
         </div>
@@ -797,14 +860,14 @@ $pagination = $data['pagination'] ?? ['current' => 1, 'total_pages' => 1, 'total
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
-    
+
     // Detail Modal Functions
     function showDetail(msg) {
         document.getElementById('detailNoWa').textContent = msg.no_wa || '-';
         document.getElementById('detailJenis').textContent = msg.jenis || '-';
         document.getElementById('detailPesan').textContent = msg.pesan || '-';
         document.getElementById('detailCreatedAt').textContent = msg.created_at || '-';
-        
+
         // Status with color
         const statusEl = document.getElementById('detailStatus');
         const status = msg.status || 'unknown';
@@ -816,7 +879,7 @@ $pagination = $data['pagination'] ?? ['current' => 1, 'total_pages' => 1, 'total
         };
         statusEl.className = 'text-sm font-bold ' + (statusColors[status] || 'text-gray-600');
         statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-        
+
         // Error message
         const errorContainer = document.getElementById('detailErrorContainer');
         const errorEl = document.getElementById('detailError');
@@ -826,40 +889,40 @@ $pagination = $data['pagination'] ?? ['current' => 1, 'total_pages' => 1, 'total
         } else {
             errorContainer.classList.add('hidden');
         }
-        
+
         document.getElementById('detailModal').classList.remove('hidden');
         document.getElementById('detailModal').classList.add('flex');
         document.body.style.overflow = 'hidden';
-        
+
         // Re-init lucide icons in modal
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
-    
+
     function closeDetailModal() {
         document.getElementById('detailModal').classList.add('hidden');
         document.getElementById('detailModal').classList.remove('flex');
         document.body.style.overflow = 'auto';
     }
-    
+
     // Bulk Select Functions
     function toggleSelectAll(checkbox) {
         const checkboxes = document.querySelectorAll('.msg-checkbox');
         checkboxes.forEach(cb => cb.checked = checkbox.checked);
         updateSelectedCount();
     }
-    
+
     function updateSelectedCount() {
         const checkboxes = document.querySelectorAll('.msg-checkbox:checked');
         const count = checkboxes.length;
         document.getElementById('selectedCount').textContent = count;
-        
+
         const bulkActions = document.getElementById('bulkActions');
         if (count > 0) {
             bulkActions.classList.remove('hidden');
         } else {
             bulkActions.classList.add('hidden');
         }
-        
+
         // Update select all checkbox
         const allCheckboxes = document.querySelectorAll('.msg-checkbox');
         const selectAll = document.getElementById('selectAll');
@@ -868,14 +931,14 @@ $pagination = $data['pagination'] ?? ['current' => 1, 'total_pages' => 1, 'total
             selectAll.indeterminate = count > 0 && count < allCheckboxes.length;
         }
     }
-    
+
     // Close modal on escape key
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') closeDetailModal();
     });
-    
+
     // Close modal on backdrop click
-    document.getElementById('detailModal')?.addEventListener('click', function(e) {
+    document.getElementById('detailModal')?.addEventListener('click', function (e) {
         if (e.target === this) closeDetailModal();
     });
 </script>

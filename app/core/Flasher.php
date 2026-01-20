@@ -1,7 +1,8 @@
 <?php
 
 // File: app/core/Flasher.php
-class Flasher {
+class Flasher
+{
 
     /**
      * setFlash dapat dipanggil dengan 2 atau 3 argumen:
@@ -10,7 +11,9 @@ class Flasher {
      */
     public static function setFlash(...$args)
     {
-        $judul = null; $pesan = null; $tipe = null;
+        $judul = null;
+        $pesan = null;
+        $tipe = null;
         if (count($args) >= 3) {
             [$judul, $pesan, $tipe] = $args;
         } elseif (count($args) === 2) {
@@ -22,7 +25,7 @@ class Flasher {
         $_SESSION['flash'] = [
             'judul' => $judul,
             'pesan' => $pesan,
-            'tipe'  => $tipe
+            'tipe' => $tipe
         ];
     }
 
@@ -31,7 +34,7 @@ class Flasher {
         if (isset($_SESSION['flash'])) {
             // Dinamis berdasarkan tipe
             $tipe = $_SESSION['flash']['tipe'] ?? 'info';
-            
+
             switch ($tipe) {
                 case 'success':
                     $tipeAlert = 'green';
@@ -56,17 +59,17 @@ class Flasher {
                     $iconLucide = 'info';
                     break;
             }
-            
+
             $judul = $_SESSION['flash']['judul'] ?: $defaultJudul;
-            
+
             echo '<div class="bg-' . $tipeAlert . '-100 border border-' . $tipeAlert . '-400 text-' . $tipeAlert . '-700 px-4 py-3 rounded-lg relative mb-4 flex items-start gap-3 animate-slide-up" role="alert">
                     <i data-lucide="' . $iconLucide . '" class="w-5 h-5 mt-0.5 flex-shrink-0"></i>
                     <div class="flex-1">
                         <strong class="font-bold block">' . htmlspecialchars($judul) . '</strong>
-                        <span class="block">' . htmlspecialchars($_SESSION['flash']['pesan']) . '</span>
+                        <span class="block">' . $_SESSION['flash']['pesan'] . '</span>
                     </div>
                   </div>';
-            
+
             // Hapus session setelah ditampilkan
             unset($_SESSION['flash']);
         }

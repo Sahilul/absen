@@ -1,6 +1,29 @@
 {
     "versions": [
         {
+            "version": "1.15.0",
+            "date": "2026-01-20",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix Notifikasi Absensi WA: Perbaikan logika pengambilan ID Kelas yang menyebabkan pesan ke grup tidak terkirim"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Group ID Formatting: Mencegah prefix 62 ditambahkan ke ID Group yang valid"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Queue Mode: Perbaikan deteksi setting wa_queue_enabled agar mode langsung/antrian berfungsi konsisten"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix HTML Flash Message: Mengizinkan tag HTML di notifikasi flash (bold, italic, dll)"
+                }
+            ]
+        },
+        {
             "version": "1.14.0",
             "date": "2026-01-20",
             "type": "feature",

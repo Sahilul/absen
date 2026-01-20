@@ -509,7 +509,7 @@
         </div>
     </main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script>
         // Global variables
         let allRows = [];
@@ -619,80 +619,17 @@
             clearFilter();
         }
 
-        // Export to Excel function
+        // Export to Excel function (Server Side via CSV)
         function exportToExcel() {
-            const table = document.getElementById('siswa-table');
-            if (!table) {
-                alert('Tidak ada data untuk diexport');
-                return;
-            }
-
-            // Baca filter kelas (hanya terapkan jika dipilih)
             const filterKelasEl = document.getElementById('filter-kelas');
-            const selectedKelas = filterKelasEl ? (filterKelasEl.value || '').toLowerCase().trim() : '';
-
-            // Prepare data for export
-            const exportData = [];
-
-            // Add header
-            exportData.push(['NISN', 'Nama Siswa', 'Kelas', 'Jenis Kelamin', 'Status Akun', 'Password']);
-
-            // Add data rows
-            const tbody = table.querySelector('tbody');
-            const rows = tbody.querySelectorAll('tr');
-
-            rows.forEach(row => {
-                // Terapkan filter kelas jika dipilih
-                const kelasAttr = (row.getAttribute('data-kelas') || '').toLowerCase().trim();
-                if (selectedKelas && kelasAttr !== selectedKelas) {
-                    return; // skip baris yang bukan kelas terpilih
-                }
-
-                const cells = row.querySelectorAll('td');
-                if (cells.length >= 6) {
-                    const nisn = cells[0].querySelector('.text-sm.font-medium').textContent.trim();
-                    const nama = cells[1].querySelector('.text-sm.font-medium').textContent.trim();
-                    const kelas = cells[2].textContent.trim();
-                    const jk = cells[3].textContent.includes('Laki-laki') ? 'L' :
-                        cells[3].textContent.includes('Perempuan') ? 'P' : '-';
-                    const status = cells[4].textContent.includes('Aktif') ? 'Aktif' : 'Belum Ada Password';
-                    const password = cells[4].querySelector('.font-mono') ?
-                        cells[4].querySelector('.font-mono').textContent.trim() : '-';
-
-                    exportData.push([nisn, nama, kelas, jk, status, password]);
-                }
-            });
-
-            // Create workbook
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(exportData);
-
-            // Style header
-            const range = XLSX.utils.decode_range(ws['!ref']);
-            for (let col = range.s.c; col <= range.e.c; col++) {
-                const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
-                if (!ws[cellAddress]) continue;
-                ws[cellAddress].s = {
-                    font: { bold: true },
-                    fill: { fgColor: { rgb: "E5E7EB" } }
-                };
+            const selectedKelas = filterKelasEl ? (filterKelasEl.value || '').trim() : '';
+            
+            let url = '<?= BASEURL; ?>/admin/exportSiswaExcel';
+            if (selectedKelas) {
+                url += '?kelas=' + encodeURIComponent(selectedKelas);
             }
-
-            // Set column widths
-            ws['!cols'] = [
-                { width: 15 }, // NISN
-                { width: 25 }, // Nama
-                { width: 18 }, // Kelas
-                { width: 12 }, // JK
-                { width: 18 }, // Status
-                { width: 15 }  // Password
-            ];
-
-            XLSX.utils.book_append_sheet(wb, ws, "Data Siswa");
-
-            // Download
-            const filename = `Data_Siswa_${new Date().toISOString().split('T')[0]}.xlsx`;
-            XLSX.writeFile(wb, filename);
+            
+            window.location.href = url;
         }
         // Modal konfirmasi hapus / nonaktifkan
         function openDeleteModal(id, nama) {
