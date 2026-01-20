@@ -7254,6 +7254,11 @@ Waktu: ' . date('d/m/Y H:i:s');
         $this->data['kelas_list'] = $kelasModel->getKelasByTP($id_tp);
         $this->data['grup_data'] = $grupModel->getAllGrupWithKelas();
 
+        // Detect WA Gateway provider for sync button
+        $this->data['wa_provider'] = $pengaturanSistemModel->get('wa_gateway_provider')
+            ?? $this->data['pengaturan']['wa_gateway_provider']
+            ?? 'fonnte';
+
         $this->view('templates/header', $this->data);
         $this->view('templates/sidebar_admin', $this->data);
         $this->view('admin/pengaturan_notifikasi_absensi', $this->data);
@@ -7294,6 +7299,34 @@ Waktu: ' . date('d/m/Y H:i:s');
         exit;
     }
 
+    /**
+     * Sync daftar grup WhatsApp dari GOWA (Go-WhatsApp-Web-Multidevice) API
+     */
+    public function syncGrupGowa()
+    {
+        require_once APPROOT . '/app/core/Fonnte.php';
+        $gowa = new Fonnte();
+
+        // Ambil daftar grup dari GOWA
+        $getResult = $gowa->getGowaGroups();
+        error_log("[AdminController::syncGrupGowa] Get result: " . json_encode($getResult));
+
+        if (isset($getResult['status']) && $getResult['status'] === true && isset($getResult['data'])) {
+            $groups = $getResult['data'];
+            $grupCount = count($groups);
+
+            // Simpan ke session untuk ditampilkan di UI (format sesuai GOWA)
+            $_SESSION['gowa_groups'] = $groups;
+
+            Flasher::setFlash("✅ Berhasil sync {$grupCount} grup dari GOWA! Pilih grup dari daftar untuk menambahkan.", 'success');
+        } else {
+            $reason = $getResult['reason'] ?? 'Unknown error';
+            Flasher::setFlash("❌ Gagal sync grup dari GOWA: {$reason}", 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
+        exit;
+    }
 
     /**
      * Simpan pengaturan mode notifikasi

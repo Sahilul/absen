@@ -196,46 +196,61 @@ $grupData = $data['grup_data'] ?? [];
                 </div>
             <?php endif; ?>
 
-            <!-- Sync Grup dari Fonnte -->
+            <!-- Sync Grup dari WA Gateway -->
             <?php
+            $wa_provider = $data['wa_provider'] ?? 'fonnte';
             $fonnte_groups = $_SESSION['fonnte_groups'] ?? [];
+            $gowa_groups = $_SESSION['gowa_groups'] ?? [];
+            $isGowa = ($wa_provider === 'gowa');
+            $syncGroups = $isGowa ? $gowa_groups : $fonnte_groups;
+            $syncUrl = $isGowa ? BASEURL . '/admin/syncGrupGowa' : BASEURL . '/admin/syncGrupFonnte';
+            $providerName = $isGowa ? 'GOWA (Self-Hosted)' : 'Fonnte';
             ?>
-            <div class="mt-6 p-4 bg-green-50 rounded-lg border border-green-100">
+            <div
+                class="mt-6 p-4 <?= $isGowa ? 'bg-purple-50 border-purple-100' : 'bg-green-50 border-green-100'; ?> rounded-lg border">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div>
-                        <h6 class="font-medium text-green-800 flex items-center">
+                        <h6
+                            class="font-medium <?= $isGowa ? 'text-purple-800' : 'text-green-800'; ?> flex items-center">
                             <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
-                            Sync Grup dari Fonnte
+                            Sync Grup dari <?= $providerName; ?>
                         </h6>
-                        <p class="text-sm text-green-700 mt-1">
-                            Klik tombol untuk mengambil daftar grup WA dari akun Fonnte Anda.
-                            <?php if (!empty($fonnte_groups)): ?>
-                                <strong>(<?= count($fonnte_groups); ?> grup tersedia)</strong>
+                        <p class="text-sm <?= $isGowa ? 'text-purple-700' : 'text-green-700'; ?> mt-1">
+                            Klik tombol untuk mengambil daftar grup WA dari <?= $providerName; ?>.
+                            <?php if (!empty($syncGroups)): ?>
+                                <strong>(<?= count($syncGroups); ?> grup tersedia)</strong>
                             <?php endif; ?>
+                            <br><span class="text-xs">Provider: <code
+                                    class="<?= $isGowa ? 'bg-purple-100' : 'bg-green-100'; ?> px-1 rounded"><?= $wa_provider; ?></code></span>
                         </p>
                     </div>
-                    <a href="<?= BASEURL; ?>/admin/syncGrupFonnte"
-                        class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center whitespace-nowrap">
+                    <a href="<?= $syncUrl; ?>"
+                        class="<?= $isGowa ? 'bg-purple-600 hover:bg-purple-700' : 'bg-green-600 hover:bg-green-700'; ?> text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center whitespace-nowrap">
                         <i data-lucide="cloud-download" class="w-4 h-4 mr-2"></i>
                         Sync Sekarang
                     </a>
                 </div>
 
-                <?php if (!empty($fonnte_groups)): ?>
-                    <div class="mt-4 border-t border-green-200 pt-4">
-                        <label class="block text-sm font-medium text-green-800 mb-2">Pilih Grup untuk Ditambahkan:</label>
+                <?php if (!empty($syncGroups)): ?>
+                    <div class="mt-4 border-t <?= $isGowa ? 'border-purple-200' : 'border-green-200'; ?> pt-4">
+                        <label
+                            class="block text-sm font-medium <?= $isGowa ? 'text-purple-800' : 'text-green-800'; ?> mb-2">Pilih
+                            Grup untuk Ditambahkan:</label>
                         <div
-                            class="max-h-48 overflow-y-auto bg-white rounded-lg border border-green-200 divide-y divide-green-100">
-                            <?php foreach ($fonnte_groups as $fg): ?>
-                                <div class="px-3 py-2 flex items-center justify-between hover:bg-green-25">
+                            class="max-h-48 overflow-y-auto bg-white rounded-lg border <?= $isGowa ? 'border-purple-200 divide-purple-100' : 'border-green-200 divide-green-100'; ?> divide-y">
+                            <?php foreach ($syncGroups as $grp):
+                                // GOWA returns JID differently
+                                $grpId = $isGowa ? ($grp['JID'] ?? $grp['jid'] ?? '') : ($grp['id'] ?? '');
+                                $grpName = $isGowa ? ($grp['Name'] ?? $grp['name'] ?? 'Grup') : ($grp['name'] ?? 'Grup');
+                                ?>
+                                <div class="px-3 py-2 flex items-center justify-between hover:bg-slate-50">
                                     <div>
+                                        <span class="font-medium text-slate-800"><?= htmlspecialchars($grpName); ?></span>
                                         <span
-                                            class="font-medium text-slate-800"><?= htmlspecialchars($fg['name'] ?? 'Grup'); ?></span>
-                                        <span
-                                            class="text-xs text-slate-500 ml-2 font-mono"><?= htmlspecialchars($fg['id'] ?? ''); ?></span>
+                                            class="text-xs text-slate-500 ml-2 font-mono"><?= htmlspecialchars($grpId); ?></span>
                                     </div>
                                     <button type="button"
-                                        onclick="useGrupId('<?= htmlspecialchars($fg['id'] ?? ''); ?>', '<?= htmlspecialchars(addslashes($fg['name'] ?? 'Grup')); ?>')"
+                                        onclick="useGrupId('<?= htmlspecialchars($grpId); ?>', '<?= htmlspecialchars(addslashes($grpName)); ?>')"
                                         class="text-xs bg-primary-100 hover:bg-primary-200 text-primary-700 px-2 py-1 rounded">
                                         Gunakan
                                     </button>

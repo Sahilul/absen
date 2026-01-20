@@ -371,6 +371,7 @@ class Fonnte
     /**
      * Format nomor HP ke format internasional
      * Mendukung auto-detect Group ID WhatsApp
+     * GOWA: Preserve format asli untuk kompatibilitas
      */
     public function formatNumber($number)
     {
@@ -381,20 +382,27 @@ class Fonnte
             return $number;
         }
 
-        // Bersihkan karakter non-numeric
+        // 2. Deteksi Legacy Group ID (format: 628xxx-xxxx)
+        // GOWA dan provider self-hosted mendukung format ini
+        if (preg_match('/^\d+-\d+$/', $number)) {
+            // Untuk GOWA, kembalikan dengan @g.us suffix
+            return $number . '@g.us';
+        }
+
+        // Bersihkan karakter non-numeric untuk nomor HP biasa
         $cleanNumber = preg_replace('/[^0-9]/', '', $number);
 
-        // 2. Deteksi Group ID (biasanya panjang > 15 digit)
+        // 3. Deteksi New Group ID (biasanya panjang > 15 digit)
         // Contoh: 120363287671196238 (18 digit)
         if (strlen($cleanNumber) > 15) {
             // Auto-append @g.us jika belum ada
             return $cleanNumber . '@g.us';
         }
 
-        // 3. Format Nomor HP Indonesia (Standard)
+        // 4. Format Nomor HP Indonesia (Standard)
         if (substr($cleanNumber, 0, 1) === '0') {
             $cleanNumber = '62' . substr($cleanNumber, 1);
-        } elseif (substr($cleanNumber, 0, 2) !== '62') {
+        } elseif (substr($cleanNumber, 0, 2) !== '62' && strlen($cleanNumber) > 0) {
             $cleanNumber = '62' . $cleanNumber;
         }
 
@@ -479,6 +487,55 @@ class Fonnte
         return $result ?: ['status' => false, 'reason' => 'Invalid response'];
     }
 
+    /**
+     * Ambil daftar grup WA dari Go-WhatsApp-Web-Multidevice (GOWA)
+     * Endpoint: GET /user/my/groups
+     * @return array Response dengan daftar grup
+     */
+    public function getGowaGroups()
+    {
+        if (empty($this->username) || empty($this->password)) {
+            return ['status' => false, 'reason' => 'Username/Password GOWA tidak dikonfigurasi'];
+        }
+
+        // Parse base URL (remove /send/message suffix if present)
+        $baseUrl = preg_replace('/\/send\/message$/', '', $this->apiUrl);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $baseUrl . '/user/my/groups',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Authorization: Basic ' . base64_encode($this->username . ':' . $this->password)
+            ],
+            CURLOPT_SSL_VERIFYPEER => false,
+        ]);
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            return ['status' => false, 'reason' => 'cURL Error: ' . $err];
+        }
+
+        error_log("[GOWA get-groups] HTTP $httpCode Response: " . $response);
+
+        $result = json_decode($response, true);
+
+        if ($httpCode >= 200 && $httpCode < 300 && isset($result['results'])) {
+            // GOWA returns { "code": 200, "message": "...", "results": { "data": [...] } }
+            $groups = $result['results']['data'] ?? $result['results'] ?? [];
+            return ['status' => true, 'data' => $groups];
+        }
+
+        $errorMsg = $result['message'] ?? $result['error'] ?? "HTTP $httpCode";
+        return ['status' => false, 'reason' => $errorMsg];
+    }
 
     /**
      * Kirim pesan WA dengan file attachment (base64)
