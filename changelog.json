@@ -1,6 +1,29 @@
 {
     "versions": [
         {
+            "version": "1.15.2",
+            "date": "2026-01-27",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Visitor Counter: Penambahan fitur penghitung pengunjung dan statistik kunjungan"
+                },
+                {
+                    "type": "fix",
+                    "description": "News Share Link: Perbaikan URL share WhatsApp & Facebook yang kurang segment '/detail/'"
+                },
+                {
+                    "type": "fix",
+                    "description": "WA Queue Timezone: Sinkronisasi waktu antrian WA (created & sent) agar sesuai zona waktu aplikasi (Asia/Jakarta)"
+                },
+                {
+                    "type": "fix",
+                    "description": "PHP Warning: Fix 'Undefined array key' pada halaman Detail Pendaftar PSB untuk tanggal lahir kosong"
+                }
+            ]
+        },
+        {
             "version": "1.15.1",
             "date": "2026-01-20",
             "type": "patch",

@@ -577,10 +577,45 @@
             $appVersion = $versionData['version'] ?? '1.0.0';
             $namaApp = htmlspecialchars($data['settings']['nama_aplikasi'] ?? 'Smart Absensi');
             ?>
+
             <div class="border-t border-white/10 pt-8 text-center text-slate-500 text-sm">
                 &copy; <?= date('Y') ?> <?= htmlspecialchars($data['settings']['yayasan_name']) ?>. All rights reserved.
                 Powered by <?= $namaApp; ?> v<?= $appVersion; ?>.
             </div>
+
+            <!-- Visitor Counter (Compact) -->
+            <?php if (!empty($data['visitor_stats'])): ?>
+                <div class="flex flex-wrap justify-center gap-2 mt-4 text-xs">
+                    <div class="bg-white/5 rounded px-2 py-1 flex items-center gap-1 border border-white/10">
+                        <i data-lucide="users" class="w-3 h-3 text-primary-400"></i>
+                        <span class="text-slate-500">Total:</span>
+                        <span
+                            class="font-semibold text-slate-300"><?= number_format($data['visitor_stats']['total_visitors'] ?? 0, 0, ',', '.') ?></span>
+                    </div>
+                    <div class="bg-white/5 rounded px-2 py-1 flex items-center gap-1 border border-white/10">
+                        <i data-lucide="calendar" class="w-3 h-3 text-blue-400"></i>
+                        <span class="text-slate-500">Hari ini:</span>
+                        <span
+                            class="font-semibold text-slate-300"><?= number_format($data['visitor_stats']['today_visitors'] ?? 0, 0, ',', '.') ?></span>
+                    </div>
+                    <div class="bg-white/5 rounded px-2 py-1 flex items-center gap-1 border border-white/10">
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        <span class="text-slate-500">Online:</span>
+                        <span
+                            class="font-semibold text-green-400"><?= number_format($data['visitor_stats']['online'] ?? 0, 0, ',', '.') ?></span>
+                    </div>
+                    <div class="bg-white/5 rounded px-2 py-1 flex items-center gap-1 border border-white/10">
+                        <i data-lucide="eye" class="w-3 h-3 text-purple-400"></i>
+                        <span class="text-slate-500">Hits:</span>
+                        <span
+                            class="font-semibold text-slate-300"><?= number_format($data['visitor_stats']['total_hits'] ?? 0, 0, ',', '.') ?></span>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
     </footer>
 

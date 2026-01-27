@@ -24,6 +24,11 @@ class HomeController extends Controller
         // Get Active Institutions with Student Count
         $data['institutions'] = $model->getActiveInstitutionsWithCount();
 
+        // Visitor Counter - Record visit and get stats
+        $visitorModel = $this->model('Visitor_model');
+        $visitorModel->recordVisit('/');
+        $data['visitor_stats'] = $visitorModel->getVisitorStats();
+
         $this->view('home/index', $data);
     }
 }

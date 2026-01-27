@@ -1,6 +1,6 @@
 {
-    "version": "1.15.1",
-    "build": 20260120,
-    "release_date": "2026-01-20",
-    "description": "Hotfix: Database Schema for Legacy Group IDs"
+    "version": "1.15.2",
+    "build": 20260127,
+    "release_date": "2026-01-27",
+    "description": "Patch: Visitor Counter, Share Link Fix, WA Queue Timezone, PSB Warning Fix"
 }

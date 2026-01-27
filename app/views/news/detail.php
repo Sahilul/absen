@@ -246,12 +246,12 @@
                         <div class="flex items-center justify-between flex-wrap gap-4">
                             <span class="text-slate-500 font-medium">Bagikan artikel ini:</span>
                             <div class="flex items-center gap-3">
-                                <a href="https://wa.me/?text=<?= urlencode($data['post']['title'] . ' - ' . BASEURL . '/news/' . $data['post']['slug']) ?>"
+                                <a href="https://wa.me/?text=<?= urlencode($data['post']['title'] . ' - ' . BASEURL . '/news/detail/' . $data['post']['slug']) ?>"
                                     target="_blank"
                                     class="bg-green-500 text-white p-2.5 rounded-full hover:bg-green-600 transition-colors">
                                     <i data-lucide="message-circle" class="w-5 h-5"></i>
                                 </a>
-                                <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode(BASEURL . '/news/' . $data['post']['slug']) ?>"
+                                <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode(BASEURL . '/news/detail/' . $data['post']['slug']) ?>"
                                     target="_blank"
                                     class="bg-blue-600 text-white p-2.5 rounded-full hover:bg-blue-700 transition-colors">
                                     <i data-lucide="facebook" class="w-5 h-5"></i>

@@ -28,13 +28,15 @@ class WaQueue_model
         }
 
         // Mode ANTRIAN: masukkan ke database queue
-        $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, scheduled_at, status) 
-                          VALUES (:no_wa, :pesan, :jenis, :metadata, :scheduled_at, "pending")');
+        // UPDATE: Gunakan PHP date() untuk created_at agar timezone konsisten (WIB)
+        $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, scheduled_at, status, created_at) 
+                          VALUES (:no_wa, :pesan, :jenis, :metadata, :scheduled_at, "pending", :created_at)');
         $this->db->bind(':no_wa', $noWa);
         $this->db->bind(':pesan', $pesan);
         $this->db->bind(':jenis', $jenis);
         $this->db->bind(':metadata', $metadata ? json_encode($metadata) : null);
         $this->db->bind(':scheduled_at', $scheduledAt ?? date('Y-m-d H:i:s'));
+        $this->db->bind(':created_at', date('Y-m-d H:i:s'));
         $this->db->execute();
         return $this->db->lastInsertId();
     }
@@ -70,13 +72,17 @@ class WaQueue_model
             $errorMessage = $isSuccess ? null : ($result['reason'] ?? 'Unknown error');
 
             // Log ke database
-            $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, status, sent_at, attempts, error_message) 
-                              VALUES (:no_wa, :pesan, :jenis, :metadata, :status, NOW(), 1, :error_message)');
+            // UPDATE: Gunakan PHP date() untuk created_at dan sent_at agar timezone konsisten
+            $now = date('Y-m-d H:i:s');
+            $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, status, sent_at, created_at, attempts, error_message) 
+                              VALUES (:no_wa, :pesan, :jenis, :metadata, :status, :sent_at, :created_at, 1, :error_message)');
             $this->db->bind(':no_wa', $noWa);
             $this->db->bind(':pesan', $pesan);
             $this->db->bind(':jenis', $jenis);
             $this->db->bind(':metadata', $metadata ? json_encode($metadata) : null);
             $this->db->bind(':status', $status);
+            $this->db->bind(':sent_at', $now);
+            $this->db->bind(':created_at', $now);
             $this->db->bind(':error_message', $errorMessage);
             $this->db->execute();
             $insertedId = $this->db->lastInsertId();
@@ -166,8 +172,9 @@ class WaQueue_model
      */
     public function markAsSent($id, $response = null, $waAccountId = null)
     {
+        // UPDATE: Gunakan PHP date() alih-alih NOW()
         $sql = 'UPDATE wa_message_queue 
-                SET status = "sent", sent_at = NOW(), error_message = NULL';
+                SET status = "sent", sent_at = :sent_at, error_message = NULL';
         if ($waAccountId) {
             $sql .= ', wa_account_id = :wa_account_id';
         }
@@ -175,6 +182,7 @@ class WaQueue_model
 
         $this->db->query($sql);
         $this->db->bind(':id', $id);
+        $this->db->bind(':sent_at', date('Y-m-d H:i:s'));
         if ($waAccountId) {
             $this->db->bind(':wa_account_id', $waAccountId);
         }

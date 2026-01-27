@@ -165,7 +165,7 @@ $p = $data['pendaftar'];
                     <div>
                         <p class="text-xs text-secondary-400 uppercase">Tanggal Lahir</p>
                         <p class="font-medium text-secondary-800">
-                            <?= $p['ayah_tanggal_lahir'] ? date('d/m/Y', strtotime($p['ayah_tanggal_lahir'])) : '-'; ?>
+                            <?= !empty($p['ayah_tanggal_lahir']) ? date('d/m/Y', strtotime($p['ayah_tanggal_lahir'])) : '-'; ?>
                         </p>
                     </div>
                     <div>
@@ -218,7 +218,7 @@ $p = $data['pendaftar'];
                     <div>
                         <p class="text-xs text-secondary-400 uppercase">Tanggal Lahir</p>
                         <p class="font-medium text-secondary-800">
-                            <?= $p['ibu_tanggal_lahir'] ? date('d/m/Y', strtotime($p['ibu_tanggal_lahir'])) : '-'; ?>
+                            <?= !empty($p['ibu_tanggal_lahir']) ? date('d/m/Y', strtotime($p['ibu_tanggal_lahir'])) : '-'; ?>
                         </p>
                     </div>
                     <div>
@@ -274,7 +274,7 @@ $p = $data['pendaftar'];
                         <div>
                             <p class="text-xs text-secondary-400 uppercase">Tanggal Lahir</p>
                             <p class="font-medium text-secondary-800">
-                                <?= $p['wali_tanggal_lahir'] ? date('d/m/Y', strtotime($p['wali_tanggal_lahir'])) : '-'; ?>
+                                <?= !empty($p['wali_tanggal_lahir']) ? date('d/m/Y', strtotime($p['wali_tanggal_lahir'])) : '-'; ?>
                             </p>
                         </div>
                         <div>
