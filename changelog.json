@@ -1,6 +1,25 @@
 {
     "versions": [
         {
+            "version": "1.16.0",
+            "date": "2026-02-01",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Dynamic WA Group Template: Admin dapat mengatur template pesan laporan absensi grup dengan variabel dinamis"
+                },
+                {
+                    "type": "fix",
+                    "description": "Critical Fix WA Gateway: Perbaikan error 'Call to undefined method updateSetting' saat menyimpan konfigurasi rotasi WA"
+                },
+                {
+                    "type": "maintenance",
+                    "description": "Meta WA Templates: Ekstraksi seluruh template WA untuk keperluan verifikasi Meta"
+                }
+            ]
+        },
+        {
             "version": "1.15.2",
             "date": "2026-01-27",
             "type": "patch",

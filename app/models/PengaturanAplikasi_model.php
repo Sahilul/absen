@@ -73,8 +73,84 @@ class PengaturanAplikasi_model
                 $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `wa_gateway_password` varchar(100) DEFAULT '' AFTER `wa_gateway_username`");
                 $this->db->execute();
             }
+
+            // Add wa_rotation_enabled column if missing
+            $this->db->query("SHOW COLUMNS FROM `{$this->table}` LIKE 'wa_rotation_enabled'");
+            if (!$this->db->single()) {
+                $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `wa_rotation_enabled` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1=Gunakan rotasi multi akun, 0=Gunakan akun default' AFTER `wa_gateway_password`");
+                $this->db->execute();
+            }
+
+            // Add wa_rotation_mode column if missing
+            $this->db->query("SHOW COLUMNS FROM `{$this->table}` LIKE 'wa_rotation_mode'");
+            if (!$this->db->single()) {
+                $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `wa_rotation_mode` ENUM('round_robin', 'random', 'load_balance') NOT NULL DEFAULT 'round_robin' AFTER `wa_rotation_enabled`");
+                $this->db->execute();
+            }
+
+            // Add wa_last_account_id column if missing
+            $this->db->query("SHOW COLUMNS FROM `{$this->table}` LIKE 'wa_last_account_id'");
+            if (!$this->db->single()) {
+                $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `wa_last_account_id` INT(11) UNSIGNED DEFAULT NULL AFTER `wa_rotation_mode`");
+                $this->db->execute();
+            }
+
+            // Add admin_wa_number column if missing
+            $this->db->query("SHOW COLUMNS FROM `{$this->table}` LIKE 'admin_wa_number'");
+            if (!$this->db->single()) {
+                $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `admin_wa_number` VARCHAR(20) DEFAULT NULL AFTER `wa_last_account_id`");
+                $this->db->execute();
+            }
+
+            // Add wa_template_group_absensi column if missing
+            $this->db->query("SHOW COLUMNS FROM `{$this->table}` LIKE 'wa_template_group_absensi'");
+            if (!$this->db->single()) {
+                $this->db->query("ALTER TABLE `{$this->table}` ADD COLUMN `wa_template_group_absensi` TEXT NULL COMMENT 'Template pesan WA ke grup absensi' AFTER `admin_wa_number`");
+                $this->db->execute();
+            }
         } catch (Exception $e) {
             // Ignore error
+        }
+    }
+
+    /**
+     * Update satu setting spesifik
+     * @param string $key Nama kolom
+     * @param mixed $value Nilai baru
+     * @return bool
+     */
+    public function updateSetting($key, $value)
+    {
+        // Whitelist kolom yang boleh diupdate via method ini
+        $allowed_columns = [
+            'nama_aplikasi',
+            'url_web',
+            'logo',
+            'wa_gateway_provider',
+            'wa_gateway_url',
+            'wa_gateway_token',
+            'wa_gateway_username',
+            'wa_gateway_password',
+            'wa_rotation_enabled',
+            'wa_rotation_mode',
+            'wa_last_account_id',
+            'admin_wa_number',
+            'wa_template_group_absensi'
+        ];
+
+        if (!in_array($key, $allowed_columns)) {
+            return false;
+        }
+
+        try {
+            // Pastikan kolom ada sebelum update (lazy migration handling)
+            $this->ensureColumnExists();
+
+            $this->db->query("UPDATE {$this->table} SET {$key} = :value, updated_at = NOW() WHERE id = 1");
+            $this->db->bind(':value', $value);
+            return $this->db->execute();
+        } catch (Exception $e) {
+            return false;
         }
     }
 
@@ -100,6 +176,7 @@ class PengaturanAplikasi_model
                     'wa_gateway_token' => '',
                     'wa_gateway_username' => '',
                     'wa_gateway_password' => '',
+                    'wa_template_group_absensi' => null,
                     'created_at' => date('Y-m-d H:i:s'),
                     'updated_at' => date('Y-m-d H:i:s')
                 ];
@@ -118,6 +195,7 @@ class PengaturanAplikasi_model
                 'wa_gateway_token' => '',
                 'wa_gateway_username' => '',
                 'wa_gateway_password' => '',
+                'wa_template_group_absensi' => null,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
@@ -171,8 +249,8 @@ class PengaturanAplikasi_model
     private function insert($data)
     {
         $this->db->query("INSERT INTO {$this->table} 
-            (id, nama_aplikasi, url_web, logo, wa_gateway_provider, wa_gateway_url, wa_gateway_token, wa_gateway_username, wa_gateway_password, created_at, updated_at) 
-            VALUES (1, :nama_aplikasi, :url_web, :logo, :wa_provider, :wa_url, :wa_token, :wa_username, :wa_password, NOW(), NOW())");
+            (id, nama_aplikasi, url_web, logo, wa_gateway_provider, wa_gateway_url, wa_gateway_token, wa_gateway_username, wa_gateway_password, wa_template_group_absensi, created_at, updated_at) 
+            VALUES (1, :nama_aplikasi, :url_web, :logo, :wa_provider, :wa_url, :wa_token, :wa_username, :wa_password, :wa_template, NOW(), NOW())");
 
         $this->db->bind(':nama_aplikasi', $data['nama_aplikasi']);
         $this->db->bind(':url_web', $data['url_web'] ?? 'http://localhost/absen');
@@ -182,6 +260,7 @@ class PengaturanAplikasi_model
         $this->db->bind(':wa_token', $data['wa_gateway_token'] ?? '');
         $this->db->bind(':wa_username', $data['wa_gateway_username'] ?? '');
         $this->db->bind(':wa_password', $data['wa_gateway_password'] ?? '');
+        $this->db->bind(':wa_template', $data['wa_template_group_absensi'] ?? null);
 
         return $this->db->execute();
     }
@@ -197,6 +276,7 @@ class PengaturanAplikasi_model
             wa_gateway_token = :wa_token,
             wa_gateway_username = :wa_username,
             wa_gateway_password = :wa_password,
+            wa_template_group_absensi = :wa_template,
             updated_at = NOW()
             WHERE id = 1");
 
@@ -208,6 +288,7 @@ class PengaturanAplikasi_model
         $this->db->bind(':wa_token', $data['wa_gateway_token'] ?? '');
         $this->db->bind(':wa_username', $data['wa_gateway_username'] ?? '');
         $this->db->bind(':wa_password', $data['wa_gateway_password'] ?? '');
+        $this->db->bind(':wa_template', $data['wa_template_group_absensi'] ?? null);
 
         return $this->db->execute();
     }

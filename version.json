@@ -1,6 +1,6 @@
 {
-    "version": "1.15.2",
-    "build": 20260127,
-    "release_date": "2026-01-27",
-    "description": "Patch: Visitor Counter, Share Link Fix, WA Queue Timezone, PSB Warning Fix"
+    "version": "1.16.0",
+    "build": 20260201,
+    "release_date": "2026-02-01",
+    "description": "Minor: Dynamic WA Group Template, WA Gateway Error Fix"
 }

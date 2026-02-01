@@ -5625,7 +5625,8 @@ class AdminController extends Controller
             'wa_gateway_url' => trim($_POST['wa_gateway_url'] ?? 'https://api.fonnte.com/send'),
             'wa_gateway_token' => trim($_POST['wa_gateway_token'] ?? ''),
             'wa_gateway_username' => trim($_POST['wa_gateway_username'] ?? ''),
-            'wa_gateway_password' => trim($_POST['wa_gateway_password'] ?? '')
+            'wa_gateway_password' => trim($_POST['wa_gateway_password'] ?? ''),
+            'wa_template_group_absensi' => trim($_POST['wa_template_group_absensi'] ?? '')
         ];
 
         if ($this->model('PengaturanAplikasi_model')->simpan($data)) {

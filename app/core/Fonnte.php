@@ -12,6 +12,7 @@ class Fonnte
     private $username = '';
     private $password = '';
     private $accountId = null; // ID akun dari wa_accounts
+    private $groupAbsensiTemplate = null; // Template pesan grup absensi
 
     // Daftar provider populer di Indonesia
     public static $providers = [
@@ -110,13 +111,14 @@ class Fonnte
 
         // Fallback ke pengaturan_aplikasi
         try {
-            $db->query('SELECT wa_gateway_provider, wa_gateway_url, wa_gateway_token, wa_gateway_username, wa_gateway_password FROM pengaturan_aplikasi WHERE id = 1');
+            $db->query('SELECT wa_gateway_provider, wa_gateway_url, wa_gateway_token, wa_gateway_username, wa_gateway_password, wa_template_group_absensi FROM pengaturan_aplikasi WHERE id = 1');
             $result = $db->single();
             $this->provider = $result['wa_gateway_provider'] ?? 'fonnte';
             $this->apiUrl = $result['wa_gateway_url'] ?? self::$providers[$this->provider]['url'] ?? 'https://api.fonnte.com/send';
             $this->token = $result['wa_gateway_token'] ?? '';
             $this->username = $result['wa_gateway_username'] ?? '';
             $this->password = $result['wa_gateway_password'] ?? '';
+            $this->groupAbsensiTemplate = $result['wa_template_group_absensi'] ?? null;
         } catch (Exception $e) {
             $this->token = '';
         }
@@ -981,6 +983,69 @@ class Fonnte
      */
     public function buildGrupAbsensiMessage($namaKelas, $mapel, $tanggal, $namaGuru, $daftarAbsen, $totalSiswa, $namaSekolah)
     {
+        // Gunakan template kustom jika ada
+        if (!empty($this->groupAbsensiTemplate)) {
+            $template = $this->groupAbsensiTemplate;
+
+            // Kelompokkan siswa berdasarkan status
+            $grouped = ['S' => [], 'I' => [], 'A' => [], 'D' => [], 'T' => []];
+            foreach ($daftarAbsen as $siswa) {
+                $status = $siswa['status'] ?? 'A';
+                if (!isset($grouped[$status])) {
+                    $grouped[$status] = []; // Handle unknown status
+                }
+                $keterangan = !empty($siswa['keterangan']) ? " ({$siswa['keterangan']})" : "";
+                $grouped[$status][] = $siswa['nama'] . $keterangan;
+            }
+
+            // Hitung jumlah
+            $jumlahSakit = count($grouped['S']);
+            $jumlahIzin = count($grouped['I']);
+            $jumlahAlpha = count($grouped['A']);
+            $jumlahDispen = count($grouped['D']);
+            $jumlahTerlambat = count($grouped['T'] ?? []); // Asumsi ada status T, jika tidak array kosong
+
+            // Format list (numbered list)
+            $formatList = function ($names) {
+                if (empty($names))
+                    return "-";
+                $list = "";
+                foreach ($names as $i => $name) {
+                    $list .= ($i + 1) . ". " . $name . "\n";
+                }
+                return trim($list);
+            };
+
+            $listSakit = $formatList($grouped['S']);
+            $listIzin = $formatList($grouped['I']);
+            $listAlpha = $formatList($grouped['A']);
+            $listTerlambat = $formatList($grouped['T'] ?? []);
+            $listDispen = $formatList($grouped['D']);
+
+            // Replace variables
+            $vars = [
+                '{{tanggal}}' => $tanggal,
+                '{{waktu_cetak}}' => date('H:i:s'),
+                '{{sekolah}}' => $namaSekolah,
+                '{{kelas}}' => $namaKelas,
+                '{{mapel}}' => $mapel,
+                '{{guru}}' => $namaGuru,
+                '{{jumlah_siswa}}' => $totalSiswa,
+                '{{hadir}}' => $totalSiswa - count($daftarAbsen), // Asumsi sisa hadir (perlu verifikasi logic ini sebenarnya)
+                '{{sakit}}' => $jumlahSakit,
+                '{{izin}}' => $jumlahIzin,
+                '{{alpha}}' => $jumlahAlpha,
+                '{{terlambat}}' => $jumlahTerlambat,
+                '{{list_sakit}}' => $listSakit,
+                '{{list_izin}}' => $listIzin,
+                '{{list_alpha}}' => $listAlpha,
+                '{{list_terlambat}}' => $listTerlambat
+            ];
+
+            return str_replace(array_keys($vars), array_values($vars), $template);
+        }
+
+        // Default Template (Hardcoded)
         $statusLabels = [
             'A' => 'ALPHA',
             'I' => 'IZIN',

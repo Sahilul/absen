@@ -141,7 +141,8 @@ $logoExists = !empty($logoFile) && file_exists($logoPath);
                 <div class="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Provider Gateway</label>
-                        <select name="wa_gateway_provider" id="wa_provider" onchange="toggleAuthFields(); updateUrlFromProvider()"
+                        <select name="wa_gateway_provider" id="wa_provider"
+                            onchange="toggleAuthFields(); updateUrlFromProvider()"
                             class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-400 bg-white">
                             <?php foreach ($providers as $key => $prov): ?>
                                 <option value="<?= $key ?>" <?= $currentProvider === $key ? 'selected' : '' ?>
@@ -208,6 +209,37 @@ $logoExists = !empty($logoFile) && file_exists($logoPath);
                     </div>
                     <div id="test_result" class="mt-3 hidden"></div>
                 </div>
+                <!-- Template WA Group Section -->
+                <div class="mt-6 pt-4 border-t border-green-200">
+                    <h6 class="text-sm font-semibold text-slate-700 mb-3 block">Template Pesan WhatsApp ke Grup</h6>
+                    <div class="mb-2">
+                        <textarea name="wa_template_group_absensi" rows="6"
+                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-400 bg-white font-mono text-sm"
+                            placeholder="Ketik template pesan di sini..."><?= htmlspecialchars($data['pengaturan']['wa_template_group_absensi'] ?? '') ?></textarea>
+                    </div>
+                    <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200 text-xs text-yellow-800">
+                        <strong>Variabel yang tersedia:</strong>
+                        <ul class="mt-1 list-disc list-inside grid grid-cols-2 gap-x-4">
+                            <li>{{tanggal}} : Tanggal Absensi</li>
+                            <li>{{waktu_cetak}} : Waktu Kirim</li>
+                            <li>{{sekolah}} : Nama Sekolah</li>
+                            <li>{{kelas}} : Nama Kelas</li>
+                            <li>{{jumlah_siswa}} : Total Siswa</li>
+                            <li>{{hadir}} : Jumlah Hadir</li>
+                            <li>{{sakit}} : Jumlah Sakit</li>
+                            <li>{{izin}} : Jumlah Izin</li>
+                            <li>{{alpha}} : Jumlah Alpha</li>
+                            <li>{{terlambat}} : Jumlah Terlambat</li>
+                            <li>{{tapel}} : Tahun Pelajaran</li>
+                            <li>{{semester}} : Semester</li>
+                            <li>{{list_sakit}} : Daftar Nama Sakit</li>
+                            <li>{{list_izin}} : Daftar Nama Izin</li>
+                            <li>{{list_alpha}} : Daftar Nama Alpha</li>
+                            <li>{{list_terlambat}} : Daftar Nama Terlambat</li>
+                        </ul>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Submit Button -->
@@ -445,7 +477,7 @@ $logoExists = !empty($logoFile) && file_exists($logoPath);
         const selectedOption = provider.options[provider.selectedIndex];
         const defaultUrl = selectedOption.dataset.url;
         const urlField = document.getElementById('wa_url');
-        
+
         urlField.value = defaultUrl;
     }
 
