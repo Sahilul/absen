@@ -78,8 +78,14 @@ foreach ($pendingMessages as $msg) {
     $usedAccountId = null;
     $usedAccountName = 'Default';
 
-    // Cek apakah ini notifikasi absensi (jenis: notif_absensi dari GuruController)
-    $isAbsensi = ($jenis === 'notif_absensi');
+    // Cek apakah pesan ini menggunakan rotation (Absensi, Grup, Test, Bulk)
+    $applyRotation = in_array($jenis, [
+        'notif_absensi',
+        'notif_absensi_grup',
+        'test_grup',
+        'pesan_bulk',
+        'pesan_admin'
+    ]);
 
     echo "Processing ID {$id} [{$jenis}] -> {$noWa}... ";
 
@@ -94,8 +100,8 @@ foreach ($pendingMessages as $msg) {
         $triedAccounts = []; // Track akun yang sudah dicoba
         $lastError = '';
 
-        // HANYA notifikasi absensi yang pakai multi WA gateway rotasi
-        if ($isAbsensi && $rotationEnabled) {
+        // Jika masuk kategori rotasi dan fitur rotasi aktif
+        if ($applyRotation && $rotationEnabled) {
 
             // Loop untuk mencoba dengan akun berbeda jika gagal
             for ($retry = 0; $retry < $maxRetries && !$sendSuccess; $retry++) {
@@ -190,8 +196,8 @@ foreach ($pendingMessages as $msg) {
 
     $processed++;
 
-    // Update last used account ID untuk round robin (hanya jika absensi & berhasil)
-    if ($isAbsensi && $rotationEnabled && $usedAccountId) {
+    // Update last used account ID untuk round robin (hanya jika rotation applied & berhasil)
+    if ($applyRotation && $rotationEnabled && $usedAccountId) {
         $pengaturanModel->updateSetting('wa_last_account_id', $usedAccountId);
     }
 

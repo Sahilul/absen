@@ -1,6 +1,6 @@
 {
-    "version": "1.16.0",
-    "build": 20260201,
-    "release_date": "2026-02-01",
-    "description": "Minor: Dynamic WA Group Template, WA Gateway Error Fix"
+    "version": "1.16.1",
+    "build": 20260204,
+    "release_date": "2026-02-04",
+    "description": "Patch: Fix WhatsApp rotation logic for group and bulk messages"
 }
