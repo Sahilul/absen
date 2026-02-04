@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.16.2",
+            "date": "2026-02-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix CMS Popup Edit: Koreksi format tanggal (YYYY-MM-DD) agar muncul di form input dan penambahan preview gambar dinamis"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix WA Direct Send: Implementasi logika rotasi akun untuk pengiriman langsung (saat antrian non-aktif), memastikan konsistensi dengan mode antrian"
+                }
+            ]
+        },
+        {
             "version": "1.16.1",
             "date": "2026-02-04",
             "type": "patch",

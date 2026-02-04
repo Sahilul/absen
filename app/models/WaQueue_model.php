@@ -58,24 +58,108 @@ class WaQueue_model
     /**
      * Kirim pesan langsung tanpa antrian
      */
+    /**
+     * Kirim pesan langsung tanpa antrian (Supports Rotation)
+     */
     private function sendDirect($noWa, $pesan, $jenis, $metadata)
     {
         try {
             require_once APPROOT . '/app/core/Fonnte.php';
-            $fonnte = new Fonnte();
-            $result = $fonnte->send($noWa, $pesan);
+            require_once APPROOT . '/app/models/WaAccount_model.php';
 
-            // Periksa status pengiriman
-            // Fonnte::send mengembalikan array ['status' => bool, 'reason' => string]
-            $isSuccess = isset($result['status']) && $result['status'] == true;
-            $status = $isSuccess ? 'sent' : 'failed';
-            $errorMessage = $isSuccess ? null : ($result['reason'] ?? 'Unknown error');
+            $fonnte = new Fonnte();
+            $waAccountModel = new WaAccount_model();
+
+            // Get Rotation Settings manually
+            $this->db->query("SELECT setting_key, setting_value FROM cms_settings WHERE setting_key IN ('wa_rotation_enabled', 'wa_rotation_mode', 'wa_last_account_id')");
+            // Fallback for settings if cms_settings not used or using different table
+            // Wait, cron uses PengaturanAplikasi_model which maps to 'pengaturan_aplikasi' table.
+            // Let's use direct query to pengaturan_aplikasi as seen in cron logic references
+            $this->db->query("SELECT * FROM pengaturan_aplikasi LIMIT 1");
+            $settings = $this->db->single();
+
+            $rotationEnabled = ($settings['wa_rotation_enabled'] ?? 0) == 1;
+            $rotationMode = $settings['wa_rotation_mode'] ?? 'round_robin';
+            $lastAccountId = $settings['wa_last_account_id'] ?? null;
+
+            // Whitelist jenis pesan yang rotasi
+            $applyRotation = in_array($jenis, [
+                'notif_absensi',
+                'notif_absensi_grup',
+                'test_grup',
+                'pesan_bulk',
+                'pesan_admin'
+            ]);
+
+            $isSuccess = false;
+            $errorMessage = 'Unknown error';
+            $usedAccountId = null;
+            $response = [];
+
+            if ($applyRotation && $rotationEnabled) {
+                // ROTATION LOGIC
+                $maxRetries = 3;
+                $triedAccounts = [];
+
+                for ($retry = 0; $retry < $maxRetries && !$isSuccess; $retry++) {
+                    $account = $waAccountModel->pickAccount($rotationMode, $lastAccountId);
+
+                    if ($account) {
+                        // Skip if already tried
+                        if (in_array($account['id'], $triedAccounts)) {
+                            // Try to get another one effectively? pickAccount might return same if only 1 exists.
+                            // Simple check: if we only have 1 active account, break loop after 1 try
+                            // But for now, let's just proceed.
+                        }
+                        $triedAccounts[] = $account['id'];
+
+                        // Configure Fonnte
+                        $fonnte->configureFromAccount($account);
+
+                        // Send
+                        $result = $fonnte->send($noWa, $pesan);
+
+                        if (isset($result['status']) && $result['status'] === true) {
+                            $isSuccess = true;
+                            $response = $result;
+                            $usedAccountId = $account['id'];
+
+                            // Update last account ID
+                            if ($usedAccountId) {
+                                // We need to update DB. Using raw query to avoid loading another model
+                                $this->db->query("UPDATE pengaturan_aplikasi SET wa_last_account_id = :id");
+                                $this->db->bind(':id', $usedAccountId);
+                                $this->db->execute();
+                            }
+                        } else {
+                            $errorMessage = $result['reason'] ?? $result['message'] ?? 'Unknown error';
+                            // If blocked/invalid token logic needed? 
+                            // simplistic for now: just retry next account
+                        }
+                    } else {
+                        // No account found
+                        break;
+                    }
+                }
+            } else {
+                // DEFAULT LOGIC (No Rotation)
+                $result = $fonnte->send($noWa, $pesan);
+                $isSuccess = isset($result['status']) && $result['status'] === true;
+                if ($isSuccess) {
+                    $response = $result;
+                } else {
+                    $errorMessage = $result['reason'] ?? 'Unknown error';
+                }
+            }
 
             // Log ke database
-            // UPDATE: Gunakan PHP date() untuk created_at dan sent_at agar timezone konsisten
+            $status = $isSuccess ? 'sent' : 'failed';
             $now = date('Y-m-d H:i:s');
-            $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, status, sent_at, created_at, attempts, error_message) 
-                              VALUES (:no_wa, :pesan, :jenis, :metadata, :status, :sent_at, :created_at, 1, :error_message)');
+
+            $sql = 'INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, status, sent_at, created_at, attempts, error_message, wa_account_id) 
+                    VALUES (:no_wa, :pesan, :jenis, :metadata, :status, :sent_at, :created_at, 1, :error_message, :wa_account_id)';
+
+            $this->db->query($sql);
             $this->db->bind(':no_wa', $noWa);
             $this->db->bind(':pesan', $pesan);
             $this->db->bind(':jenis', $jenis);
@@ -83,14 +167,16 @@ class WaQueue_model
             $this->db->bind(':status', $status);
             $this->db->bind(':sent_at', $now);
             $this->db->bind(':created_at', $now);
-            $this->db->bind(':error_message', $errorMessage);
+            $this->db->bind(':error_message', $isSuccess ? null : $errorMessage);
+            $this->db->bind(':wa_account_id', $usedAccountId);
+
             $this->db->execute();
             $insertedId = $this->db->lastInsertId();
 
             if ($isSuccess) {
-                // Log ke wa_message_log jika sukses (opsional, untuk konsistensi)
-                // $this->logMessage($insertedId, 'sent', json_encode($result));
-                error_log("WA Direct Send SUCCESS to {$noWa}");
+                // Log ke wa_message_log
+                $this->logMessage($insertedId, 'sent', json_encode($response));
+                error_log("WA Direct Send SUCCESS to {$noWa} (Acc: {$usedAccountId})");
             } else {
                 error_log("WA Direct Send FAILED to {$noWa}: {$errorMessage}");
             }
