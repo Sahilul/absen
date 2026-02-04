@@ -6957,10 +6957,15 @@ Waktu: ' . date('d/m/Y H:i:s');
         // Get data
         $this->data['accounts'] = $waAccountModel->getAll();
         $this->data['stats'] = $waAccountModel->getStats();
+
         $pengaturan = $pengaturanModel->getPengaturan();
         $this->data['rotation_enabled'] = ($pengaturan['wa_rotation_enabled'] ?? 0) == 1;
         $this->data['rotation_mode'] = $pengaturan['wa_rotation_mode'] ?? 'round_robin';
         $this->data['admin_wa_number'] = $pengaturan['admin_wa_number'] ?? '';
+
+        // Get Queue Setting
+        $pengaturanSistemModel = $this->model('PengaturanSistem_model');
+        $this->data['queue_enabled'] = ($pengaturanSistemModel->get('wa_queue_enabled') ?? '1') == '1';
 
         // Load Fonnte class untuk akses providers list
         require_once APPROOT . '/app/core/Fonnte.php';
@@ -7053,7 +7058,13 @@ Waktu: ' . date('d/m/Y H:i:s');
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pengaturanModel = $this->model('PengaturanAplikasi_model');
+            $pengaturanSistemModel = $this->model('PengaturanSistem_model');
 
+            // Queue Settings
+            $queueEnabled = isset($_POST['queue_enabled']) ? '1' : '0';
+            $pengaturanSistemModel->set('wa_queue_enabled', $queueEnabled);
+
+            // Rotation Settings
             $rotationEnabled = isset($_POST['rotation_enabled']) ? 1 : 0;
             $rotationMode = $_POST['rotation_mode'] ?? 'round_robin';
             $adminWaNumber = $_POST['admin_wa_number'] ?? '';
@@ -7062,7 +7073,7 @@ Waktu: ' . date('d/m/Y H:i:s');
             $pengaturanModel->updateSetting('wa_rotation_mode', $rotationMode);
             $pengaturanModel->updateSetting('admin_wa_number', $adminWaNumber);
 
-            Flasher::setFlash('Pengaturan rotasi WA berhasil disimpan.', 'success');
+            Flasher::setFlash('Pengaturan WA Gateway berhasil disimpan.', 'success');
         }
 
         header('Location: ' . BASEURL . '/admin/waGateway');

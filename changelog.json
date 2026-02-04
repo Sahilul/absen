@@ -1,6 +1,25 @@
 {
     "versions": [
         {
+            "version": "1.16.3",
+            "date": "2026-02-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix Queue Persistence: Mengatasi bug di mana pesan tetap masuk antrian meskipun mode antrian dimatikan (karena duplikasi database)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Queue Toggle UI: Menambahkan opsi checkbox 'Aktifkan Antrian Pesan' di halaman Pengaturan WA Gateway untuk kontrol langsung"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Queue Logic: Optimalisasi logika pembacaan setting antrian agar selalu menggunakan nilai terbaru"
+                }
+            ]
+        },
+        {
             "version": "1.16.2",
             "date": "2026-02-04",
             "type": "patch",

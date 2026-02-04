@@ -130,11 +130,23 @@
         </div>
         <form action="<?= BASEURL; ?>/admin/prosesWaGateway" method="POST" class="p-5">
             <div class="space-y-4">
-                <div class="flex items-center gap-4">
+                <div class="flex flex-col gap-4">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" name="queue_enabled" value="1" <?= ($data['queue_enabled'] ?? true) ? 'checked' : '' ?>
+                            class="wa-checkbox w-5 h-5 text-indigo-600 rounded">
+                        <div>
+                            <span class="font-medium text-gray-700 block">Aktifkan Antrian Pesan (Queue) - DISARANKAN</span>
+                            <span class="text-xs text-gray-500 block">Jika aktif, pesan masuk antrian DB dan dikirim via Cron. Jika mati, kirim langsung (loading lama).</span>
+                        </div>
+                    </label>
+
                     <label class="flex items-center gap-3 cursor-pointer">
                         <input type="checkbox" name="rotation_enabled" value="1" <?= $data['rotation_enabled'] ? 'checked' : '' ?>
                             class="wa-checkbox w-5 h-5 text-indigo-600 rounded">
-                        <span class="font-medium text-gray-700">Aktifkan Rotasi Multi Akun</span>
+                        <div>
+                             <span class="font-medium text-gray-700 block">Aktifkan Rotasi Multi Akun</span>
+                             <span class="text-xs text-gray-500 block">Gunakan banyak nomor WA secara bergantian untuk menghindari blokir.</span>
+                        </div>
                     </label>
                 </div>
 

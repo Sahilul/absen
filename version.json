@@ -1,6 +1,6 @@
 {
-    "version": "1.16.2",
+    "version": "1.16.3",
     "build": 20260204,
     "release_date": "2026-02-04",
-    "description": "Patch: Fix Popup Edit date format & image preview, WA Direct Rotation consistency"
+    "description": "Patch: Fix Queue Mode Persistence & Add Queue Toggle UI"
 }

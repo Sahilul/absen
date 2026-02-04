@@ -46,12 +46,13 @@ class WaQueue_model
      */
     private function isQueueEnabled()
     {
-        $this->db->query("SELECT value FROM pengaturan_sistem WHERE key_name = :key");
+        // Gunakan ORDER BY id DESC LIMIT 1 untuk mengambil settingan TERBARU
+        // Ini mengatasi masalah jika ada duplikasi row di database
+        $this->db->query("SELECT value FROM pengaturan_sistem WHERE key_name = :key ORDER BY id DESC LIMIT 1");
         $this->db->bind(':key', 'wa_queue_enabled');
         $result = $this->db->single();
 
         // Default ke enabled (1) jika tidak ditemukan setting
-        // Gunakan false comparison agar lebih aman ( '1' == 1 )
         return ($result['value'] ?? '1') == '1';
     }
 
