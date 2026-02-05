@@ -32,16 +32,6 @@ class WaAccount_model
     }
 
     /**
-     * Hitung jumlah akun aktif
-     */
-    public function countActiveAccounts()
-    {
-        $this->db->query('SELECT COUNT(*) as total FROM wa_accounts WHERE is_active = 1');
-        $result = $this->db->single();
-        return $result['total'] ?? 0;
-    }
-
-    /**
      * Ambil akun by ID
      */
     public function getById($id)

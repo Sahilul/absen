@@ -1,6 +1,6 @@
 {
-    "version": "1.16.4",
+    "version": "1.17.0",
     "build": 20260205,
     "release_date": "2026-02-05",
-    "description": "Patch: Fix WA Group Sending, Rotation Fallback & Exclusions"
+    "description": "Minor: Cleanup Debug Files & Simplify WA Queue"
 }

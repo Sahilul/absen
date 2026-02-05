@@ -1,70 +1,25 @@
 {
     "versions": [
         {
-            "version": "1.16.4",
+            "version": "1.17.0",
             "date": "2026-02-05",
-            "type": "patch",
+            "type": "minor",
             "changes": [
                 {
-                    "type": "fix",
-                    "description": "Critical Fix WA Group: Menghapus 'countryCode' saat pengiriman ke Grup agar Fonnte tidak salah mendeteksi target sebagai ID personal"
+                    "type": "cleanup",
+                    "description": "Code Cleanup: Menghapus file debug yang tidak digunakan (debug_accounts.php, debug_settings.php)"
                 },
                 {
-                    "type": "feature",
-                    "description": "Rotation Fallback: Otomatis gunakan WA Utama (Default) jika Rotasi Multi Akun gagal atau tidak ada akun aktif"
-                },
-                {
-                    "type": "config",
-                    "description": "Rotation Exclusion: Notifikasi Grup dan Pembayaran sekarang dipaksa menggunakan WA Utama untuk kestabilan"
+                    "type": "refactor",
+                    "description": "WA Queue Model: Penyederhanaan logika pengiriman pesan (menghapus rotasi inline, delegasi ke Fonnte core)"
                 },
                 {
                     "type": "improvement",
-                    "description": "Queue UI: Menampilkan detail pesan error pada modal detail antrian untuk memudahkan debugging"
-                }
-            ]
-        },
-        {
-            "version": "1.16.3",
-            "date": "2026-02-04",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "fix",
-                    "description": "Fix Queue Persistence: Mengatasi bug di mana pesan tetap masuk antrian meskipun mode antrian dimatikan (karena duplikasi database)"
+                    "description": "Optimasi Fonnte Core: Peningkatan penanganan antrian dan status pesan"
                 },
                 {
-                    "type": "feature",
-                    "description": "Queue Toggle UI: Menambahkan opsi checkbox 'Aktifkan Antrian Pesan' di halaman Pengaturan WA Gateway untuk kontrol langsung"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Queue Logic: Optimalisasi logika pembacaan setting antrian agar selalu menggunakan nilai terbaru"
-                }
-            ]
-        },
-        {
-            "version": "1.16.2",
-            "date": "2026-02-04",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "fix",
-                    "description": "Fix CMS Popup Edit: Koreksi format tanggal (YYYY-MM-DD) agar muncul di form input dan penambahan preview gambar dinamis"
-                },
-                {
-                    "type": "fix",
-                    "description": "Fix WA Direct Send: Implementasi logika rotasi akun untuk pengiriman langsung (saat antrian non-aktif), memastikan konsistensi dengan mode antrian"
-                }
-            ]
-        },
-        {
-            "version": "1.16.1",
-            "date": "2026-02-04",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "fix",
-                    "description": "Fix WA Gateway Rotation: Memastikan rotasi akun WA bekerja untuk notifikasi grup, test grup, dan pesan masal (bulk)"
+                    "type": "maintenance",
+                    "description": "System Update: Update versi internal dan build number"
                 }
             ]
         },

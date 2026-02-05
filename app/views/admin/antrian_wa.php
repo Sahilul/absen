@@ -49,8 +49,7 @@ $queue_enabled = $data['queue_enabled'] ?? true;
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="flex items-center justify-between gap-4 p-5">
                 <div class="flex items-center gap-4">
-                    <div
-                        class="<?= $queue_enabled ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-orange-500 to-orange-600' ?> p-3 rounded-xl shadow-lg">
+                    <div class="<?= $queue_enabled ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-orange-500 to-orange-600' ?> p-3 rounded-xl shadow-lg">
                         <i data-lucide="<?= $queue_enabled ? 'layers' : 'zap' ?>" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
@@ -65,8 +64,7 @@ $queue_enabled = $data['queue_enabled'] ?? true;
                     </div>
                 </div>
                 <form action="<?= BASEURL ?>/admin/toggleQueueMode" method="POST" class="inline">
-                    <button type="submit"
-                        onclick="return confirm('<?= $queue_enabled ? 'Ubah ke mode LANGSUNG? WA dikirim langsung tanpa antrian.' : 'Ubah ke mode ANTRIAN? WA masuk antrian, dikirim via cron.' ?>')"
+                    <button type="submit" onclick="return confirm('<?= $queue_enabled ? 'Ubah ke mode LANGSUNG? WA dikirim langsung tanpa antrian.' : 'Ubah ke mode ANTRIAN? WA masuk antrian, dikirim via cron.' ?>')"
                         class="px-4 py-2 <?= $queue_enabled ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700' ?> text-white rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-md whitespace-nowrap">
                         <i data-lucide="<?= $queue_enabled ? 'zap' : 'layers' ?>" class="w-4 h-4"></i>
                         <?= $queue_enabled ? 'Langsung' : 'Antrian' ?>
@@ -79,8 +77,7 @@ $queue_enabled = $data['queue_enabled'] ?? true;
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="flex items-center justify-between gap-4 p-5">
                 <div class="flex items-center gap-4">
-                    <div
-                        class="<?= $notif_enabled ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-gray-400 to-gray-500' ?> p-3 rounded-xl shadow-lg">
+                    <div class="<?= $notif_enabled ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-gray-400 to-gray-500' ?> p-3 rounded-xl shadow-lg">
                         <i data-lucide="bell" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
@@ -883,38 +880,22 @@ $queue_enabled = $data['queue_enabled'] ?? true;
         statusEl.className = 'text-sm font-bold ' + (statusColors[status] || 'text-gray-600');
         statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
 
-        // Error Message
+        // Error message
         const errorContainer = document.getElementById('detailErrorContainer');
-        const errorText = document.getElementById('detailError');
-
-        if (msg.error_message && msg.status === 'failed') {
-            errorText.textContent = msg.error_message;
+        const errorEl = document.getElementById('detailError');
+        if (msg.error_message) {
             errorContainer.classList.remove('hidden');
+            errorEl.textContent = msg.error_message;
         } else {
             errorContainer.classList.add('hidden');
         }
 
         document.getElementById('detailModal').classList.remove('hidden');
         document.getElementById('detailModal').classList.add('flex');
-    }
-    statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        document.body.style.overflow = 'hidden';
 
-    // Error message
-    const errorContainer = document.getElementById('detailErrorContainer');
-    const errorEl = document.getElementById('detailError');
-    if (msg.error_message) {
-        errorContainer.classList.remove('hidden');
-        errorEl.textContent = msg.error_message;
-    } else {
-        errorContainer.classList.add('hidden');
-    }
-
-    document.getElementById('detailModal').classList.remove('hidden');
-    document.getElementById('detailModal').classList.add('flex');
-    document.body.style.overflow = 'hidden';
-
-    // Re-init lucide icons in modal
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+        // Re-init lucide icons in modal
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function closeDetailModal() {

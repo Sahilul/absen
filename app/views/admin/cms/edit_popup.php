@@ -31,52 +31,16 @@
                 <!-- Gambar -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar</label>
-                    
-                    <!-- Preview Container -->
-                    <div class="mb-3 flex items-center gap-4 <?= empty($data['popup']['image']) ? 'hidden' : '' ?>" id="preview-container">
-                        <img src="<?= !empty($data['popup']['image']) ? BASEURL . '/public/img/cms/' . $data['popup']['image'] : '' ?>"
-                            id="preview-image"
-                            class="h-24 w-auto object-cover rounded-xl border border-slate-200">
-                        <div class="flex flex-col">
-                            <span class="text-xs text-slate-500 font-medium" id="preview-label">Gambar saat ini</span>
-                            <button type="button" id="btn-remove-preview" class="text-xs text-red-500 hover:text-red-700 mt-1 text-left hidden">
-                                Batalkan ubahan
-                            </button>
+                    <?php if (!empty($data['popup']['image'])): ?>
+                        <div class="mb-3 flex items-center gap-4">
+                            <img src="<?= BASEURL ?>/public/img/cms/<?= $data['popup']['image'] ?>"
+                                class="h-24 w-auto object-cover rounded-xl border border-slate-200">
+                            <span class="text-xs text-slate-500">Gambar saat ini</span>
                         </div>
-                    </div>
-
-                    <input type="file" name="image" id="file-input" accept="image/*"
+                    <?php endif; ?>
+                    <input type="file" name="image" accept="image/*"
                         class="w-full border border-slate-300 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                     <p class="text-xs text-slate-500 mt-1">Biarkan kosong jika tidak ingin mengubah gambar.</p>
-
-                    <script>
-                        const fileInput = document.getElementById('file-input');
-                        const previewContainer = document.getElementById('preview-container');
-                        const previewImage = document.getElementById('preview-image');
-                        const previewLabel = document.getElementById('preview-label');
-                        const originalSrc = previewImage.src;
-                        
-                        fileInput.addEventListener('change', function(e) {
-                            const file = this.files[0];
-                            if (file) {
-                                const reader = new FileReader();
-                                reader.onload = function(e) {
-                                    previewImage.src = e.target.result;
-                                    previewContainer.classList.remove('hidden');
-                                    previewLabel.textContent = 'Preview gambar baru';
-                                }
-                                reader.readAsDataURL(file);
-                            } else {
-                                // If cancelled or cleared, revert to original if exists
-                                if (originalSrc && !originalSrc.includes('window.location')) {
-                                    previewImage.src = originalSrc;
-                                    previewLabel.textContent = 'Gambar saat ini';
-                                } else {
-                                    previewContainer.classList.add('hidden');
-                                }
-                            }
-                        });
-                    </script>
                 </div>
 
                 <!-- Isi -->
@@ -97,14 +61,12 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Mulai Tampil</label>
-                        <input type="date" name="start_date"
-                            value="<?= date('Y-m-d', strtotime($data['popup']['start_date'])) ?>"
+                        <input type="date" name="start_date" value="<?= $data['popup']['start_date'] ?>"
                             class="w-full border border-slate-300 rounded-xl py-2.5 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 text-slate-800">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Selesai Tampil</label>
-                        <input type="date" name="end_date"
-                            value="<?= date('Y-m-d', strtotime($data['popup']['end_date'])) ?>"
+                        <input type="date" name="end_date" value="<?= $data['popup']['end_date'] ?>"
                             class="w-full border border-slate-300 rounded-xl py-2.5 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 text-slate-800">
                     </div>
                 </div>

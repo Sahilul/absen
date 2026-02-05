@@ -16,7 +16,7 @@ class PengaturanSistem_model
             return self::$cache;
         }
 
-        $this->db->query("SELECT key_name, value FROM pengaturan_sistem ORDER BY id ASC");
+        $this->db->query("SELECT key_name, value FROM pengaturan_sistem");
         $results = $this->db->resultSet();
 
         $settings = [];

@@ -157,26 +157,17 @@ class Fonnte
             return ['status' => false, 'reason' => 'Token WA Gateway tidak dikonfigurasi'];
         }
 
-        $postData = [
-            'target' => $target,
-            'message' => $message,
-        ];
-
-        // Hanya tambahkan countryCode jika target BUKAN Group ID
-        // Group ID biasanya mengandung '@g.us' atau panjang digit > 15 (Liaison ID 1203...)
-        $isGroup = strpos($target, '@g.us') !== false || (strlen($target) > 15 && substr($target, 0, 4) === '1203');
-
-        if (!$isGroup) {
-            $postData['countryCode'] = '62';
-        }
-
         $curl = curl_init();
         curl_setopt_array($curl, [
             CURLOPT_URL => $this->apiUrl,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => $postData,
+            CURLOPT_POSTFIELDS => [
+                'target' => $target,
+                'message' => $message,
+                'countryCode' => '62'
+            ],
             CURLOPT_HTTPHEADER => [
                 'Authorization: ' . $this->token
             ],
