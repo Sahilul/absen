@@ -1,6 +1,29 @@
 {
     "versions": [
         {
+            "version": "1.16.4",
+            "date": "2026-02-05",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Critical Fix WA Group: Menghapus 'countryCode' saat pengiriman ke Grup agar Fonnte tidak salah mendeteksi target sebagai ID personal"
+                },
+                {
+                    "type": "feature",
+                    "description": "Rotation Fallback: Otomatis gunakan WA Utama (Default) jika Rotasi Multi Akun gagal atau tidak ada akun aktif"
+                },
+                {
+                    "type": "config",
+                    "description": "Rotation Exclusion: Notifikasi Grup dan Pembayaran sekarang dipaksa menggunakan WA Utama untuk kestabilan"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Queue UI: Menampilkan detail pesan error pada modal detail antrian untuk memudahkan debugging"
+                }
+            ]
+        },
+        {
             "version": "1.16.3",
             "date": "2026-02-04",
             "type": "patch",

@@ -78,10 +78,11 @@ foreach ($pendingMessages as $msg) {
     $usedAccountId = null;
     $usedAccountName = 'Default';
 
-    // Cek apakah pesan ini menggunakan rotation (Absensi, Grup, Test, Bulk)
+    // Cek apakah pesan ini menggunakan rotation (Absensi, Test, Bulk)
+    // EXCLUDED: notif_absensi_grup, notif_pembayaran (Gunakan WA Utama)
     $applyRotation = in_array($jenis, [
         'notif_absensi',
-        'notif_absensi_grup',
+        // 'notif_absensi_grup', // Excluded by user request
         'test_grup',
         'pesan_bulk',
         'pesan_admin'
@@ -94,82 +95,99 @@ foreach ($pendingMessages as $msg) {
 
     try {
         // Buat instance Fonnte baru untuk setiap pesan
-        $fonnte = new Fonnte();
         $sendSuccess = false;
         $maxRetries = 3; // Maksimal percobaan dengan akun berbeda
         $triedAccounts = []; // Track akun yang sudah dicoba
         $lastError = '';
 
+        // Flag untuk fallback ke default
+        $useDefaultGateway = true;
+
         // Jika masuk kategori rotasi dan fitur rotasi aktif
         if ($applyRotation && $rotationEnabled) {
+            $accountCheck = $waAccountModel->pickAccount($rotationMode, $lastAccountId);
 
-            // Loop untuk mencoba dengan akun berbeda jika gagal
-            for ($retry = 0; $retry < $maxRetries && !$sendSuccess; $retry++) {
-                $account = $waAccountModel->pickAccount($rotationMode, $lastAccountId);
+            // Jika ada akun tersedia, gunakan mode Multi WA
+            if ($accountCheck) {
+                $useDefaultGateway = false;
 
-                // Skip akun yang sudah dicoba
-                while ($account && in_array($account['id'], $triedAccounts)) {
-                    $lastAccountId = $account['id'];
-                    $account = $waAccountModel->pickAccount($rotationMode, $lastAccountId);
-                }
+                // Loop untuk mencoba dengan akun berbeda jika gagal
+                for ($retry = 0; $retry < $maxRetries && !$sendSuccess; $retry++) {
+                    $account = ($retry == 0) ? $accountCheck : $waAccountModel->pickAccount($rotationMode, $lastAccountId);
 
-                if ($account) {
-                    // Konfigurasi Fonnte dengan akun terpilih
-                    $fonnte->configureFromAccount($account);
-                    $usedAccountId = $account['id'];
-                    $usedAccountName = $account['nama'];
-                    $triedAccounts[] = $account['id'];
-
-                    echo "[Multi:{$usedAccountName}] ";
-
-                    // Send message
-                    $response = $fonnte->send($noWa, $pesan);
-
-                    if (isset($response['status']) && $response['status'] === true) {
-                        $sendSuccess = true;
-                        $queueModel->markAsSent($id, json_encode($response), $usedAccountId);
-                        $waAccountModel->incrementSent($usedAccountId);
+                    // Skip akun yang sudah dicoba
+                    while ($account && in_array($account['id'], $triedAccounts)) {
                         $lastAccountId = $account['id'];
-                        echo "SENT\n";
-                        $results[] = ['id' => $id, 'jenis' => $jenis, 'status' => 'sent', 'account' => $usedAccountName];
-                    } else {
-                        $lastError = $response['reason'] ?? $response['message'] ?? 'Unknown error';
-                        echo "FAILED ({$lastError}) ";
-
-                        // Cek apakah error mengindikasikan akun terblokir
-                        if (WaAccount_model::checkIfErrorIsBlock($lastError)) {
-                            echo ">>> [BLOCKED] Auto-disabling {$usedAccountName}...\n";
-                            $waAccountModel->markAsBlocked($usedAccountId, $lastError);
-
-                            // Notifikasi admin
-                            $adminNotifNumber = $pengaturan['admin_wa_number'] ?? null;
-                            if ($adminNotifNumber) {
-                                $alertFonnte = new Fonnte();
-                                $alertFonnte->send($adminNotifNumber, "⚠️ *WA Gateway Blocked*\n\nAkun: {$usedAccountName}\nError: {$lastError}\nWaktu: " . date('d/m/Y H:i:s'));
-                            }
-                        }
-
-                        // Coba akun lain jika masih ada retry
-                        if ($retry < $maxRetries - 1) {
-                            echo ">>> Trying next account...\n";
-                            $lastAccountId = $account['id'];
+                        $account = $waAccountModel->pickAccount($rotationMode, $lastAccountId);
+                        // If we've tried all available accounts, break to prevent infinite loop
+                        if (count($triedAccounts) >= $waAccountModel->countActiveAccounts()) {
+                            $account = null; // Force break from this inner loop and outer for loop
+                            break;
                         }
                     }
-                } else {
-                    // Tidak ada akun aktif tersedia
-                    echo "[No Active Account] ";
-                    break;
+
+                    if ($account) {
+                        $usedAccountId = $account['id'];
+                        $usedAccountName = $account['nama'];
+                        $triedAccounts[] = $account['id'];
+
+                        echo "[Multi:{$usedAccountName}] ";
+
+                        // Send message
+                        $fonnteMulti = new Fonnte(); // New instance for each account attempt
+                        $fonnteMulti->configureFromAccount($account);
+                        $response = $fonnteMulti->send($noWa, $pesan);
+
+                        if (isset($response['status']) && $response['status'] === true) {
+                            $sendSuccess = true;
+                            $queueModel->markAsSent($id, json_encode($response), $usedAccountId);
+                            $waAccountModel->incrementSent($usedAccountId);
+                            $lastAccountId = $account['id'];
+                            echo "SENT\n";
+                            $results[] = ['id' => $id, 'jenis' => $jenis, 'status' => 'sent', 'account' => $usedAccountName];
+                        } else {
+                            $lastError = $response['reason'] ?? $response['message'] ?? 'Unknown error';
+                            echo "FAILED ({$lastError}) ";
+
+                            // Cek apakah error mengindikasikan akun terblokir
+                            if (WaAccount_model::checkIfErrorIsBlock($lastError)) {
+                                echo ">>> [BLOCKED] Auto-disabling {$usedAccountName}...\n";
+                                $waAccountModel->markAsBlocked($usedAccountId, $lastError);
+
+                                // Notifikasi admin
+                                $adminNotifNumber = $pengaturan['admin_wa_number'] ?? null;
+                                if ($adminNotifNumber) {
+                                    $alertFonnte = new Fonnte();
+                                    $alertFonnte->send($adminNotifNumber, "⚠️ *WA Gateway Blocked*\n\nAkun: {$usedAccountName}\nError: {$lastError}\nWaktu: " . date('d/m/Y H:i:s'));
+                                }
+                            }
+
+                            // Coba akun lain jika masih ada retry
+                            if ($retry < $maxRetries - 1) {
+                                echo ">>> Trying next account...\n";
+                                $lastAccountId = $account['id'];
+                            }
+                        }
+                    } else {
+                        // No more active accounts to try in this retry loop
+                        echo "[No more active accounts to try] ";
+                        break;
+                    }
                 }
+            } else {
+                echo "[No Active Account in Rotation] ";
+                // $useDefaultGateway remains true -> Fallback to default
             }
+        }
 
-            // Tidak ada fallback ke default gateway
-            // Hanya gunakan akun dari Multi WA Gateway
-
-        } else {
+        // Jalankan Default Gateway jika tidak pakai rotasi ATAU fallback
+        if ($useDefaultGateway && !$sendSuccess) {
             // Notifikasi lainnya pakai gateway default dari pengaturan_aplikasi
-            echo "[Default] ";
+            echo "[Default Fallback] ";
 
-            $response = $fonnte->send($noWa, $pesan);
+            // Buat instance Fonnte baru untuk default gateway
+            $fonnteDefault = new Fonnte();
+            $response = $fonnteDefault->send($noWa, $pesan);
 
             if (isset($response['status']) && $response['status'] === true) {
                 $sendSuccess = true;

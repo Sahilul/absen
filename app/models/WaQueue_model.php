@@ -84,9 +84,10 @@ class WaQueue_model
             $lastAccountId = $settings['wa_last_account_id'] ?? null;
 
             // Whitelist jenis pesan yang rotasi
+            // EXCLUDED: notif_absensi_grup, notif_pembayaran (Gunakan WA Utama)
             $applyRotation = in_array($jenis, [
                 'notif_absensi',
-                'notif_absensi_grup',
+                // 'notif_absensi_grup', // Excluded by user request
                 'test_grup',
                 'pesan_bulk',
                 'pesan_admin'
@@ -97,54 +98,60 @@ class WaQueue_model
             $usedAccountId = null;
             $response = [];
 
+            $useDefaultGateway = true;
+
             if ($applyRotation && $rotationEnabled) {
                 // ROTATION LOGIC
                 $maxRetries = 3;
                 $triedAccounts = [];
+                $accountCheck = $waAccountModel->pickAccount($rotationMode, $lastAccountId);
 
-                for ($retry = 0; $retry < $maxRetries && !$isSuccess; $retry++) {
-                    $account = $waAccountModel->pickAccount($rotationMode, $lastAccountId);
+                if ($accountCheck) {
+                    $useDefaultGateway = false;
 
-                    if ($account) {
-                        // Skip if already tried
-                        if (in_array($account['id'], $triedAccounts)) {
-                            // Try to get another one effectively? pickAccount might return same if only 1 exists.
-                            // Simple check: if we only have 1 active account, break loop after 1 try
-                            // But for now, let's just proceed.
-                        }
-                        $triedAccounts[] = $account['id'];
+                    for ($retry = 0; $retry < $maxRetries && !$isSuccess; $retry++) {
+                        $account = ($retry == 0) ? $accountCheck : $waAccountModel->pickAccount($rotationMode, $lastAccountId);
 
-                        // Configure Fonnte
-                        $fonnte->configureFromAccount($account);
+                        if ($account) {
+                            if (in_array($account['id'], $triedAccounts)) {
+                                if (count($triedAccounts) >= $waAccountModel->countActiveAccounts()) {
+                                    break;
+                                }
+                            }
+                            $triedAccounts[] = $account['id'];
 
-                        // Send
-                        $result = $fonnte->send($noWa, $pesan);
+                            // Configure Fonnte
+                            $fonnteMulti = new Fonnte();
+                            $fonnteMulti->configureFromAccount($account);
 
-                        if (isset($result['status']) && $result['status'] === true) {
-                            $isSuccess = true;
-                            $response = $result;
-                            $usedAccountId = $account['id'];
+                            // Send
+                            $result = $fonnteMulti->send($noWa, $pesan);
 
-                            // Update last account ID
-                            if ($usedAccountId) {
-                                // We need to update DB. Using raw query to avoid loading another model
-                                $this->db->query("UPDATE pengaturan_aplikasi SET wa_last_account_id = :id");
-                                $this->db->bind(':id', $usedAccountId);
-                                $this->db->execute();
+                            if (isset($result['status']) && $result['status'] === true) {
+                                $isSuccess = true;
+                                $response = $result;
+                                $usedAccountId = $account['id'];
+
+                                // Update last account ID
+                                if ($usedAccountId) {
+                                    $this->db->query("UPDATE pengaturan_aplikasi SET wa_last_account_id = :id");
+                                    $this->db->bind(':id', $usedAccountId);
+                                    $this->db->execute();
+                                }
+                            } else {
+                                $errorMessage = $result['reason'] ?? $result['message'] ?? 'Unknown error';
                             }
                         } else {
-                            $errorMessage = $result['reason'] ?? $result['message'] ?? 'Unknown error';
-                            // If blocked/invalid token logic needed? 
-                            // simplistic for now: just retry next account
+                            break;
                         }
-                    } else {
-                        // No account found
-                        break;
                     }
                 }
-            } else {
-                // DEFAULT LOGIC (No Rotation)
-                $result = $fonnte->send($noWa, $pesan);
+            }
+
+            // DEFAULT LOGIC (No Rotation or Fallback)
+            if ($useDefaultGateway && !$isSuccess) {
+                $fonnteDefault = new Fonnte();
+                $result = $fonnteDefault->send($noWa, $pesan);
                 $isSuccess = isset($result['status']) && $result['status'] === true;
                 if ($isSuccess) {
                     $response = $result;

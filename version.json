@@ -1,6 +1,6 @@
 {
-    "version": "1.16.3",
-    "build": 20260204,
-    "release_date": "2026-02-04",
-    "description": "Patch: Fix Queue Mode Persistence & Add Queue Toggle UI"
+    "version": "1.16.4",
+    "build": 20260205,
+    "release_date": "2026-02-05",
+    "description": "Patch: Fix WA Group Sending, Rotation Fallback & Exclusions"
 }
