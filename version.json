@@ -1,6 +1,6 @@
 {
-    "version": "1.17.0",
-    "build": 20260205,
-    "release_date": "2026-02-05",
-    "description": "Minor: Cleanup Debug Files & Simplify WA Queue"
+    "version": "1.18.0",
+    "build": 20260206,
+    "release_date": "2026-02-06",
+    "description": "Minor: Auto-Retry WA Queue & Improve Group Notifications"
 }

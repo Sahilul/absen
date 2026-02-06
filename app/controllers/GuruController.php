@@ -852,8 +852,12 @@ class GuruController extends Controller
                         $grupId = $grup['grup_wa_id'];
                         $namaGrup = $grup['nama_grup'];
 
+                        // Data tambahan: Jam dan Topik
+                        $jam = isset($jurnal['timestamp']) ? date('H:i', strtotime($jurnal['timestamp'])) : '';
+                        $topik = $jurnal['topik_materi'] ?? '';
+
                         // Build message menggunakan Fonnte helper
-                        $pesan = $fonnte->buildGrupAbsensiMessage($namaKelas, $namaMapel, $tanggal, $namaGuru, $daftarAbsen, 0, $namaSekolah);
+                        $pesan = $fonnte->buildGrupAbsensiMessage($namaKelas, $namaMapel, $tanggal, $namaGuru, $daftarAbsen, 0, $namaSekolah, $jam, $topik);
 
                         // Masukkan ke antrian
                         $queueModel->addToQueue(

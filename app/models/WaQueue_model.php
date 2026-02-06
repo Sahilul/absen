@@ -29,8 +29,9 @@ class WaQueue_model
 
         // Mode ANTRIAN: masukkan ke database queue
         // UPDATE: Gunakan PHP date() untuk created_at agar timezone konsisten (WIB)
-        $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, scheduled_at, status, created_at) 
-                          VALUES (:no_wa, :pesan, :jenis, :metadata, :scheduled_at, "pending", :created_at)');
+        // Set max_attempts = 3 agar bisa retry otomatis
+        $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, scheduled_at, status, created_at, max_attempts) 
+                          VALUES (:no_wa, :pesan, :jenis, :metadata, :scheduled_at, "pending", :created_at, 3)');
         $this->db->bind(':no_wa', $noWa);
         $this->db->bind(':pesan', $pesan);
         $this->db->bind(':jenis', $jenis);
@@ -73,9 +74,10 @@ class WaQueue_model
 
             // Log ke database
             // UPDATE: Gunakan PHP date() untuk created_at dan sent_at agar timezone konsisten
+            // Set max_attempts = 3 agar jika gagal bisa di-retry oleh cron (jika nanti dinyalakan)
             $now = date('Y-m-d H:i:s');
-            $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, status, sent_at, created_at, attempts, error_message) 
-                              VALUES (:no_wa, :pesan, :jenis, :metadata, :status, :sent_at, :created_at, 1, :error_message)');
+            $this->db->query('INSERT INTO wa_message_queue (no_wa, pesan, jenis, metadata, status, sent_at, created_at, attempts, max_attempts, error_message) 
+                              VALUES (:no_wa, :pesan, :jenis, :metadata, :status, :sent_at, :created_at, 1, 3, :error_message)');
             $this->db->bind(':no_wa', $noWa);
             $this->db->bind(':pesan', $pesan);
             $this->db->bind(':jenis', $jenis);
@@ -141,14 +143,13 @@ class WaQueue_model
     }
 
     /**
-     * Ambil beberapa pesan pending
+     * Ambil pesan yang perlu diproses (pending atau failed yang masih punya sisa attempts)
      */
     public function getPendingMessages($limit = 5)
     {
         $this->db->query('SELECT * FROM wa_message_queue 
-                          WHERE status = "pending" 
+                          WHERE (status = "pending" OR (status = "failed" AND attempts < max_attempts))
                           AND scheduled_at <= NOW()
-                          AND attempts < max_attempts
                           ORDER BY scheduled_at ASC 
                           LIMIT :limit');
         $this->db->bind(':limit', $limit);
@@ -197,10 +198,33 @@ class WaQueue_model
     /**
      * Tandai pesan gagal
      */
+    /**
+     * Tandai pesan gagal (dengan logic retry otomatis)
+     */
     public function markAsFailed($id, $errorMessage = null)
     {
         $this->db->query('UPDATE wa_message_queue 
                           SET status = CASE WHEN attempts >= max_attempts THEN "failed" ELSE "pending" END,
+                              error_message = :error
+                          WHERE id = :id');
+        $this->db->bind(':id', $id);
+        $this->db->bind(':error', $errorMessage);
+        $this->db->execute();
+
+        // Log ke tabel log
+        $this->logMessage($id, 'failed', $errorMessage);
+
+        return true;
+    }
+
+    /**
+     * Tandai pesan gagal secara langsung (TANPA retry logic)
+     * Digunakan untuk Mode Direct agar status langsung Failed
+     */
+    public function markAsFailedDirect($id, $errorMessage = null)
+    {
+        $this->db->query('UPDATE wa_message_queue 
+                          SET status = "failed",
                               error_message = :error
                           WHERE id = :id');
         $this->db->bind(':id', $id);

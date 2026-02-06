@@ -49,7 +49,8 @@ $queue_enabled = $data['queue_enabled'] ?? true;
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="flex items-center justify-between gap-4 p-5">
                 <div class="flex items-center gap-4">
-                    <div class="<?= $queue_enabled ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-orange-500 to-orange-600' ?> p-3 rounded-xl shadow-lg">
+                    <div
+                        class="<?= $queue_enabled ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-orange-500 to-orange-600' ?> p-3 rounded-xl shadow-lg">
                         <i data-lucide="<?= $queue_enabled ? 'layers' : 'zap' ?>" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
@@ -64,7 +65,8 @@ $queue_enabled = $data['queue_enabled'] ?? true;
                     </div>
                 </div>
                 <form action="<?= BASEURL ?>/admin/toggleQueueMode" method="POST" class="inline">
-                    <button type="submit" onclick="return confirm('<?= $queue_enabled ? 'Ubah ke mode LANGSUNG? WA dikirim langsung tanpa antrian.' : 'Ubah ke mode ANTRIAN? WA masuk antrian, dikirim via cron.' ?>')"
+                    <button type="submit"
+                        onclick="return confirm('<?= $queue_enabled ? 'Ubah ke mode LANGSUNG? WA dikirim langsung tanpa antrian.' : 'Ubah ke mode ANTRIAN? WA masuk antrian, dikirim via cron.' ?>')"
                         class="px-4 py-2 <?= $queue_enabled ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700' ?> text-white rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-md whitespace-nowrap">
                         <i data-lucide="<?= $queue_enabled ? 'zap' : 'layers' ?>" class="w-4 h-4"></i>
                         <?= $queue_enabled ? 'Langsung' : 'Antrian' ?>
@@ -77,7 +79,8 @@ $queue_enabled = $data['queue_enabled'] ?? true;
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="flex items-center justify-between gap-4 p-5">
                 <div class="flex items-center gap-4">
-                    <div class="<?= $notif_enabled ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-gray-400 to-gray-500' ?> p-3 rounded-xl shadow-lg">
+                    <div
+                        class="<?= $notif_enabled ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-gray-400 to-gray-500' ?> p-3 rounded-xl shadow-lg">
                         <i data-lucide="bell" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
@@ -253,7 +256,7 @@ $queue_enabled = $data['queue_enabled'] ?? true;
                     <p class="text-sm font-semibold text-gray-700 mb-2">🔗 URL Cron Anda:</p>
                     <div class="flex gap-2">
                         <input type="text" id="cronUrl" readonly
-                            value="<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"
+                            value="https://sabilillah.id/public/cron_wa_processor.php?token=wa_queue_secret_2026"
                             class="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-mono text-gray-700">
                         <button onclick="copyCronUrl()"
                             class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition flex items-center gap-1">
@@ -334,12 +337,14 @@ $queue_enabled = $data['queue_enabled'] ?? true;
                             <p class="text-sm text-green-700 mb-2">Paste command berikut:</p>
                             <div id="cpanelWget"
                                 class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto">wget
-                                -q -O /dev/null "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"
+                                -q -O /dev/null
+                                "https://sabilillah.id/public/cron_wa_processor.php?token=wa_queue_secret_2026"
                             </div>
                             <p class="text-xs text-green-600 mt-2">Atau gunakan curl:</p>
                             <div id="cpanelCurl"
                                 class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto mt-1">
-                                curl -s "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026" >
+                                curl -s "https://sabilillah.id/public/cron_wa_processor.php?token=wa_queue_secret_2026"
+                                >
                                 /dev/null 2>&1</div>
                         </div>
                     </div>
@@ -379,7 +384,7 @@ $queue_enabled = $data['queue_enabled'] ?? true;
                             <div id="aapanelScript"
                                 class="bg-gray-900 text-purple-400 p-3 rounded-lg text-xs font-mono overflow-x-auto">
                                 wget -q -O /dev/null
-                                "<?= BASEURL ?>/public/cron_wa_processor.php?token=wa_queue_secret_2026"</div>
+                                "https://sabilillah.id/public/cron_wa_processor.php?token=wa_queue_secret_2026"</div>
                         </div>
 
                         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
@@ -402,50 +407,14 @@ $queue_enabled = $data['queue_enabled'] ?? true;
                         <div class="text-sm text-red-700">
                             <p class="font-bold">⚠️ Penting!</p>
                             <ul class="mt-1 list-disc list-inside space-y-1">
-                                <li>Ganti <code class="bg-red-100 px-1 rounded">wa_queue_secret_2026</code> dengan token
-                                    rahasia Anda sendiri</li>
-                                <li>Edit token di file: <code
-                                        class="bg-red-100 px-1 rounded">public/cron_wa_processor.php</code> baris 15
-                                </li>
+                                <li>Pastikan token URL adalah: <code
+                                        class="bg-red-100 px-1 rounded">wa_queue_secret_2026</code></li>
                                 <li>Jangan share URL cron ini kepada siapapun</li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                <!-- Token Generator -->
-                <div class="mt-4 bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <div class="flex-1">
-                            <p class="font-bold text-indigo-800 text-sm flex items-center gap-2">
-                                <i data-lucide="key" class="w-4 h-4"></i>
-                                Generate Token Baru
-                            </p>
-                            <p class="text-xs text-indigo-600 mt-1">Klik generate, lalu paste ke file
-                                cron_wa_processor.php baris 15</p>
-                        </div>
-                        <button onclick="generateToken()"
-                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition whitespace-nowrap">
-                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                            Generate Token
-                        </button>
-                    </div>
-                    <div id="tokenResult" class="hidden mt-3">
-                        <div class="flex gap-2">
-                            <input type="text" id="generatedToken" readonly
-                                class="flex-1 px-3 py-2 bg-white border border-indigo-300 rounded-lg text-sm font-mono text-indigo-800 font-bold">
-                            <button onclick="copyToken()"
-                                class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
-                                <i data-lucide="copy" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                        <p class="text-xs text-indigo-500 mt-2">
-                            📋 Copy token di atas, lalu edit file <code
-                                class="bg-indigo-100 px-1 rounded">public/cron_wa_processor.php</code> dan ganti nilai
-                            <code class="bg-indigo-100 px-1 rounded">$secretToken</code> dengan token baru.
-                        </p>
-                    </div>
-                </div>
             </div>
 
             <!-- Modal Footer -->
@@ -683,7 +652,12 @@ $queue_enabled = $data['queue_enabled'] ?? true;
                                                 echo '<span class="px-3 py-1.5 text-xs rounded-full font-semibold bg-green-100 text-green-800"><i data-lucide="check" class="w-3 h-3 inline mr-1"></i>Terkirim</span>';
                                                 break;
                                             case 'failed':
+                                                echo '<div class="flex flex-col items-center">';
                                                 echo '<span class="px-3 py-1.5 text-xs rounded-full font-semibold bg-red-100 text-red-800" title="' . htmlspecialchars($msg['error_message'] ?? '') . '"><i data-lucide="x" class="w-3 h-3 inline mr-1"></i>Gagal</span>';
+                                                if (!empty($msg['error_message'])) {
+                                                    echo '<span class="text-[10px] text-red-600 mt-1 max-w-[150px] truncate" title="' . htmlspecialchars($msg['error_message']) . '">' . htmlspecialchars(mb_substr($msg['error_message'], 0, 20)) . '...</span>';
+                                                }
+                                                echo '</div>';
                                                 break;
                                         }
                                         ?>
@@ -839,8 +813,8 @@ $queue_enabled = $data['queue_enabled'] ?? true;
                         class="text-sm text-gray-800 whitespace-pre-wrap bg-white p-4 rounded-lg border border-gray-200 max-h-60 overflow-y-auto"></pre>
                 </div>
                 <div id="detailErrorContainer" class="hidden bg-red-50 rounded-xl p-4 border border-red-200">
-                    <p class="text-xs text-red-600 uppercase font-semibold mb-1">Error Message</p>
-                    <p id="detailError" class="text-sm text-red-700"></p>
+                    <p class="text-xs text-red-600 uppercase font-semibold mb-1">Penyebab Gagal</p>
+                    <p id="detailError" class="text-sm text-red-700 font-medium"></p>
                 </div>
             </div>
         </div>

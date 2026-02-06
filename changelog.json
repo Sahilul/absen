@@ -1,6 +1,25 @@
 {
     "versions": [
         {
+            "version": "1.18.0",
+            "date": "2026-02-06",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Auto-Retry WA Queue: Pesan gagal otomatis dicoba kirim ulang (max 3x) oleh Cron Job"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Direct Retry: Retry pesan saat mode antrian mati (Direct) kini statusnya langsung sukses/gagal seketika (tidak pending)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Format Laporan Absensi WA: Tampilan lebih bersih (tanpa ikon/nama guru), format tanggal Indonesia, dan tambahan info Waktu (WIB) & Materi"
+                }
+            ]
+        },
+        {
             "version": "1.17.0",
             "date": "2026-02-05",
             "type": "minor",

@@ -981,7 +981,7 @@ class Fonnte
      * @param string $namaSekolah
      * @return string
      */
-    public function buildGrupAbsensiMessage($namaKelas, $mapel, $tanggal, $namaGuru, $daftarAbsen, $totalSiswa, $namaSekolah)
+    public function buildGrupAbsensiMessage($namaKelas, $mapel, $tanggal, $namaGuru, $daftarAbsen, $totalSiswa, $namaSekolah, $jam = '', $topik = '')
     {
         // Gunakan template kustom jika ada
         if (!empty($this->groupAbsensiTemplate)) {
@@ -1023,13 +1023,32 @@ class Fonnte
             $listDispen = $formatList($grouped['D']);
 
             // Replace variables
+            // Format Tanggal Indo
+            $bulanIndo = [
+                'January' => 'Januari',
+                'February' => 'Februari',
+                'March' => 'Maret',
+                'April' => 'April',
+                'May' => 'Mei',
+                'June' => 'Juni',
+                'July' => 'Juli',
+                'August' => 'Agustus',
+                'September' => 'September',
+                'October' => 'Oktober',
+                'November' => 'November',
+                'December' => 'Desember'
+            ];
+            $tglIndo = strtr($tanggal, $bulanIndo);
+
             $vars = [
-                '{{tanggal}}' => $tanggal,
+                '{{tanggal}}' => $tglIndo,
                 '{{waktu_cetak}}' => date('H:i:s'),
                 '{{sekolah}}' => $namaSekolah,
                 '{{kelas}}' => $namaKelas,
                 '{{mapel}}' => $mapel,
                 '{{guru}}' => $namaGuru,
+                '{{jam}}' => $jam,
+                '{{topik}}' => $topik,
                 '{{jumlah_siswa}}' => $totalSiswa,
                 '{{hadir}}' => $totalSiswa - count($daftarAbsen), // Asumsi sisa hadir (perlu verifikasi logic ini sebenarnya)
                 '{{sakit}}' => $jumlahSakit,
@@ -1053,15 +1072,36 @@ class Fonnte
             'D' => 'DISPENSASI'
         ];
 
-        $msg = "📢 *LAPORAN ABSENSI KELAS {$namaKelas}*\n";
-        $msg .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $msg .= "📚 Mata Pelajaran: *{$mapel}*\n";
-        $msg .= "📅 Tanggal: {$tanggal}\n";
-        if ($namaGuru) {
-            $msg .= "👨‍🏫 Guru: {$namaGuru}\n";
+        // Format Tanggal Indo
+        $bulanIndo = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+        $tglIndo = strtr($tanggal, $bulanIndo);
+
+        $msg = "*LAPORAN ABSENSI KELAS {$namaKelas}*\n";
+        $msg .= "-----------------------------------\n";
+        $msg .= "Mata Pelajaran: *{$mapel}*\n";
+        $msg .= "Tanggal: {$tglIndo}\n";
+        if (!empty($jam)) {
+            $msg .= "Waktu: {$jam} WIB\n";
         }
+        if (!empty($topik)) {
+            $msg .= "Materi: {$topik}\n";
+        }
+
         $msg .= "\n*Siswa Tidak Hadir:*\n";
-        $msg .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        $msg .= "-----------------------------------\n";
 
         $no = 1;
         foreach ($daftarAbsen as $siswa) {

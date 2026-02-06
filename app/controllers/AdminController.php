@@ -6728,10 +6728,52 @@ Waktu: ' . date('d/m/Y H:i:s');
         }
 
         $queueModel = $this->model('WaQueue_model');
-        $queueModel->retryFailed($id);
+        $pengaturanSistemModel = $this->model('PengaturanSistem_model');
 
-        Flasher::setFlash('Pesan akan dicoba kirim ulang.', 'success');
-        header('Location: ' . BASEURL . '/admin/antrianWa?status=failed');
+        // Cek apakah antrian aktif
+        $queueEnabled = ($pengaturanSistemModel->get('wa_queue_enabled') ?? '1') === '1';
+
+        if (!$queueEnabled) {
+            // MODE DIRECT: Kirim langsung sekarang juga
+            require_once APPROOT . '/app/core/Fonnte.php';
+            $fonnte = new Fonnte();
+
+            // Ambil data pesan
+            $msg = $queueModel->getById($id);
+
+            if ($msg) {
+                // Set processing
+                $queueModel->markAsProcessing($id);
+
+                try {
+                    // Coba kirim
+                    $response = $fonnte->send($msg['no_wa'], $msg['pesan']); // Gunakan send standard, fonnte class akan handle provider
+
+                    if (isset($response['status']) && $response['status'] === true) {
+                        $queueModel->markAsSent($id, json_encode($response));
+                        Flasher::setFlash('Pesan berhasil dikirim ulang secara langsung.', 'success');
+                        header('Location: ' . BASEURL . '/admin/antrianWa?status=sent');
+                    } else {
+                        $errorMsg = $response['reason'] ?? $response['message'] ?? 'Unknown error';
+                        $queueModel->markAsFailedDirect($id, $errorMsg);
+                        Flasher::setFlash('Gagal mengirim ulang: ' . $errorMsg, 'danger');
+                        header('Location: ' . BASEURL . '/admin/antrianWa?status=failed');
+                    }
+                } catch (Exception $e) {
+                    $queueModel->markAsFailedDirect($id, $e->getMessage());
+                    Flasher::setFlash('Error saat retry: ' . $e->getMessage(), 'danger');
+                    header('Location: ' . BASEURL . '/admin/antrianWa?status=failed');
+                }
+            } else {
+                Flasher::setFlash('Data pesan tidak ditemukan.', 'danger');
+                header('Location: ' . BASEURL . '/admin/antrianWa');
+            }
+        } else {
+            // MODE QUEUE: Reset jadi pending (default behavior)
+            $queueModel->retryFailed($id);
+            Flasher::setFlash('Pesan dikembalikan ke antrian (Pending).', 'success');
+            header('Location: ' . BASEURL . '/admin/antrianWa?status=pending');
+        }
         exit;
     }
 
