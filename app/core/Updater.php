@@ -13,7 +13,7 @@ class Updater
 
     private $githubUser = 'Sahilul';
     private $githubRepo = 'absen';
-    private $githubBranch = 'main';
+    private $githubBranch = 'master';
 
     public function __construct()
     {
