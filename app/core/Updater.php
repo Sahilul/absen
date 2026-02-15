@@ -59,12 +59,6 @@ class Updater
         try {
             // Method 1 (Fastest): version.json from branch - most repos have this
             $rawResponse = $this->httpGet("https://raw.githubusercontent.com/{$this->githubUser}/{$this->githubRepo}/{$this->githubBranch}/version.json");
-            
-            // Fallback to jsDelivr CDN if GitHub raw is slow
-            if (!$rawResponse) {
-                $rawResponse = $this->httpGet("https://cdn.jsdelivr.net/gh/{$this->githubUser}/{$this->githubRepo}@{$this->githubBranch}/version.json");
-            }
-            
             if ($rawResponse) {
                 $remoteVersion = json_decode($rawResponse, true);
                 if (isset($remoteVersion['version'])) {
