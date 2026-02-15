@@ -1,0 +1,832 @@
+{
+    "versions": [
+        {
+            "version": "1.18.0",
+            "date": "2026-02-06",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Auto-Retry WA Queue: Pesan gagal otomatis dicoba kirim ulang (max 3x) oleh Cron Job"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Direct Retry: Retry pesan saat mode antrian mati (Direct) kini statusnya langsung sukses/gagal seketika (tidak pending)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Format Laporan Absensi WA: Tampilan lebih bersih (tanpa ikon/nama guru), format tanggal Indonesia, dan tambahan info Waktu (WIB) & Materi"
+                }
+            ]
+        },
+        {
+            "version": "1.17.0",
+            "date": "2026-02-05",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "cleanup",
+                    "description": "Code Cleanup: Menghapus file debug yang tidak digunakan (debug_accounts.php, debug_settings.php)"
+                },
+                {
+                    "type": "refactor",
+                    "description": "WA Queue Model: Penyederhanaan logika pengiriman pesan (menghapus rotasi inline, delegasi ke Fonnte core)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Optimasi Fonnte Core: Peningkatan penanganan antrian dan status pesan"
+                },
+                {
+                    "type": "maintenance",
+                    "description": "System Update: Update versi internal dan build number"
+                }
+            ]
+        },
+        {
+            "version": "1.16.0",
+            "date": "2026-02-01",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Dynamic WA Group Template: Admin dapat mengatur template pesan laporan absensi grup dengan variabel dinamis"
+                },
+                {
+                    "type": "fix",
+                    "description": "Critical Fix WA Gateway: Perbaikan error 'Call to undefined method updateSetting' saat menyimpan konfigurasi rotasi WA"
+                },
+                {
+                    "type": "maintenance",
+                    "description": "Meta WA Templates: Ekstraksi seluruh template WA untuk keperluan verifikasi Meta"
+                }
+            ]
+        },
+        {
+            "version": "1.15.2",
+            "date": "2026-01-27",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Visitor Counter: Penambahan fitur penghitung pengunjung dan statistik kunjungan"
+                },
+                {
+                    "type": "fix",
+                    "description": "News Share Link: Perbaikan URL share WhatsApp & Facebook yang kurang segment '/detail/'"
+                },
+                {
+                    "type": "fix",
+                    "description": "WA Queue Timezone: Sinkronisasi waktu antrian WA (created & sent) agar sesuai zona waktu aplikasi (Asia/Jakarta)"
+                },
+                {
+                    "type": "fix",
+                    "description": "PHP Warning: Fix 'Undefined array key' pada halaman Detail Pendaftar PSB untuk tanggal lahir kosong"
+                }
+            ]
+        },
+        {
+            "version": "1.15.1",
+            "date": "2026-01-20",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Database Fix: Resize kolom no_wa di tabel antrian agar support ID Grup Legacy yang panjang"
+                }
+            ]
+        },
+        {
+            "version": "1.15.0",
+            "date": "2026-01-20",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix Notifikasi Absensi WA: Perbaikan logika pengambilan ID Kelas yang menyebabkan pesan ke grup tidak terkirim"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Group ID Formatting: Mencegah prefix 62 ditambahkan ke ID Group yang valid"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Queue Mode: Perbaikan deteksi setting wa_queue_enabled agar mode langsung/antrian berfungsi konsisten"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix HTML Flash Message: Mengizinkan tag HTML di notifikasi flash (bold, italic, dll)"
+                }
+            ]
+        },
+        {
+            "version": "1.14.0",
+            "date": "2026-01-20",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Implementasi Field Config pada modul Wali Kelas (Detail Siswa & Edit Siswa) - field menyesuaikan pengaturan admin"
+                },
+                {
+                    "type": "feature",
+                    "description": "Implementasi Field Config pada modul Siswa (Edit Identitas) - field menyesuaikan pengaturan admin"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Layout Form Responsif: Field otomatis menyesuaikan lebar (auto-fill) saat field lain disembunyikan"
+                },
+                {
+                    "type": "fix",
+                    "description": "Perbaikan logika visibility field alamat detail (Kelurahan, Kecamatan, Kab/Kota, Prov) pada form edit identitas"
+                }
+            ]
+        },
+        {
+            "version": "1.13.5",
+            "date": "2026-01-17",
+            "type": "maintenance",
+            "changes": [
+                {
+                    "type": "removed",
+                    "description": "Hapus REST API untuk Mobile App (folder api/)"
+                },
+                {
+                    "type": "removed",
+                    "description": "Hapus FCM.php - tidak digunakan"
+                },
+                {
+                    "type": "removed",
+                    "description": "Hapus menu 'Pengaturan Mobile App' di Admin Panel"
+                },
+                {
+                    "type": "cleanup",
+                    "description": "Pembersihan kode - fitur Mobile App yang tidak jadi dihapus"
+                }
+            ]
+        },
+        {
+            "version": "1.13.4",
+            "date": "2026-01-15",
+            "type": "fix",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Error 'Token WA Gateway tidak dikonfigurasi' sekarang trigger failover ke akun lain"
+                }
+            ]
+        },
+        {
+            "version": "1.13.3",
+            "date": "2026-01-15",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Auto-Failover WA Gateway - otomatis coba akun lain jika akun pertama gagal (max 3 percobaan)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Skip akun yang sudah dicoba untuk menghindari duplikasi"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Tidak ada fallback ke default gateway untuk absensi - hanya gunakan Multi WA"
+                }
+            ]
+        },
+        {
+            "version": "1.13.2",
+            "date": "2026-01-15",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Tombol Detail Pesan - lihat isi pesan lengkap dalam modal popup"
+                },
+                {
+                    "type": "feature",
+                    "description": "Bulk Delete - pilih banyak pesan sekaligus dan hapus massal"
+                },
+                {
+                    "type": "feature",
+                    "description": "Pagination - navigasi halaman untuk data banyak (20 pesan per halaman)"
+                }
+            ]
+        },
+        {
+            "version": "1.13.1",
+            "date": "2026-01-14",
+            "type": "fix",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan database migration untuk fitur Multi WA Account Rotation"
+                }
+            ]
+        },
+        {
+            "version": "1.13.0",
+            "date": "2026-01-14",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur Multi WA Account Rotation - kelola beberapa akun WA Gateway dengan rotasi otomatis"
+                },
+                {
+                    "type": "feature",
+                    "description": "3 mode rotasi: Round Robin (berurutan), Random (acak), Load Balance (beban terendah)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Limit harian per akun dengan auto-reset tengah malam"
+                },
+                {
+                    "type": "feature",
+                    "description": "Halaman admin baru: Pengaturan WA Gateway dengan UI modern"
+                },
+                {
+                    "type": "feature",
+                    "description": "Tracking akun mana yang mengirim setiap pesan"
+                },
+                {
+                    "type": "feature",
+                    "description": "Deteksi otomatis akun WA terblokir dengan notifikasi ke admin"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Notifikasi absensi hanya ke Ibu (fallback ke Ayah jika tidak ada) untuk hemat kuota"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Hanya notifikasi absensi yang pakai multi WA, notifikasi lain tetap pakai gateway default"
+                }
+            ]
+        },
+        {
+            "version": "1.12.5",
+            "date": "2026-01-14",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Notifikasi absensi via antrian sekarang menggunakan 10 template random (sama seperti pengiriman langsung)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Tambah method buildAbsensiMessage() di Fonnte.php untuk penggunaan eksternal"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix pengambilan nama sekolah dari kolom 'nama_aplikasi' yang benar di database"
+                }
+            ]
+        },
+        {
+            "version": "1.12.4",
+            "date": "2026-01-14",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Tambah informasi Mata Pelajaran di semua 10 template notifikasi absensi"
+                },
+                {
+                    "type": "feature",
+                    "description": "Template via antrian (GuruController) dan via API langsung (Fonnte.php) sudah support mata pelajaran"
+                }
+            ]
+        },
+        {
+            "version": "1.12.3",
+            "date": "2026-01-14",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix default setting wa_notif_absensi_enabled agar notifikasi aktif meskipun kolom tidak ada di database"
+                },
+                {
+                    "type": "debug",
+                    "description": "Tambahan debug log untuk tracing notifikasi absensi"
+                }
+            ]
+        },
+        {
+            "version": "1.12.2",
+            "date": "2026-01-14",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Notifikasi absensi siswa (A/I/S/D) sekarang masuk ke antrian WA, bukan kirim langsung"
+                },
+                {
+                    "type": "feature",
+                    "description": "Jenis pesan 'notif_absensi' untuk tracking di halaman Antrian WA"
+                }
+            ]
+        },
+        {
+            "version": "1.12.1",
+            "date": "2026-01-14",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan scroll halaman absensi guru yang muncul area kosong putih saat di-scroll"
+                }
+            ]
+        },
+        {
+            "version": "1.12.0",
+            "date": "2026-01-13",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur Riwayat Login - Monitor siapa saja yang login dengan IP, Browser, dan waktu"
+                },
+                {
+                    "type": "feature",
+                    "description": "Logging otomatis setiap login (berhasil & gagal) untuk keamanan"
+                },
+                {
+                    "type": "feature",
+                    "description": "Pencarian, sorting, filter status, dan pagination di halaman Riwayat Login"
+                },
+                {
+                    "type": "feature",
+                    "description": "Auto-cleanup data lebih dari 90 hari"
+                }
+            ]
+        },
+        {
+            "version": "1.11.9",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix error 'Unauthorized' saat menyimpan token (masalah key session yang salah)"
+                }
+            ]
+        },
+        {
+            "version": "1.11.8",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan feedback visual saat generate token (Alert Sukses/Gagal)"
+                }
+            ]
+        },
+        {
+            "version": "1.11.7",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix path 'app/app' ganda pada cron_wa_processor.php"
+                },
+                {
+                    "type": "fix",
+                    "description": "Koreksi definisi APPROOT menjadi Project Root agar sesuai dengan struktur config yang ada"
+                }
+            ]
+        },
+        {
+            "version": "1.11.6",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Revert perubahan config.php untuk menjaga kompatibilitas enkripsi"
+                },
+                {
+                    "type": "fix",
+                    "description": "Definisi CONSTANT APPROOT dipindahkan ke cron_wa_processor.php"
+                }
+            ]
+        },
+        {
+            "version": "1.11.5",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Critical Fix: Error 'Undefined constant APPROOT' pada config.php"
+                },
+                {
+                    "type": "fix",
+                    "description": "Menambahkan definisi APPROOT secara global di config.php agar script external (cron) berjalan lancar"
+                }
+            ]
+        },
+        {
+            "version": "1.11.4",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix error 'Forbidden' pada Cron Job: Token sekarang disimpan di database & otomatis sync saat generate"
+                },
+                {
+                    "type": "feature",
+                    "description": "Menambahkan kolom cron_secret di tabel pengaturan_aplikasi"
+                }
+            ]
+        },
+        {
+            "version": "1.11.3",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Critical Fix: Mengatasi error 'Unknown column nama' saat kirim pesan massal"
+                },
+                {
+                    "type": "fix",
+                    "description": "Perbaikan query SQL pada AdminController untuk menggunakan alias kolom yang benar"
+                }
+            ]
+        },
+        {
+            "version": "1.11.2",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix bug URL WA Gateway tertimpa default provider saat halaman diload"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Pemisahan logika UI update URL dengan toggle visibility pada menu pengaturan"
+                }
+            ]
+        },
+        {
+            "version": "1.11.1",
+            "date": "2026-01-13",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Cron Guide Modal: Panduan interaktif setup cron job di cPanel & aaPanel"
+                },
+                {
+                    "type": "feature",
+                    "description": "Token Generator: Alat bantu generate token aman & auto-update command"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Modal Z-Index: Modal panduan kini tampil di atas sidebar"
+                },
+                {
+                    "type": "chore",
+                    "description": "Exclude `public/index.php` dari git untuk enkripsi file"
+                }
+            ]
+        },
+        {
+            "version": "1.11.0",
+            "date": "2026-01-13",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Sistem Antrian WA: Mencegah blokir WhatsApp dengan kirim pesan bertahap"
+                },
+                {
+                    "type": "feature",
+                    "description": "Bulk WA Sender: Kirim pesan massal ke guru, siswa, dan orang tua"
+                },
+                {
+                    "type": "feature",
+                    "description": "Dashboard Antrian WA: Monitor dan kelola antrian pesan WhatsApp"
+                },
+                {
+                    "type": "feature",
+                    "description": "10 Template Variasi Pesan: Absensi notifikasi acak untuk hindari spam"
+                },
+                {
+                    "type": "security",
+                    "description": "Fix keamanan upload file: Whitelist extension untuk mencegah shell upload"
+                }
+            ]
+        },
+        {
+            "version": "1.10.0",
+            "date": "2026-01-13",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "PSB Import ke Siswa: Migrasi dokumen Google Drive sekarang berfungsi dengan benar"
+                },
+                {
+                    "type": "feature",
+                    "description": "Fitur Kop Surat PSB: Upload gambar kop surat per lembaga untuk formulir PDF"
+                },
+                {
+                    "type": "feature",
+                    "description": "Fitur Batalkan Import: Admin dapat mengembalikan siswa ke status PSB 'diterima'"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix bug dokumen tidak termigrasikan saat import PSB (untuk file Google Drive)"
+                }
+            ]
+        },
+        {
+            "version": "1.9.0",
+            "date": "2026-01-11",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Full PWA Support: Website now installable as Native App (Android/iOS)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Dynamic Manifest: App Icon & Name follows Database Settings"
+                },
+                {
+                    "type": "feature",
+                    "description": "Offline Mode: Custom 'No Internet' page instead of browser error"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Service Worker caching for faster page loads"
+                }
+            ]
+        },
+        {
+            "version": "1.8.21",
+            "date": "2026-01-11",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "SEO Optimization: Add JSON-LD Schema (Organization) for Google Search Logo"
+                },
+                {
+                    "type": "feature",
+                    "description": "SEO Optimization: Create Robots.txt and Dynamic XML Sitemap (/sitemap)"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix WhatsApp Link Preview: Use post image instead of default logo if available"
+                }
+            ]
+        },
+        {
+            "version": "1.8.20",
+            "date": "2026-01-11",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur Toggle Notifikasi WhatsApp (Admin dapat mengaktifkan/menonaktifkan notifikasi Absensi & Pembayaran via Pengaturan Menu)"
+                },
+                {
+                    "type": "fix",
+                    "description": "Perbaikan bug upload dokumen di panel Siswa (Error 'response tidak valid' karena redirect)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Tampilan Pengaturan Menu Admin lebih bersih"
+                }
+            ]
+        },
+        {
+            "version": "1.8.19",
+            "date": "2026-01-11",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur Diskon Pembayaran: Tombol diskon & popup nominal pada halaman tagihan"
+                },
+                {
+                    "type": "feature",
+                    "description": "Notifikasi WhatsApp otomatis ke orang tua saat diskon diupdate"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Dashboard Siswa: Statistik pembayaran memperhitungkan diskon & popup tagihan lebih detail"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Perbaikan logika status 'Lunas' otomatis jika tagihan 0 karena diskon"
+                }
+            ]
+        },
+        {
+            "version": "1.7.1",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan hapus guru - otomatis hapus penugasan terkait"
+                },
+                {
+                    "type": "feature",
+                    "description": "Fitur hapus banyak guru sekaligus dengan checkbox"
+                }
+            ]
+        },
+        {
+            "version": "1.7.0",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur hapus banyak siswa sekaligus dengan checkbox"
+                }
+            ]
+        },
+        {
+            "version": "1.6.9",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Integrasi WA Gateway OneSender 2.0 dengan custom URL"
+                }
+            ]
+        },
+        {
+            "version": "1.6.8",
+            "date": "2026-01-04",
+            "type": "improvement",
+            "changes": [
+                {
+                    "type": "improvement",
+                    "description": "Memindahkan menu Pesan ke dalam folder Aplikasi Lain di sidebar admin"
+                }
+            ]
+        },
+        {
+            "version": "1.6.7",
+            "date": "2026-01-04",
+            "type": "feature",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Menampilkan password guru (plain text) pada tabel data guru"
+                }
+            ]
+        },
+        {
+            "version": "1.6.6",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix halaman blank saat simpan data guru (method POST)"
+                }
+            ]
+        },
+        {
+            "version": "1.6.5",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix popup update muncul terus di halaman update"
+                }
+            ]
+        },
+        {
+            "version": "1.6.4",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan notifikasi flash message saat tambah/edit guru"
+                },
+                {
+                    "type": "fix",
+                    "description": "Perbaikan update password guru pada form edit"
+                }
+            ]
+        },
+        {
+            "version": "1.6.3",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Changelog sekarang diambil dari GitHub, bukan lokal"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Popup update menampilkan detail perubahan dari GitHub"
+                }
+            ]
+        },
+        {
+            "version": "1.6.2",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Menu Keuangan siswa dikontrol oleh MENU_PEMBAYARAN_ENABLED"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Access control pada halaman pembayaran siswa"
+                }
+            ]
+        },
+        {
+            "version": "1.6.1",
+            "date": "2026-01-04",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Popup notifikasi update otomatis di halaman admin"
+                },
+                {
+                    "type": "feature",
+                    "description": "Changelog ditampilkan saat ada update baru"
+                }
+            ]
+        },
+        {
+            "version": "1.6.0",
+            "date": "2026-01-04",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Pengaturan sistem disimpan di database (bisa diubah via web admin)"
+                },
+                {
+                    "type": "feature",
+                    "description": "File config.php bisa dienkripsi IonCube tanpa kehilangan fungsionalitas"
+                },
+                {
+                    "type": "feature",
+                    "description": "Tombol WhatsApp di halaman lisensi blokir"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Pengaturan Menu baca/simpan langsung ke database"
+                }
+            ]
+        },
+        {
+            "version": "1.5.2",
+            "date": "2026-01-01",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan bug upload dokumen siswa"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Optimasi performa dashboard"
+                }
+            ]
+        },
+        {
+            "version": "1.5.0",
+            "date": "2025-12-28",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Sistem PSB (Penerimaan Siswa Baru)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Integrasi Google Drive untuk dokumen"
+                },
+                {
+                    "type": "feature",
+                    "description": "Google OAuth Single Sign-On"
+                }
+            ]
+        }
+    ]
+}
