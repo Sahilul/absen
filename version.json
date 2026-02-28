@@ -1,6 +1,6 @@
 {
     "version": "1.19.1",
-    "build": 20260228,
+    "build": 1191,
     "release_date": "2026-02-28",
-    "description": "Patch: Fix Daftar Siswa Kosong di Nilai Tengah & Akhir Semester"
+    "app_name": "School App"
 }
