@@ -1,6 +1,48 @@
 {
     "versions": [
         {
+            "version": "1.19.1",
+            "date": "2026-02-28",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix Nilai STS & SAS: Daftar siswa tidak tampil (0 siswa) di halaman Input Nilai Tengah Semester dan Akhir Semester karena salah model query"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Auto-Update Timeout: Naikkan timeout download ZIP dari 15 detik ke 300 detik agar update dari GitHub tidak gagal di koneksi lambat"
+                }
+            ]
+        },
+        {
+            "version": "1.19.0",
+            "date": "2026-02-28",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Google Drive Integration: Tambah kolom drive_file_id dan drive_url di psb_dokumen untuk backup dokumen ke Google Drive"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Remove Upload Limit: Hapus batasan 2MB file upload di form PSB, sekarang support upload dokumen tanpa batasan ukuran"
+                },
+                {
+                    "type": "fix",
+                    "description": "Empty Date Fields: Fix handling empty date fields (tanggal_lahir, ayah_tanggal_lahir, ibu_tanggal_lahir, wali_tanggal_lahir) agar tidak error Invalid datetime format"
+                },
+                {
+                    "type": "feature",
+                    "description": "PSB Form Schema: Tambah 60+ kolom missing di tabel psb_pendaftar (kip, alamat lengkap, data orang tua/wali, sekolah asal, dsb) sesuai schema yang dibutuhkan"
+                },
+                {
+                    "type": "fix",
+                    "description": "Database.php Syntax Error: Fix unmatched closing brace yang menyebabkan parse error"
+                }
+            ]
+        },
+        {
             "version": "1.18.0",
             "date": "2026-02-06",
             "type": "minor",

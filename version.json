@@ -1,6 +1,6 @@
 {
-    "version": "1.18.0",
-    "build": 20260206,
-    "release_date": "2026-02-06",
-    "description": "Minor: Auto-Retry WA Queue & Improve Group Notifications"
+    "version": "1.19.1",
+    "build": 20260228,
+    "release_date": "2026-02-28",
+    "description": "Patch: Fix Daftar Siswa Kosong di Nilai Tengah & Akhir Semester"
 }
