@@ -1,6 +1,25 @@
 {
     "versions": [
         {
+            "version": "1.24.0",
+            "date": "2026-08-07",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Proteksi CSRF menyeluruh: token per-sesi diinjeksi otomatis ke seluruh halaman (meta + patch form/fetch/XHR) dan divalidasi terpusat untuk semua POST pengguna yang sudah login; respons 419 bila token tidak valid"
+                },
+                {
+                    "type": "feature",
+                    "description": "Rate limiting login: akun/IP terkunci 15 menit setelah 5 kali percobaan gagal (login utama berbasis tabel login_history, login PSB berbasis session)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Cookie sesi kini diberi flag Secure saat diakses lewat HTTPS dan folder backups/ dilindungi .htaccess deny sebagai lapisan pertahanan tambahan"
+                }
+            ]
+        },
+        {
             "version": "1.23.0",
             "date": "2026-08-07",
             "type": "minor",

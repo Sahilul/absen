@@ -26,6 +26,36 @@ class App
         require_once APPROOT . '/app/core/Controller.php';
         require_once APPROOT . '/app/core/Flasher.php';
         require_once APPROOT . '/app/core/InputValidator.php'; // Load validator
+        require_once APPROOT . '/app/core/Csrf.php'; // v1.24.0 - CSRF protection
+
+        // ================================================================
+        // v1.24.0 - VALIDASI CSRF UNTUK SEMUA POST TER-AUTENTIKASI
+        // Hanya dipaksa jika user sudah login (session ada). Form publik
+        // (login, PSB, buku tamu) tidak diblokir agar tidak lockout.
+        // ================================================================
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && !empty($_SESSION['user_id'])) {
+            if (!Csrf::validate()) {
+                error_log("CSRF REJECTED: user=" . $_SESSION['user_id'] . " uri=" . ($_SERVER['REQUEST_URI'] ?? ''));
+                if (Csrf::isAjax()) {
+                    http_response_code(419);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Sesi keamanan tidak valid (CSRF). Muat ulang halaman lalu coba lagi.']);
+                    exit;
+                }
+                http_response_code(419);
+                echo '<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">'
+                    . '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+                    . '<title>Sesi Tidak Valid</title>'
+                    . '<style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f1f5f9}'
+                    . '.card{background:#fff;border-radius:16px;padding:40px;max-width:420px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}'
+                    . 'h1{font-size:20px;color:#0f172a;margin:0 0 8px}p{color:#64748b;font-size:14px;line-height:1.6}'
+                    . 'a{display:inline-block;margin-top:16px;background:#16a34a;color:#fff;text-decoration:none;padding:10px 24px;border-radius:10px;font-size:14px}</style></head>'
+                    . '<body><div class="card"><h1>&#128274; Sesi Keamanan Tidak Valid</h1>'
+                    . '<p>Permintaan ditolak karena token keamanan (CSRF) tidak cocok. Ini bisa terjadi jika halaman sudah terlalu lama terbuka atau berasal dari sumber tidak dikenal.</p>'
+                    . '<a href="' . htmlspecialchars(BASEURL, ENT_QUOTES, 'UTF-8') . '/">Kembali ke Beranda</a></div></body></html>';
+                exit;
+            }
+        }
 
         $url = $this->parseURL();
 

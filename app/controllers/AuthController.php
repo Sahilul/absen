@@ -37,6 +37,17 @@ class AuthController extends Controller
                 exit;
             }
 
+            // v1.24.0 - RATE LIMITING: blokir jika terlalu banyak percobaan gagal
+            $loginHistoryModel = $this->model('LoginHistory_model');
+            $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+            $lock = $loginHistoryModel->checkLockout($username, $ip, 5, 15);
+            if ($lock['locked']) {
+                $menit = (int) ceil($lock['remaining'] / 60);
+                Flasher::setFlash('Terlalu banyak percobaan gagal. Coba lagi dalam ' . $menit . ' menit.', 'danger');
+                header('Location: ' . BASEURL . '/auth/login');
+                exit;
+            }
+
             $userModel = $this->model('User_model');
             $user = $userModel->getUserByUsername($username);
 

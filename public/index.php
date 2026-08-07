@@ -10,6 +10,10 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_httponly', 1); // Prevent JavaScript access
     ini_set('session.use_strict_mode', 1); // Prevent session fixation
     ini_set('session.cookie_samesite', 'Lax'); // CSRF protection
+    // v1.24.0 - Cookie hanya dikirim via HTTPS (jika diakses lewat HTTPS)
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        ini_set('session.cookie_secure', 1);
+    }
 
     session_name('ABSEN_SESSION'); // Custom session name
     session_start();

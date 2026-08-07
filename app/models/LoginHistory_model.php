@@ -151,4 +151,51 @@ class LoginHistory_model
             FROM {$this->table}");
         return $this->db->single();
     }
+
+    // =================================================================
+    // v1.24.0 - RATE LIMITING LOGIN (anti brute-force)
+    // =================================================================
+
+    /**
+     * Cek apakah kombinasi username/IP sedang terkunci akibat terlalu banyak
+     * percobaan gagal.
+     *
+     * @param string $username username yang dicoba
+     * @param string $ip       alamat IP peminta
+     * @param int    $maxAttempts jumlah kegagalan maksimum sebelum dikunci
+     * @param int    $lockMinutes durasi penguncian (menit)
+     * @return array ['locked' => bool, 'remaining' => int detik tersisa, 'attempts' => int]
+     */
+    public function checkLockout($username, $ip, $maxAttempts = 5, $lockMinutes = 15)
+    {
+        try {
+            $this->db->query("SELECT COUNT(*) AS cnt, MAX(login_at) AS last_at
+                FROM {$this->table}
+                WHERE (username = :username OR ip_address = :ip)
+                  AND status = 'failed'
+                  AND login_at > DATE_SUB(NOW(), INTERVAL :minutes MINUTE)");
+            $this->db->bind(':username', (string) $username);
+            $this->db->bind(':ip', (string) $ip);
+            $this->db->bind(':minutes', (int) $lockMinutes);
+            $row = $this->db->single();
+
+            $count = (int) ($row['cnt'] ?? 0);
+            if ($count < $maxAttempts || empty($row['last_at'])) {
+                return ['locked' => false, 'remaining' => 0, 'attempts' => $count];
+            }
+
+            $lastTs = strtotime($row['last_at']);
+            $unlockAt = $lastTs + ($lockMinutes * 60);
+            $remaining = $unlockAt - time();
+
+            if ($remaining > 0) {
+                return ['locked' => true, 'remaining' => $remaining, 'attempts' => $count];
+            }
+            return ['locked' => false, 'remaining' => 0, 'attempts' => $count];
+        } catch (Exception $e) {
+            error_log('checkLockout error: ' . $e->getMessage());
+            // Fail-open: jangan sampai error DB menghalangi login
+            return ['locked' => false, 'remaining' => 0, 'attempts' => 0];
+        }
+    }
 }

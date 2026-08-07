@@ -591,9 +591,20 @@ class PsbController extends Controller
             exit;
         }
 
+        // v1.24.0 - Rate limiting sederhana berbasis session (anti brute-force PSB)
+        $rlKey = 'psb_login_attempts';
+        $rlTime = 'psb_login_lock';
+        if (isset($_SESSION[$rlTime]) && time() < $_SESSION[$rlTime]) {
+            $menit = (int) ceil(($_SESSION[$rlTime] - time()) / 60);
+            $_SESSION['flash'] = ['type' => 'error', 'message' => 'Terlalu banyak percobaan. Coba lagi dalam ' . $menit . ' menit.'];
+            header('Location: ' . BASEURL . '/psb/login');
+            exit;
+        }
+
         $akun = $this->psbModel->loginAkun($nisn, $password);
 
         if ($akun) {
+            unset($_SESSION[$rlKey], $_SESSION[$rlTime]);
             $_SESSION['psb_akun'] = [
                 'id_akun' => $akun['id_akun'],
                 'nisn' => $akun['nisn'],
@@ -603,7 +614,15 @@ class PsbController extends Controller
             $_SESSION['flash'] = ['type' => 'success', 'message' => 'Login berhasil!'];
             header('Location: ' . BASEURL . '/psb/dashboardPendaftar');
         } else {
-            $_SESSION['flash'] = ['type' => 'error', 'message' => 'NISN atau password salah'];
+            $attempts = (int) ($_SESSION[$rlKey] ?? 0) + 1;
+            $_SESSION[$rlKey] = $attempts;
+            if ($attempts >= 5) {
+                $_SESSION[$rlTime] = time() + (15 * 60);
+                $_SESSION[$rlKey] = 0;
+                $_SESSION['flash'] = ['type' => 'error', 'message' => 'Terlalu banyak percobaan gagal. Coba lagi dalam 15 menit.'];
+            } else {
+                $_SESSION['flash'] = ['type' => 'error', 'message' => 'NISN atau password salah'];
+            }
             header('Location: ' . BASEURL . '/psb/login');
         }
         exit;
