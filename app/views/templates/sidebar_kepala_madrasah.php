@@ -87,6 +87,28 @@
         </a>
       </li>
 
+      <!-- Section: Administrasi -->
+      <li class="pt-6 pb-2">
+        <div class="flex items-center px-3">
+          <i data-lucide="folder-open" class="w-4 h-4 text-secondary-400 mr-2"></i>
+          <span class="text-xs font-bold text-secondary-400 uppercase tracking-wider">Administrasi</span>
+        </div>
+      </li>
+
+      <!-- Panel Surat Tugas -->
+      <li>
+        <a href="<?= BASEURL; ?>/suratTugas"
+          class="group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= (strpos($judul, 'Surat Tugas') !== false) ? 'bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
+          <div
+            class="<?= (strpos($judul, 'Surat Tugas') !== false) ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-indigo-100'; ?> p-2 rounded-lg transition-colors duration-200">
+            <i data-lucide="file-text"
+              class="w-4 h-4 <?= (strpos($judul, 'Surat Tugas') !== false) ? 'text-white' : 'text-secondary-500 group-hover:text-indigo-600'; ?>"></i>
+          </div>
+          <span class="ml-3 whitespace-nowrap">Surat Tugas</span>
+          <?= (strpos($judul, 'Surat Tugas') !== false) ? '<div class="ml-auto w-2 h-2 bg-white rounded-full"></div>' : ''; ?>
+        </a>
+      </li>
+
       <!-- Logout -->
       <li class="pt-4">
         <a href="<?= BASEURL; ?>/auth/logout"

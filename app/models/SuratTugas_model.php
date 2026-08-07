@@ -89,6 +89,14 @@ class SuratTugas_model
 
     public function hapusLembaga($id)
     {
+        // Jangan hapus lembaga yang masih memiliki surat tugas (mencegah data yatim)
+        $this->db->query('SELECT COUNT(*) AS total FROM surat_tugas WHERE id_lembaga = :id');
+        $this->db->bind('id', $id);
+        $row = $this->db->single();
+        if (!empty($row['total'])) {
+            return -1; // Sinyal: lembaga masih punya surat
+        }
+
         $this->db->query('DELETE FROM surat_tugas_lembaga WHERE id_lembaga = :id');
         $this->db->bind('id', $id);
         $this->db->execute();
@@ -144,9 +152,9 @@ class SuratTugas_model
             // 1. Insert/Update Surat
             if (empty($data['id_surat'])) {
                 $query = "INSERT INTO surat_tugas 
-                            (id_lembaga, nomor_surat, tanggal_surat, perihal, tempat_tugas, tanggal_mulai, tanggal_selesai, status)
+                            (id_lembaga, nomor_surat, tanggal_surat, perihal, tempat_tugas, tanggal_mulai, tanggal_selesai, status, created_by)
                           VALUES 
-                            (:id_lembaga, :nomor_surat, :tanggal_surat, :perihal, :tempat_tugas, :tanggal_mulai, :tanggal_selesai, :status)";
+                            (:id_lembaga, :nomor_surat, :tanggal_surat, :perihal, :tempat_tugas, :tanggal_mulai, :tanggal_selesai, :status, :created_by)";
                 $this->db->query($query);
             } else {
                 $query = "UPDATE surat_tugas SET 
@@ -171,6 +179,9 @@ class SuratTugas_model
             $this->db->bind('tanggal_mulai', $data['tanggal_mulai'] ?: null);
             $this->db->bind('tanggal_selesai', $data['tanggal_selesai'] ?: null);
             $this->db->bind('status', $data['status'] ?? 'draft');
+            if (empty($data['id_surat'])) {
+                $this->db->bind('created_by', $data['created_by'] ?? null);
+            }
 
             $this->db->execute();
 

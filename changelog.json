@@ -1,6 +1,37 @@
 {
     "versions": [
         {
+            "version": "1.19.3",
+            "date": "2026-08-07",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Cleanup Surat Tugas: Hapus implementasi lama mati di AdminController (suratTugas/tambahSuratTugas/dkk) yang memanggil method model tidak ada (getAllSuratTugas, generateNomorSurat, updateSurat, tambahSurat) sehingga route /admin/suratTugas pasti fatal error"
+                },
+                {
+                    "type": "fix",
+                    "description": "Hapus view lama mati app/views/surat_tugas/{index,form,cetak}.php yang hanya dipakai implementasi lama"
+                },
+                {
+                    "type": "fix",
+                    "description": "Hapus lembaga yang masih memiliki surat tugas kini ditolak dengan pesan error (sebelumnya surat menjadi data yatim dan hilang dari daftar karena INNER JOIN)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Menu Surat Tugas kini tersedia di sidebar Kepala Madrasah (sebelumnya hanya admin yang punya link meski controller mengizinkan kedua role)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Sidebar panel Surat Tugas: tombol 'Kembali ke Admin' menyesuaikan role (kepala madrasah diarahkan ke dashboard kepala madrasah, bukan /admin/dashboard yang memblokirnya)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Kolom created_by surat tugas kini terisi otomatis dengan user pembuat saat surat dibuat"
+                }
+            ]
+        },
+        {
             "version": "1.19.2",
             "date": "2026-08-07",
             "type": "patch",

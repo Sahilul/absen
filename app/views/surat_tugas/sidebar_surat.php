@@ -3,6 +3,9 @@
 // Sidebar khusus panel Surat Tugas (PSB Style)
 
 $judul = $data['judul'] ?? '';
+$isKepalaMadrasah = (($_SESSION['role'] ?? '') === 'kepala_madrasah');
+$backUrl = $isKepalaMadrasah ? BASEURL . '/KepalaMadrasah/dashboard' : BASEURL . '/admin/dashboard';
+$backLabel = $isKepalaMadrasah ? 'Kembali ke Dashboard' : 'Kembali ke Admin';
 ?>
 
 <aside id="sidebar"
@@ -90,12 +93,12 @@ $judul = $data['judul'] ?? '';
 
             <!-- Back to Admin -->
             <li>
-                <a href="<?= BASEURL; ?>/admin/dashboard"
+                <a href="<?= $backUrl; ?>"
                     class="group flex items-center p-3 text-sm font-medium rounded-xl transition-all duration-200 text-secondary-600 hover:bg-white/50 hover:text-secondary-800">
                     <div class="bg-gray-100 group-hover:bg-gray-200 p-2 rounded-lg transition-colors duration-200">
                         <i data-lucide="arrow-left-circle" class="w-4 h-4 text-gray-600 group-hover:text-gray-700"></i>
                     </div>
-                    <span class="ml-3 whitespace-nowrap">Kembali ke Admin</span>
+                    <span class="ml-3 whitespace-nowrap"><?= $backLabel; ?></span>
                 </a>
             </li>
 

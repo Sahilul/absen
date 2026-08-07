@@ -134,7 +134,10 @@ class SuratTugasController extends Controller
 
     public function hapusLembaga($id)
     {
-        if ($this->model('SuratTugas_model')->hapusLembaga($id) > 0) {
+        $result = $this->model('SuratTugas_model')->hapusLembaga($id);
+        if ($result === -1) {
+            Flasher::setFlash('Lembaga tidak dapat dihapus karena masih memiliki surat tugas', 'danger');
+        } elseif ($result > 0) {
             Flasher::setFlash('Lembaga berhasil dihapus', 'success');
         } else {
             Flasher::setFlash('Gagal menghapus lembaga', 'danger');
@@ -198,7 +201,8 @@ class SuratTugasController extends Controller
             'tempat_tugas' => $_POST['tempat_tugas'],
             'tanggal_mulai' => $_POST['tanggal_mulai'],
             'tanggal_selesai' => $_POST['tanggal_selesai'],
-            'status' => 'terbit'
+            'status' => 'terbit',
+            'created_by' => $_SESSION['user_id'] ?? null
         ];
 
         // Process Petugas List from Dynamic Rows - Now includes jenis_identitas
