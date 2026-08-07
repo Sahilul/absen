@@ -323,6 +323,7 @@
                         'nilai' => 'Nilai',
                         'mapel' => 'Mata Pelajaran',
                         'sksa' => 'Surat Keterangan Siswa Aktif (SKSA)',
+                        'surat_pindahan' => 'Surat Penerimaan Siswa Pindahan',
                     ];
                     $docTypeNice = humanize_label($docType, $docMap);
                     

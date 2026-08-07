@@ -1,6 +1,33 @@
 {
     "versions": [
         {
+            "version": "1.21.0",
+            "date": "2026-08-07",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Panel baru Surat Pindahan: surat keterangan penerimaan siswa pindahan dengan menu tersendiri (/suratPindahan) untuk admin dan kepala madrasah, mendukung multi lembaga"
+                },
+                {
+                    "type": "feature",
+                    "description": "Format PDF mengikuti contoh resmi: kop lembaga, judul SURAT PENERIMAAN SISWA + nomor, data penandatangan (Nama/Jabatan/Unit Kerja/Alamat), data siswa (Nama/TTL/Jenis Kelamin/NISN/Asal Sekolah/Nama Orang Tua), paragraf penerimaan, dan tanda tangan kanan dengan QR validasi elektronik"
+                },
+                {
+                    "type": "feature",
+                    "description": "Tabel baru surat_pindahan (migration 1.21.0) dengan lembaga memakai ulang tabel surat_tugas_lembaga (kop & kepala madrasah dikelola di Panel Surat Tugas)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Halaman validasi QR kini mengenali tipe dokumen surat_pindahan (Surat Penerimaan Siswa Pindahan) beserta nama siswa"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Menu Panel Surat Pindahan ditambahkan di sidebar admin (grup Aplikasi Lain) dan sidebar kepala madrasah (grup Administrasi)"
+                }
+            ]
+        },
+        {
             "version": "1.19.3",
             "date": "2026-08-07",
             "type": "patch",
