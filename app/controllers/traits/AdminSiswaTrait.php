@@ -23,6 +23,45 @@ function siswa()
         $this->view('templates/footer', $this->data);
     }
 
+    /**
+     * v1.26.0 - Lihat password_plain on-demand (AJAX, khusus admin).
+     * Password tidak lagi dirender di HTML daftar; diambil hanya saat
+     * tombol "Lihat" ditekan dari halaman admin/siswa atau admin/guru.
+     */
+    function lihatPassword()
+    {
+        header('Content-Type: application/json');
+
+        if (($_SESSION['role'] ?? '') !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Akses ditolak.']);
+            exit;
+        }
+
+        // Hanya terima permintaan AJAX dari halaman admin
+        if (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== 'XMLHttpRequest') {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Permintaan tidak valid.']);
+            exit;
+        }
+
+        $id_ref = filter_var($_GET['id_ref'] ?? 0, FILTER_VALIDATE_INT);
+        $role = $_GET['role'] ?? '';
+        if (!$id_ref || !in_array($role, ['siswa', 'guru'], true)) {
+            echo json_encode(['success' => false, 'message' => 'Parameter tidak valid.']);
+            exit;
+        }
+
+        $user = $this->model('User_model')->getByRef($id_ref, $role);
+        if (!$user || empty($user['password_plain'])) {
+            echo json_encode(['success' => false, 'message' => 'Password belum diset.']);
+            exit;
+        }
+
+        echo json_encode(['success' => true, 'password' => $user['password_plain']]);
+        exit;
+    }
+
 function tambahSiswa()
     {
         $this->data['judul'] = 'Tambah Data Siswa';

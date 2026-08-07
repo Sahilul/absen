@@ -137,8 +137,13 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
                                 </td>
                                 <td class="px-4 py-3">
                                     <?php if (!empty($guru['password_plain'])): ?>
-                                        <code
+                                        <code id="pw-t-<?= $guru['id_guru'] ?>"
                                             class="px-2 py-1 bg-gray-100 rounded text-xs font-mono text-gray-800"><?= htmlspecialchars($guru['password_plain']) ?></code>
+                                        <button type="button"
+                                            onclick="revealPassword(<?= (int) $guru['id_guru'] ?>, 'guru', 'pw-t-<?= $guru['id_guru'] ?>', this)"
+                                            class="ml-1 text-indigo-600 hover:text-indigo-800 align-middle" title="Lihat password">
+                                            <i data-lucide="eye" class="w-3 h-3 inline"></i>
+                                        </button>
                                     <?php else: ?>
                                         <span class="text-xs text-gray-400 italic">Belum diset</span>
                                     <?php endif; ?>
@@ -215,8 +220,13 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
                         <div class="flex items-center gap-2 text-gray-600">
                             <i data-lucide="key" class="w-4 h-4 text-gray-400"></i>
                             <?php if (!empty($guru['password_plain'])): ?>
-                                <code
+                                <code id="pw-c-<?= $guru['id_guru'] ?>"
                                     class="px-1.5 py-0.5 bg-gray-100 rounded text-xs font-mono"><?= htmlspecialchars($guru['password_plain']) ?></code>
+                                <button type="button"
+                                    onclick="revealPassword(<?= (int) $guru['id_guru'] ?>, 'guru', 'pw-c-<?= $guru['id_guru'] ?>', this)"
+                                    class="text-indigo-600 hover:text-indigo-800" title="Lihat password">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5 inline"></i>
+                                </button>
                             <?php else: ?>
                                 <span class="text-xs italic text-gray-400">Belum diset</span>
                             <?php endif; ?>
@@ -317,6 +327,34 @@ $totalBelumPassword = $totalGuru - $totalAkunAktif;
 
 <script>
     const BASEURL = '<?= BASEURL ?>';
+
+    // v1.26.0 - Lihat password on-demand (khusus admin). Klik lagi untuk menyembunyikan.
+    function revealPassword(idRef, role, targetId, btn) {
+        const el = document.getElementById(targetId);
+        if (!el) return;
+        if (el.dataset.revealed === '1') {
+            el.textContent = '••••••••';
+            delete el.dataset.revealed;
+            if (btn) btn.title = 'Lihat password';
+            return;
+        }
+        const original = el.textContent;
+        el.textContent = '...';
+        fetch(BASEURL + '/admin/lihatPassword?id_ref=' + encodeURIComponent(idRef) + '&role=' + encodeURIComponent(role), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    el.textContent = d.password;
+                    el.dataset.revealed = '1';
+                    if (btn) btn.title = 'Sembunyikan password';
+                } else {
+                    el.textContent = d.message || 'Gagal memuat';
+                }
+            })
+            .catch(() => { el.textContent = original; });
+    }
 
     function openEditModal(guru) {
         document.getElementById('modalTitle').textContent = 'Edit Data Guru';

@@ -12,6 +12,10 @@
                 {
                     "type": "security",
                     "description": "Pensiun bertahap password_plain di tampilan: helper baru PasswordMask (app/core/PasswordMask.php) men-masker nilai password_plain menjadi bullet pada daftar siswa/guru admin dan daftar siswa wali kelas (termasuk data JSON modal detail) sehingga kredensial tidak lagi bocor ke HTML sumber; kolom tetap dipertahankan dan fitur cetak kartu login tidak berubah"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Tombol 'Lihat' (ikon mata) pada daftar siswa/guru admin dan modal detail siswa untuk menampilkan password on-demand: password diambil lewat endpoint khusus admin (admin/lihatPassword) yang menolak akses non-admin dan non-AJAX, klik kedua menyembunyikan kembali"
                 }
             ]
         },

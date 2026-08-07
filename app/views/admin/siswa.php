@@ -293,8 +293,13 @@
                                                 Akun Aktif
                                             </span>
                                             <div class="text-xs text-gray-500 mt-1">
-                                                Password: <span
+                                                Password: <span id="pw-t-<?= $siswa['id_siswa']; ?>"
                                                     class="font-mono bg-gray-100 px-1 rounded"><?= htmlspecialchars($siswa['password_plain']); ?></span>
+                                                <button type="button"
+                                                    onclick="revealPassword(<?= (int) $siswa['id_siswa']; ?>, 'siswa', 'pw-t-<?= $siswa['id_siswa']; ?>', this)"
+                                                    class="ml-1 text-indigo-600 hover:text-indigo-800 align-middle" title="Lihat password">
+                                                    <i data-lucide="eye" class="w-3 h-3 inline"></i>
+                                                </button>
                                             </div>
                                         <?php else: ?>
                                             <span
@@ -422,10 +427,15 @@
                                     </span>
                                 <?php endif; ?>
                                 <?php if (!empty($siswa['password_plain'])): ?>
-                                    <span
+                                    <span id="pw-c-<?= $siswa['id_siswa']; ?>"
                                         class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-600 font-mono">
                                         <?= htmlspecialchars($siswa['password_plain']); ?>
                                     </span>
+                                    <button type="button"
+                                        onclick="revealPassword(<?= (int) $siswa['id_siswa']; ?>, 'siswa', 'pw-c-<?= $siswa['id_siswa']; ?>', this)"
+                                        class="text-indigo-600 hover:text-indigo-800" title="Lihat password">
+                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                    </button>
                                 <?php endif; ?>
 
                                 <!-- Status HP Ortu -->
@@ -1210,7 +1220,13 @@
                         </div>
                         <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg">
                             <p class="text-xs text-amber-700 mb-1">Password</p>
-                            <p class="font-mono font-semibold text-amber-900" id="detailPassword">-</p>
+                            <p class="font-mono font-semibold text-amber-900 flex items-center gap-2">
+                                <span id="detailPassword">-</span>
+                                <button type="button" onclick="revealDetailPassword(this)"
+                                    class="text-amber-600 hover:text-amber-800" title="Lihat password">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -1227,6 +1243,39 @@
     </div>
 
     <script>
+        // v1.26.0 - Lihat password on-demand (khusus admin). Klik lagi untuk menyembunyikan.
+        function revealPassword(idRef, role, targetId, btn) {
+            const el = document.getElementById(targetId);
+            if (!el) return;
+            if (el.dataset.revealed === '1') {
+                el.textContent = '••••••••';
+                delete el.dataset.revealed;
+                if (btn) btn.title = 'Lihat password';
+                return;
+            }
+            const original = el.textContent;
+            el.textContent = '...';
+            fetch('<?= BASEURL; ?>/admin/lihatPassword?id_ref=' + encodeURIComponent(idRef) + '&role=' + encodeURIComponent(role), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        el.textContent = d.password;
+                        el.dataset.revealed = '1';
+                        if (btn) btn.title = 'Sembunyikan password';
+                    } else {
+                        el.textContent = d.message || 'Gagal memuat';
+                    }
+                })
+                .catch(() => { el.textContent = original; });
+        }
+
+        function revealDetailPassword(btn) {
+            if (!window.__detailSiswaId) return;
+            revealPassword(window.__detailSiswaId, 'siswa', 'detailPassword', btn);
+        }
+
         // Show detail siswa modal
         function showDetailSiswa(siswa) {
             // Helper to safely set text content
@@ -1319,6 +1368,9 @@
             // Akun Login
             setText('detailUsername', siswa.nisn || '-');
             setText('detailPassword', siswa.password_plain || '-');
+            window.__detailSiswaId = siswa.id_siswa || null;
+            const dp = document.getElementById('detailPassword');
+            if (dp) delete dp.dataset.revealed;
 
             // Show modal
             const modal = document.getElementById('modalDetailSiswa');
