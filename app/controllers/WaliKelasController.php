@@ -700,6 +700,8 @@ class WaliKelasController extends Controller
         $this->data['judul'] = 'Daftar Siswa';
         $this->data['wali_kelas_info'] = $waliKelasInfo;
         $this->data['siswa_list'] = $this->model('Siswa_model')->getSiswaByKelas($waliKelasInfo['id_kelas'], $id_tp_aktif);
+        // v1.26.0 - Masker password_plain agar tidak bocor ke HTML
+        $this->data['siswa_list'] = PasswordMask::maskRows($this->data['siswa_list']);
 
         // Load field configuration
         $pengaturanModel = $this->model('PengaturanAplikasi_model');

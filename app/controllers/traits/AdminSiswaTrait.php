@@ -9,6 +9,8 @@ function siswa()
     {
         $this->data['judul'] = 'Manajemen Siswa';
         $this->data['siswa'] = $this->model('Siswa_model')->getAllSiswa();
+        // v1.26.0 - Masker password_plain agar tidak bocor ke HTML (kecuali kartu login)
+        $this->data['siswa'] = PasswordMask::maskRows($this->data['siswa']);
         $this->data['kelas_list'] = $this->model('Kelas_model')->getAllKelas();
 
         // Load field configuration

@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.26.0",
+            "date": "2026-08-07",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Runner migration berbasis tabel schema_migrations: kelas baru Migrator (app/core/Migrator.php) mencatat versi migration yang sudah diterapkan, menandai ulang (backfill) migration lama tanpa mengeksekusinya, dan hanya menjalankan migration yang belum diterapkan secara idempoten; Updater kini ikut mencatat migration semver ke schema_migrations"
+                },
+                {
+                    "type": "security",
+                    "description": "Pensiun bertahap password_plain di tampilan: helper baru PasswordMask (app/core/PasswordMask.php) men-masker nilai password_plain menjadi bullet pada daftar siswa/guru admin dan daftar siswa wali kelas (termasuk data JSON modal detail) sehingga kredensial tidak lagi bocor ke HTML sumber; kolom tetap dipertahankan dan fitur cetak kartu login tidak berubah"
+                }
+            ]
+        },
+        {
             "version": "1.25.0",
             "date": "2026-08-07",
             "type": "minor",

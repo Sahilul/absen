@@ -9,6 +9,8 @@ function guru()
     {
         $this->data['judul'] = 'Manajemen Guru';
         $this->data['guru'] = $this->model('Guru_model')->getAllGuru();
+        // v1.26.0 - Masker password_plain agar tidak bocor ke HTML (kecuali kartu login)
+        $this->data['guru'] = PasswordMask::maskRows($this->data['guru']);
         $this->view('templates/header', $this->data);
         $this->view('templates/sidebar_admin', $this->data);
         $this->view('admin/guru', $this->data);

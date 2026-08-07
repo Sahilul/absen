@@ -228,7 +228,10 @@ class Updater
         sort($sqlFiles);
 
         require_once APPROOT . '/app/core/Database.php';
+        require_once APPROOT . '/app/core/Migrator.php';
         $db = new Database();
+        $migrator = new Migrator();
+        $migrator->ensureTable();
         $results = [];
 
         foreach ($sqlFiles as $sqlFile) {
@@ -243,6 +246,17 @@ class Updater
                     $db->execute();
                 }
                 $results[] = ['file' => basename($sqlFile), 'status' => 'success'];
+
+                // v1.26.0 - Catat migration semver ke schema_migrations
+                $base = basename($sqlFile, '.sql');
+                if (preg_match('/^\d+\.\d+\.\d+$/', $base)) {
+                    $db->query("INSERT IGNORE INTO schema_migrations (version, filename, checksum)
+                                VALUES (:version, :filename, :checksum)");
+                    $db->bind(':version', $base);
+                    $db->bind(':filename', basename($sqlFile));
+                    $db->bind(':checksum', hash_file('sha256', $sqlFile) ?: null);
+                    $db->execute();
+                }
             } catch (Exception $e) {
                 $results[] = ['file' => basename($sqlFile), 'status' => 'error', 'message' => $e->getMessage()];
             }

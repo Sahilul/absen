@@ -27,6 +27,7 @@ class App
         require_once APPROOT . '/app/core/Flasher.php';
         require_once APPROOT . '/app/core/InputValidator.php'; // Load validator
         require_once APPROOT . '/app/core/Csrf.php'; // v1.24.0 - CSRF protection
+        require_once APPROOT . '/app/core/PasswordMask.php'; // v1.26.0 - masking password_plain di tampilan
 
         // ================================================================
         // v1.24.0 - VALIDASI CSRF UNTUK SEMUA POST TER-AUTENTIKASI
