@@ -95,31 +95,18 @@
         </div>
       </li>
 
-      <!-- Panel Surat Tugas -->
+      <!-- Panel Persuratan (v1.22.0: gabungan Surat Tugas & Surat Penerimaan) -->
+      <?php $persuratanActive = (strpos($judul, 'Persuratan') !== false || strpos($judul, 'Surat Tugas') !== false || strpos($judul, 'Surat Penerimaan') !== false); ?>
       <li>
-        <a href="<?= BASEURL; ?>/suratTugas"
-          class="group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= (strpos($judul, 'Surat Tugas') !== false) ? 'bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
+        <a href="<?= BASEURL; ?>/persuratan"
+          class="group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $persuratanActive ? 'bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
           <div
-            class="<?= (strpos($judul, 'Surat Tugas') !== false) ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-indigo-100'; ?> p-2 rounded-lg transition-colors duration-200">
-            <i data-lucide="file-text"
-              class="w-4 h-4 <?= (strpos($judul, 'Surat Tugas') !== false) ? 'text-white' : 'text-secondary-500 group-hover:text-indigo-600'; ?>"></i>
+            class="<?= $persuratanActive ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-indigo-100'; ?> p-2 rounded-lg transition-colors duration-200">
+            <i data-lucide="file-stack"
+              class="w-4 h-4 <?= $persuratanActive ? 'text-white' : 'text-secondary-500 group-hover:text-indigo-600'; ?>"></i>
           </div>
-          <span class="ml-3 whitespace-nowrap">Surat Tugas</span>
-          <?= (strpos($judul, 'Surat Tugas') !== false) ? '<div class="ml-auto w-2 h-2 bg-white rounded-full"></div>' : ''; ?>
-        </a>
-      </li>
-
-      <!-- Panel Surat Penerimaan -->
-      <li>
-        <a href="<?= BASEURL; ?>/suratPenerimaan"
-          class="group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= (strpos($judul, 'Surat Penerimaan') !== false) ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
-          <div
-            class="<?= (strpos($judul, 'Surat Penerimaan') !== false) ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-emerald-100'; ?> p-2 rounded-lg transition-colors duration-200">
-            <i data-lucide="user-round-plus"
-              class="w-4 h-4 <?= (strpos($judul, 'Surat Penerimaan') !== false) ? 'text-white' : 'text-secondary-500 group-hover:text-emerald-600'; ?>"></i>
-          </div>
-          <span class="ml-3 whitespace-nowrap">Surat Penerimaan</span>
-          <?= (strpos($judul, 'Surat Penerimaan') !== false) ? '<div class="ml-auto w-2 h-2 bg-white rounded-full"></div>' : ''; ?>
+          <span class="ml-3 whitespace-nowrap">Panel Persuratan</span>
+          <?= $persuratanActive ? '<div class="ml-auto w-2 h-2 bg-white rounded-full"></div>' : ''; ?>
         </a>
       </li>
 

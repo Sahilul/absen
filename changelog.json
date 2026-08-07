@@ -1,6 +1,33 @@
 {
     "versions": [
         {
+            "version": "1.22.0",
+            "date": "2026-08-07",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Panel Persuratan baru (/persuratan): penggabungan Panel Surat Tugas dan Panel Surat Penerimaan dalam satu panel dengan dashboard terpadu (statistik lembaga, surat tugas, dan surat penerimaan)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Sidebar Panel Persuratan berisi menu Dashboard, Surat Tugas, Surat Penerimaan, dan Lembaga (lembaga dipakai bersama kedua jenis surat)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Menu di sidebar admin (grup Aplikasi Lain) dan kepala madrasah (grup Administrasi) disederhanakan menjadi satu tautan Panel Persuratan"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Dashboard lama /suratTugas dan /suratPenerimaan otomatis dialihkan ke /persuratan; seluruh URL CRUD surat tugas dan surat penerimaan tetap berfungsi tanpa perubahan"
+                },
+                {
+                    "type": "fix",
+                    "description": "Guard hapus lembaga kini juga memeriksa tabel surat_penerimaan sehingga lembaga yang masih memiliki surat penerimaan tidak dapat dihapus"
+                }
+            ]
+        },
+        {
             "version": "1.21.0",
             "date": "2026-08-07",
             "type": "minor",

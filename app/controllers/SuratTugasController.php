@@ -25,8 +25,8 @@ class SuratTugasController extends Controller
         // Load Models
         $this->data['judul'] = 'Surat Tugas';
 
-        // Flag untuk Sidebar khusus (Separate Panel)
-        $this->data['use_surat_sidebar'] = true;
+        // v1.22.0 - Pakai sidebar gabungan Panel Persuratan
+        $this->data['use_persuratan_sidebar'] = true;
 
         // Load QR Helper
         require_once APPROOT . '/config/qrcode.php';
@@ -37,12 +37,9 @@ class SuratTugasController extends Controller
 
     public function index()
     {
-        $this->data['judul'] = 'Dashboard Surat Tugas';
-        $this->data['stats'] = $this->model('SuratTugas_model')->getStats();
-
-        $this->view('templates/header', $this->data);
-        $this->view('surat_tugas/dashboard', $this->data);
-        $this->view('templates/footer', $this->data);
+        // v1.22.0 - Dashboard lama digabung ke Panel Persuratan
+        header('Location: ' . BASEURL . '/persuratan');
+        exit;
     }
 
     // =================================================================
@@ -136,7 +133,7 @@ class SuratTugasController extends Controller
     {
         $result = $this->model('SuratTugas_model')->hapusLembaga($id);
         if ($result === -1) {
-            Flasher::setFlash('Lembaga tidak dapat dihapus karena masih memiliki surat tugas', 'danger');
+            Flasher::setFlash('Lembaga tidak dapat dihapus karena masih memiliki surat tugas / surat penerimaan', 'danger');
         } elseif ($result > 0) {
             Flasher::setFlash('Lembaga berhasil dihapus', 'success');
         } else {

@@ -97,6 +97,14 @@ class SuratTugas_model
             return -1; // Sinyal: lembaga masih punya surat
         }
 
+        // v1.22.0 - Lembaga juga dipakai Panel Surat Penerimaan (tabel bersama)
+        $this->db->query('SELECT COUNT(*) AS total FROM surat_penerimaan WHERE id_lembaga = :id');
+        $this->db->bind('id', $id);
+        $rowTerima = $this->db->single();
+        if (!empty($rowTerima['total'])) {
+            return -1; // Sinyal: lembaga masih punya surat penerimaan
+        }
+
         $this->db->query('DELETE FROM surat_tugas_lembaga WHERE id_lembaga = :id');
         $this->db->bind('id', $id);
         $this->db->execute();

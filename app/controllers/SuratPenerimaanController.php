@@ -25,8 +25,8 @@ class SuratPenerimaanController extends Controller
 
         $this->data['judul'] = 'Surat Penerimaan';
 
-        // Flag untuk Sidebar khusus (Separate Panel)
-        $this->data['use_penerimaan_sidebar'] = true;
+        // v1.22.0 - Pakai sidebar gabungan Panel Persuratan
+        $this->data['use_persuratan_sidebar'] = true;
 
         // Load QR Helper
         require_once APPROOT . '/config/qrcode.php';
@@ -37,12 +37,9 @@ class SuratPenerimaanController extends Controller
 
     public function index()
     {
-        $this->data['judul'] = 'Dashboard Surat Penerimaan';
-        $this->data['stats'] = $this->model('SuratPenerimaan_model')->getStats();
-
-        $this->view('templates/header', $this->data);
-        $this->view('surat_penerimaan/dashboard', $this->data);
-        $this->view('templates/footer', $this->data);
+        // v1.22.0 - Dashboard lama digabung ke Panel Persuratan
+        header('Location: ' . BASEURL . '/persuratan');
+        exit;
     }
 
     // =================================================================
