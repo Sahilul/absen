@@ -1,11 +1,11 @@
 <?php
-// File: app/controllers/SuratPindahanController.php
-// Panel Surat Penerimaan Siswa Pindahan (multi lembaga, reuse tabel lembaga surat tugas).
+// File: app/controllers/SuratPenerimaanController.php
+// Panel Surat Penerimaan Siswa (siswa pindahan) - multi lembaga, reuse tabel lembaga surat tugas.
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-class SuratPindahanController extends Controller
+class SuratPenerimaanController extends Controller
 {
     private $data = [];
 
@@ -23,10 +23,10 @@ class SuratPindahanController extends Controller
             exit;
         }
 
-        $this->data['judul'] = 'Surat Pindahan';
+        $this->data['judul'] = 'Surat Penerimaan';
 
         // Flag untuk Sidebar khusus (Separate Panel)
-        $this->data['use_pindahan_sidebar'] = true;
+        $this->data['use_penerimaan_sidebar'] = true;
 
         // Load QR Helper
         require_once APPROOT . '/config/qrcode.php';
@@ -37,63 +37,63 @@ class SuratPindahanController extends Controller
 
     public function index()
     {
-        $this->data['judul'] = 'Dashboard Surat Pindahan';
-        $this->data['stats'] = $this->model('SuratPindahan_model')->getStats();
+        $this->data['judul'] = 'Dashboard Surat Penerimaan';
+        $this->data['stats'] = $this->model('SuratPenerimaan_model')->getStats();
 
         $this->view('templates/header', $this->data);
-        $this->view('surat_pindahan/dashboard', $this->data);
+        $this->view('surat_penerimaan/dashboard', $this->data);
         $this->view('templates/footer', $this->data);
     }
 
     // =================================================================
-    // SURAT PINDAHAN
+    // SURAT PENERIMAAN
     // =================================================================
 
     public function surat()
     {
-        $this->data['judul'] = 'Daftar Surat Pindahan';
+        $this->data['judul'] = 'Daftar Surat Penerimaan';
 
         $idLembaga = $_GET['lembaga'] ?? null;
         $this->data['filter_lembaga'] = $idLembaga;
 
-        $this->data['lembaga_list'] = $this->model('SuratPindahan_model')->getAllLembaga();
-        $this->data['surat_list'] = $this->model('SuratPindahan_model')->getAllSurat($idLembaga);
+        $this->data['lembaga_list'] = $this->model('SuratPenerimaan_model')->getAllLembaga();
+        $this->data['surat_list'] = $this->model('SuratPenerimaan_model')->getAllSurat($idLembaga);
 
         $this->view('templates/header', $this->data);
-        $this->view('surat_pindahan/surat/index', $this->data);
+        $this->view('surat_penerimaan/surat/index', $this->data);
         $this->view('templates/footer', $this->data);
     }
 
     public function inputSurat($id = null)
     {
-        $this->data['judul'] = $id ? 'Edit Surat Pindahan' : 'Buat Surat Pindahan';
-        $this->data['lembaga_list'] = $this->model('SuratPindahan_model')->getAllLembaga();
+        $this->data['judul'] = $id ? 'Edit Surat Penerimaan' : 'Buat Surat Penerimaan';
+        $this->data['lembaga_list'] = $this->model('SuratPenerimaan_model')->getAllLembaga();
 
         if ($id) {
-            $this->data['surat'] = $this->model('SuratPindahan_model')->getSuratById($id);
+            $this->data['surat'] = $this->model('SuratPenerimaan_model')->getSuratById($id);
             if (!$this->data['surat']) {
                 Flasher::setFlash('Surat tidak ditemukan', 'danger');
-                header('Location: ' . BASEURL . '/suratPindahan/surat');
+                header('Location: ' . BASEURL . '/suratPenerimaan/surat');
                 exit;
             }
         }
 
         $this->view('templates/header', $this->data);
-        $this->view('surat_pindahan/surat/form', $this->data);
+        $this->view('surat_penerimaan/surat/form', $this->data);
         $this->view('templates/footer', $this->data);
     }
 
     public function simpanSurat()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASEURL . '/suratPindahan/surat');
+            header('Location: ' . BASEURL . '/suratPenerimaan/surat');
             exit;
         }
 
         // Validasi minimal
         if (empty($_POST['id_lembaga']) || empty($_POST['nomor_surat']) || empty($_POST['nama_siswa'])) {
             Flasher::setFlash('Lembaga, nomor surat, dan nama siswa wajib diisi', 'danger');
-            header('Location: ' . BASEURL . '/suratPindahan/inputSurat' . (!empty($_POST['id_surat']) ? '/' . $_POST['id_surat'] : ''));
+            header('Location: ' . BASEURL . '/suratPenerimaan/inputSurat' . (!empty($_POST['id_surat']) ? '/' . $_POST['id_surat'] : ''));
             exit;
         }
 
@@ -118,24 +118,24 @@ class SuratPindahanController extends Controller
             'created_by' => $_SESSION['user_id'] ?? null
         ];
 
-        if ($this->model('SuratPindahan_model')->simpanSurat($data)) {
+        if ($this->model('SuratPenerimaan_model')->simpanSurat($data)) {
             Flasher::setFlash('Surat penerimaan siswa berhasil disimpan', 'success');
         } else {
             Flasher::setFlash('Gagal menyimpan surat penerimaan siswa', 'danger');
         }
 
-        header('Location: ' . BASEURL . '/suratPindahan/surat');
+        header('Location: ' . BASEURL . '/suratPenerimaan/surat');
         exit;
     }
 
     public function hapusSurat($id)
     {
-        if ($this->model('SuratPindahan_model')->hapusSurat($id) > 0) {
+        if ($this->model('SuratPenerimaan_model')->hapusSurat($id) > 0) {
             Flasher::setFlash('Surat penerimaan siswa berhasil dihapus', 'success');
         } else {
             Flasher::setFlash('Gagal menghapus surat', 'danger');
         }
-        header('Location: ' . BASEURL . '/suratPindahan/surat');
+        header('Location: ' . BASEURL . '/suratPenerimaan/surat');
         exit;
     }
 
@@ -145,7 +145,7 @@ class SuratPindahanController extends Controller
 
     public function cetak($id)
     {
-        $surat = $this->model('SuratPindahan_model')->getSuratById($id);
+        $surat = $this->model('SuratPenerimaan_model')->getSuratById($id);
 
         if (!$surat) {
             echo "Surat tidak ditemukan";
@@ -153,7 +153,7 @@ class SuratPindahanController extends Controller
         }
 
         // Generate QR Code
-        $qrData = generatePDFQRCode('surat_pindahan', $id, [
+        $qrData = generatePDFQRCode('surat_penerimaan', $id, [
             'nomor' => $surat['nomor_surat'],
             'tanggal' => $surat['tanggal_surat'],
             'nama_siswa' => $surat['nama_siswa']
@@ -266,7 +266,7 @@ class SuratPindahanController extends Controller
             $html .= '</div>';
         }
 
-        // Judul Surat
+        // Judul Surat (sesuai contoh: SURAT PENERIMAAN SISWA)
         $html .= '<div class="title">SURAT PENERIMAAN SISWA</div>';
         $html .= '<div class="nomor">No : ' . $e($surat['nomor_surat']) . '</div>';
 

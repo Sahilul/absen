@@ -562,8 +562,8 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             $this->view('templates/sidebar_cms');
         } elseif (isset($data['use_surat_sidebar']) && $data['use_surat_sidebar'] === true) {
             $this->view('surat_tugas/sidebar_surat');
-        } elseif (isset($data['use_pindahan_sidebar']) && $data['use_pindahan_sidebar'] === true) {
-            $this->view('surat_pindahan/sidebar_pindahan');
+        } elseif (isset($data['use_penerimaan_sidebar']) && $data['use_penerimaan_sidebar'] === true) {
+            $this->view('surat_penerimaan/sidebar_penerimaan');
         } elseif (isset($data['use_bendahara_sidebar']) && $data['use_bendahara_sidebar'] === true) {
             $this->view('templates/sidebar_bendahara');
         }

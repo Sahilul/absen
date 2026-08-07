@@ -1,12 +1,12 @@
 <?php
-// File: app/views/surat_pindahan/dashboard.php
+// File: app/views/surat_penerimaan/dashboard.php
 $stats = $data['stats'] ?? ['total_lembaga' => 0, 'total_surat' => 0];
 ?>
 
 <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Dashboard Surat Pindahan</h1>
+            <h1 class="text-2xl font-bold text-gray-800">Dashboard Surat Penerimaan</h1>
             <p class="text-gray-600">Overview surat keterangan penerimaan siswa pindahan</p>
         </div>
     </div>
@@ -33,7 +33,7 @@ $stats = $data['stats'] ?? ['total_lembaga' => 0, 'total_surat' => 0];
             <div>
                 <p class="text-sm font-medium text-gray-500">Total Surat Penerimaan</p>
                 <h3 class="text-2xl font-bold text-gray-800"><?= $stats['total_surat']; ?></h3>
-                <a href="<?= BASEURL; ?>/suratPindahan/surat"
+                <a href="<?= BASEURL; ?>/suratPenerimaan/surat"
                     class="text-sm text-emerald-600 hover:underline mt-1 inline-block">Lihat Daftar Surat &rarr;</a>
             </div>
         </div>
@@ -43,11 +43,11 @@ $stats = $data['stats'] ?? ['total_lembaga' => 0, 'total_surat' => 0];
     <div class="bg-white rounded-xl shadow-sm border p-6">
         <h3 class="text-lg font-bold text-gray-800 mb-4">Aksi Cepat</h3>
         <div class="flex gap-4 flex-wrap">
-            <a href="<?= BASEURL; ?>/suratPindahan/inputSurat"
+            <a href="<?= BASEURL; ?>/suratPenerimaan/inputSurat"
                 class="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">
                 <i data-lucide="plus" class="w-4 h-4"></i> Buat Surat Penerimaan Baru
             </a>
-            <a href="<?= BASEURL; ?>/suratPindahan/surat"
+            <a href="<?= BASEURL; ?>/suratPenerimaan/surat"
                 class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
                 <i data-lucide="list" class="w-4 h-4"></i> Daftar Surat
             </a>

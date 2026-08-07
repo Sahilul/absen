@@ -1,12 +1,12 @@
 <?php
-// app/views/surat_pindahan/surat/form.php
+// app/views/surat_penerimaan/surat/form.php
 $isEdit = isset($data['surat']);
 $s = $data['surat'] ?? [];
 ?>
 <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
     <div class="max-w-6xl mx-auto">
         <div class="flex items-center gap-4 mb-6">
-            <a href="<?= BASEURL; ?>/suratPindahan/surat"
+            <a href="<?= BASEURL; ?>/suratPenerimaan/surat"
                 class="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition shadow-sm">
                 <i data-lucide="arrow-left" class="w-5 h-5 text-gray-700"></i>
             </a>
@@ -16,7 +16,7 @@ $s = $data['surat'] ?? [];
             </div>
         </div>
 
-        <form action="<?= BASEURL; ?>/suratPindahan/simpanSurat" method="POST" class="space-y-6">
+        <form action="<?= BASEURL; ?>/suratPenerimaan/simpanSurat" method="POST" class="space-y-6">
             <input type="hidden" name="id_surat" value="<?= $s['id_surat'] ?? ''; ?>">
 
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -181,7 +181,7 @@ $s = $data['surat'] ?? [];
             </div>
 
             <div class="flex justify-end gap-4">
-                <a href="<?= BASEURL; ?>/suratPindahan/surat"
+                <a href="<?= BASEURL; ?>/suratPenerimaan/surat"
                     class="px-6 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition">Batal</a>
                 <button type="submit"
                     class="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition shadow-xl shadow-emerald-200 hover:shadow-emerald-300 transform hover:-translate-y-0.5">

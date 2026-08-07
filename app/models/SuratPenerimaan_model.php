@@ -1,9 +1,9 @@
 <?php
-// File: app/models/SuratPindahan_model.php
-// Model untuk fitur Surat Penerimaan Siswa Pindahan.
+// File: app/models/SuratPenerimaan_model.php
+// Model untuk fitur Surat Penerimaan Siswa (siswa pindahan).
 // Lembaga (kop surat, kepala madrasah, dll) memakai ulang tabel surat_tugas_lembaga.
 
-class SuratPindahan_model
+class SuratPenerimaan_model
 {
     private $db;
 
@@ -23,13 +23,13 @@ class SuratPindahan_model
     }
 
     // =================================================================
-    // SURAT PINDAHAN CRUD
+    // SURAT PENERIMAAN CRUD
     // =================================================================
 
     public function getAllSurat($idLembaga = null)
     {
         $sql = "SELECT sp.*, l.nama_lembaga
-                FROM surat_pindahan sp
+                FROM surat_penerimaan sp
                 JOIN surat_tugas_lembaga l ON sp.id_lembaga = l.id_lembaga";
 
         if ($idLembaga) {
@@ -48,7 +48,7 @@ class SuratPindahan_model
     public function getSuratById($id)
     {
         $this->db->query("SELECT sp.*, l.*
-                          FROM surat_pindahan sp
+                          FROM surat_penerimaan sp
                           JOIN surat_tugas_lembaga l ON sp.id_lembaga = l.id_lembaga
                           WHERE sp.id_surat = :id");
         $this->db->bind('id', $id);
@@ -59,7 +59,7 @@ class SuratPindahan_model
     {
         try {
             if (empty($data['id_surat'])) {
-                $query = "INSERT INTO surat_pindahan
+                $query = "INSERT INTO surat_penerimaan
                             (id_lembaga, nomor_surat, tanggal_surat, kota_surat,
                              nama_siswa, tempat_lahir, tanggal_lahir, jenis_kelamin, nisn,
                              asal_sekolah, nama_orang_tua, alamat_siswa,
@@ -70,7 +70,7 @@ class SuratPindahan_model
                              :asal_sekolah, :nama_orang_tua, :alamat_siswa,
                              :diterima_di_kelas, :tahun_pelajaran, :keterangan, :status, :created_by)";
             } else {
-                $query = "UPDATE surat_pindahan SET
+                $query = "UPDATE surat_penerimaan SET
                             id_lembaga = :id_lembaga,
                             nomor_surat = :nomor_surat,
                             tanggal_surat = :tanggal_surat,
@@ -128,7 +128,7 @@ class SuratPindahan_model
 
     public function hapusSurat($id)
     {
-        $this->db->query("DELETE FROM surat_pindahan WHERE id_surat = :id");
+        $this->db->query("DELETE FROM surat_penerimaan WHERE id_surat = :id");
         $this->db->bind('id', $id);
         $this->db->execute();
         return $this->db->rowCount();
@@ -141,7 +141,7 @@ class SuratPindahan_model
         $this->db->query("SELECT COUNT(*) as total FROM surat_tugas_lembaga");
         $stats['total_lembaga'] = $this->db->single()['total'];
 
-        $this->db->query("SELECT COUNT(*) as total FROM surat_pindahan");
+        $this->db->query("SELECT COUNT(*) as total FROM surat_penerimaan");
         $stats['total_surat'] = $this->db->single()['total'];
 
         return $stats;

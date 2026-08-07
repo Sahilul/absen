@@ -124,7 +124,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: APLIKASI LAIN -->
             <!-- ============================================== -->
-            <?php $aplikasiLainActive = isGroupActive($judul, ['Pesan', 'Buku Tamu', 'PSB', 'Surat Tugas', 'Surat Pindahan', 'Website']); ?>
+            <?php $aplikasiLainActive = isGroupActive($judul, ['Pesan', 'Buku Tamu', 'PSB', 'Surat Tugas', 'Surat Penerimaan', 'Website']); ?>
             <li class="pt-4" x-data="{ open: <?= $aplikasiLainActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $aplikasiLainActive ? 'bg-purple-50 text-purple-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -167,10 +167,10 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                         </a>
                     </li>
                     <li>
-                        <a href="<?= BASEURL; ?>/suratPindahan"
+                        <a href="<?= BASEURL; ?>/suratPenerimaan"
                             class="group flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-secondary-600 hover:bg-emerald-50 hover:text-emerald-700">
                             <i data-lucide="user-round-plus" class="w-4 h-4 mr-2 text-emerald-600"></i>
-                            Panel Surat Pindahan
+                            Panel Surat Penerimaan
                         </a>
                     </li>
                     <li>

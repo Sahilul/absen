@@ -1,14 +1,14 @@
 <?php
-// File: app/views/surat_pindahan/sidebar_pindahan.php
-// Sidebar khusus panel Surat Penerimaan Siswa Pindahan
+// File: app/views/surat_penerimaan/sidebar_penerimaan.php
+// Sidebar khusus panel Surat Penerimaan Siswa
 
 $judul = $data['judul'] ?? '';
 $isKepalaMadrasah = (($_SESSION['role'] ?? '') === 'kepala_madrasah');
 $backUrl = $isKepalaMadrasah ? BASEURL . '/KepalaMadrasah/dashboard' : BASEURL . '/admin/dashboard';
 $backLabel = $isKepalaMadrasah ? 'Kembali ke Dashboard' : 'Kembali ke Admin';
 
-$isDashboard = ($judul == 'Dashboard Surat Pindahan');
-$isSurat = (strpos($judul, 'Surat Pindahan') !== false && !$isDashboard);
+$isDashboard = ($judul == 'Dashboard Surat Penerimaan');
+$isSurat = (strpos($judul, 'Surat Penerimaan') !== false && !$isDashboard);
 $isLembaga = (strpos($judul, 'Lembaga') !== false);
 ?>
 
@@ -24,7 +24,7 @@ $isLembaga = (strpos($judul, 'Lembaga') !== false);
                 <i data-lucide="user-round-plus" class="w-5 h-5 text-white"></i>
             </div>
             <div class="min-w-0">
-                <h1 class="text-lg font-bold text-secondary-800 leading-tight break-words">Surat Pindahan</h1>
+                <h1 class="text-lg font-bold text-secondary-800 leading-tight break-words">Surat Penerimaan</h1>
                 <p class="text-xs text-secondary-500 font-medium mt-0.5">Panel Admin</p>
             </div>
         </div>
@@ -40,7 +40,7 @@ $isLembaga = (strpos($judul, 'Lembaga') !== false);
 
             <!-- Dashboard -->
             <li>
-                <a href="<?= BASEURL; ?>/suratPindahan"
+                <a href="<?= BASEURL; ?>/suratPenerimaan"
                     class="group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $isDashboard ? 'gradient-primary text-white shadow-lg' : 'text-secondary-600 hover:bg-white/50 hover:text-secondary-800'; ?>">
                     <div
                         class="<?= $isDashboard ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-primary-100'; ?> p-2 rounded-lg transition-colors duration-200">
@@ -60,16 +60,16 @@ $isLembaga = (strpos($judul, 'Lembaga') !== false);
                 </div>
             </li>
 
-            <!-- Surat Pindahan -->
+            <!-- Surat Penerimaan -->
             <li>
-                <a href="<?= BASEURL; ?>/suratPindahan/surat"
+                <a href="<?= BASEURL; ?>/suratPenerimaan/surat"
                     class="group flex items-center p-3 text-sm font-medium rounded-xl transition-all duration-200 <?= $isSurat ? 'gradient-primary text-white shadow-lg' : 'text-secondary-600 hover:bg-white/50 hover:text-secondary-800'; ?>">
                     <div
                         class="<?= $isSurat ? 'bg-white/20' : 'bg-blue-100 group-hover:bg-blue-200'; ?> p-2 rounded-lg transition-colors duration-200">
                         <i data-lucide="file-check"
                             class="w-4 h-4 <?= $isSurat ? 'text-white' : 'text-blue-600 group-hover:text-blue-700'; ?>"></i>
                     </div>
-                    <span class="ml-3 whitespace-nowrap">Daftar Surat Pindahan</span>
+                    <span class="ml-3 whitespace-nowrap">Daftar Surat Penerimaan</span>
                 </a>
             </li>
 

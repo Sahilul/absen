@@ -109,17 +109,17 @@
         </a>
       </li>
 
-      <!-- Panel Surat Pindahan -->
+      <!-- Panel Surat Penerimaan -->
       <li>
-        <a href="<?= BASEURL; ?>/suratPindahan"
-          class="group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= (strpos($judul, 'Surat Pindahan') !== false) ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
+        <a href="<?= BASEURL; ?>/suratPenerimaan"
+          class="group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= (strpos($judul, 'Surat Penerimaan') !== false) ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
           <div
-            class="<?= (strpos($judul, 'Surat Pindahan') !== false) ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-emerald-100'; ?> p-2 rounded-lg transition-colors duration-200">
+            class="<?= (strpos($judul, 'Surat Penerimaan') !== false) ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-emerald-100'; ?> p-2 rounded-lg transition-colors duration-200">
             <i data-lucide="user-round-plus"
-              class="w-4 h-4 <?= (strpos($judul, 'Surat Pindahan') !== false) ? 'text-white' : 'text-secondary-500 group-hover:text-emerald-600'; ?>"></i>
+              class="w-4 h-4 <?= (strpos($judul, 'Surat Penerimaan') !== false) ? 'text-white' : 'text-secondary-500 group-hover:text-emerald-600'; ?>"></i>
           </div>
-          <span class="ml-3 whitespace-nowrap">Surat Pindahan</span>
-          <?= (strpos($judul, 'Surat Pindahan') !== false) ? '<div class="ml-auto w-2 h-2 bg-white rounded-full"></div>' : ''; ?>
+          <span class="ml-3 whitespace-nowrap">Surat Penerimaan</span>
+          <?= (strpos($judul, 'Surat Penerimaan') !== false) ? '<div class="ml-auto w-2 h-2 bg-white rounded-full"></div>' : ''; ?>
         </a>
       </li>
 
