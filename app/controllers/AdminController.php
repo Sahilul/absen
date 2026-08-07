@@ -4878,9 +4878,17 @@ class AdminController extends Controller
 
         $username = trim($_POST['username'] ?? '');
         $nama_lengkap = trim($_POST['nama_lengkap'] ?? '');
+        $email = trim($_POST['email'] ?? '');
 
         if (empty($username)) {
             Flasher::setFlash('Username tidak boleh kosong.', 'danger');
+            header('Location: ' . BASEURL . '/admin/profil');
+            exit;
+        }
+
+        // v1.23.0 - Validasi format email (boleh kosong, tapi jika diisi harus valid)
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Flasher::setFlash('Format email tidak valid.', 'danger');
             header('Location: ' . BASEURL . '/admin/profil');
             exit;
         }
@@ -4900,10 +4908,25 @@ class AdminController extends Controller
                 exit;
             }
 
+            // v1.23.0 - Cek apakah email sudah digunakan oleh user lain
+            if ($email !== '') {
+                $db->query("SELECT id_user FROM users WHERE email = :email AND id_user != :id_user LIMIT 1");
+                $db->bind('email', $email);
+                $db->bind('id_user', $id_user);
+                $emailExists = $db->single();
+
+                if ($emailExists) {
+                    Flasher::setFlash('Email sudah digunakan oleh user lain.', 'danger');
+                    header('Location: ' . BASEURL . '/admin/profil');
+                    exit;
+                }
+            }
+
             // Update profil
-            $db->query("UPDATE users SET username = :username, nama_lengkap = :nama_lengkap WHERE id_user = :id_user");
+            $db->query("UPDATE users SET username = :username, nama_lengkap = :nama_lengkap, email = :email WHERE id_user = :id_user");
             $db->bind('username', $username);
             $db->bind('nama_lengkap', $nama_lengkap);
+            $db->bind('email', $email !== '' ? $email : null);
             $db->bind('id_user', $id_user);
             $db->execute();
 

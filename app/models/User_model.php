@@ -159,6 +159,22 @@ class User_model {
      */
     public function getUserByEmail($email) {
         try {
+            // v1.23.0 - Cari admin berdasarkan email di tabel users (login Google)
+            $this->db->query('
+                SELECT u.*, u.email 
+                FROM users u
+                WHERE u.role = "admin" 
+                  AND u.email = :email
+                  AND u.status = "aktif"
+                LIMIT 1
+            ');
+            $this->db->bind('email', $email);
+            $user = $this->db->single();
+
+            if ($user) {
+                return $user;
+            }
+
             // Cari di guru yang memiliki email ini
             $this->db->query('
                 SELECT u.*, g.email 

@@ -1,6 +1,25 @@
 {
     "versions": [
         {
+            "version": "1.23.0",
+            "date": "2026-08-07",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Akun admin kini dapat login menggunakan tombol Login dengan Google: email dicocokkan dari kolom email baru di tabel users (migration 1.23.0)"
+                },
+                {
+                    "type": "feature",
+                    "description": "Halaman Profil Admin (/admin/profil) memiliki field Email Google dengan validasi format dan cek duplikasi antar user"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Email admin utama otomatis diisi dengan turuae1@gmail.com sehingga login Google langsung siap digunakan"
+                }
+            ]
+        },
+        {
             "version": "1.22.0",
             "date": "2026-08-07",
             "type": "minor",
