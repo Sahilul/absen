@@ -483,6 +483,23 @@
                         </div>
                     <?php endforeach; ?>
                 </div>
+
+                <!-- v1.26.0 - Pagination -->
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <span>Tampilkan</span>
+                        <select id="per-page-select" onchange="changePerPage(this.value)"
+                            class="px-2 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span>per halaman</span>
+                        <span class="text-gray-400">|</span>
+                        <span id="page-info" class="text-gray-500"></span>
+                    </div>
+                    <div class="flex items-center gap-1" id="pagination-controls"></div>
+                </div>
             <?php else: ?>
                 <!-- Empty State -->
                 <div class="text-center py-12">
@@ -526,6 +543,13 @@
         let allCards = [];
         let totalRows = 0;
 
+        // v1.26.0 - Pagination
+        let filteredRows = [];
+        let filteredCards = [];
+        let currentPage = 1;
+        let perPage = parseInt(localStorage.getItem('siswa_per_page') || '25', 10);
+        if (![25, 50, 100].includes(perPage)) perPage = 25;
+
         // Auto refresh dan inisialisasi
         document.addEventListener('DOMContentLoaded', function () {
             // Inisialisasi Lucide icons
@@ -550,6 +574,10 @@
             const searchInput = document.getElementById('search-input');
             const filterKelas = document.getElementById('filter-kelas');
 
+            // v1.26.0 - inisialisasi pilihan jumlah data per halaman
+            const perPageSelect = document.getElementById('per-page-select');
+            if (perPageSelect) perPageSelect.value = String(perPage);
+
             // Initial apply to set correct count
             applyFilters();
         });
@@ -561,7 +589,8 @@
             const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
             const selectedKelas = filterKelas ? filterKelas.value.toLowerCase().trim() : '';
 
-            let visibleCount = 0;
+            filteredRows = [];
+            filteredCards = [];
 
             // Filter table rows (desktop)
             allRows.forEach(row => {
@@ -573,8 +602,7 @@
                 const matchKelas = !selectedKelas || kelas === selectedKelas;
 
                 if (matchSearch && matchKelas) {
-                    row.style.display = '';
-                    visibleCount++;
+                    filteredRows.push(row);
                 } else {
                     row.style.display = 'none';
                 }
@@ -590,7 +618,7 @@
                 const matchKelas = !selectedKelas || kelas === selectedKelas;
 
                 if (matchSearch && matchKelas) {
-                    card.style.display = '';
+                    filteredCards.push(card);
                 } else {
                     card.style.display = 'none';
                 }
@@ -599,13 +627,103 @@
             // Update counter
             const countEl = document.getElementById('filtered-count');
             if (countEl) {
-                countEl.textContent = visibleCount;
+                countEl.textContent = filteredRows.length;
             }
+
+            // v1.26.0 - Kembali ke halaman 1 setiap filter berubah, lalu terapkan pagination
+            currentPage = 1;
+            applyPagination();
+        }
+
+        // ==========================================
+        // v1.26.0 - PAGINATION (25 / 50 / 100)
+        // ==========================================
+        function applyPagination() {
+            const total = filteredRows.length;
+            const totalPages = Math.max(1, Math.ceil(total / perPage));
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const start = (currentPage - 1) * perPage;
+            const end = Math.min(start + perPage, total);
+
+            filteredRows.forEach((row, i) => {
+                row.style.display = (i >= start && i < end) ? '' : 'none';
+            });
+            filteredCards.forEach((card, i) => {
+                card.style.display = (i >= start && i < end) ? '' : 'none';
+            });
+
+            renderPaginationControls(total, totalPages, start, end);
 
             // Re-render icons
             if (typeof lucide !== 'undefined') {
                 setTimeout(() => lucide.createIcons(), 100);
             }
+        }
+
+        function renderPaginationControls(total, totalPages, start, end) {
+            const info = document.getElementById('page-info');
+            if (info) {
+                info.textContent = total === 0 ? 'Tidak ada data' : `Menampilkan ${start + 1}\u2013${end} dari ${total}`;
+            }
+
+            const controls = document.getElementById('pagination-controls');
+            if (!controls) return;
+            controls.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            const makeBtn = (label, page, disabled, active) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = label;
+                btn.className = 'min-w-[32px] px-2 py-1 text-sm rounded-md border transition-colors ' +
+                    (active
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : disabled
+                            ? 'bg-gray-50 text-gray-300 border-gray-200 cursor-not-allowed'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100');
+                if (!disabled && !active) btn.onclick = () => goToPage(page);
+                return btn;
+            };
+
+            controls.appendChild(makeBtn('\u2039', currentPage - 1, currentPage === 1, false));
+
+            // Nomor halaman: pertama, terakhir, dan sekitar halaman aktif
+            const pages = [];
+            for (let p = 1; p <= totalPages; p++) {
+                if (p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1) pages.push(p);
+            }
+            let prev = 0;
+            pages.forEach(p => {
+                if (p - prev > 1) {
+                    const dots = document.createElement('span');
+                    dots.textContent = '\u2026';
+                    dots.className = 'px-1 text-gray-400 text-sm';
+                    controls.appendChild(dots);
+                }
+                controls.appendChild(makeBtn(String(p), p, false, p === currentPage));
+                prev = p;
+            });
+
+            controls.appendChild(makeBtn('\u203A', currentPage + 1, currentPage === totalPages, false));
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            applyPagination();
+            const table = document.getElementById('siswa-table');
+            if (table) table.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function changePerPage(val) {
+            const n = parseInt(val, 10);
+            if (![25, 50, 100].includes(n)) return;
+            perPage = n;
+            localStorage.setItem('siswa_per_page', String(perPage));
+            currentPage = 1;
+            applyPagination();
         }
 
         function clearSearch() {

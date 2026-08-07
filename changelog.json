@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.26.1",
+            "date": "2026-08-07",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Pagination pada halaman daftar siswa admin: pilihan jumlah data per halaman (25/50/100, tersimpan di browser), navigasi nomor halaman dengan tombol sebelumnya/berikutnya, info rentang data, tetap terintegrasi dengan pencarian dan filter kelas serta konsisten antara tabel desktop dan kartu mobile"
+                }
+            ]
+        },
+        {
             "version": "1.26.0",
             "date": "2026-08-07",
             "type": "minor",
