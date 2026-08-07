@@ -79,7 +79,7 @@ function isMenuActive($judul, $keyword)
 
       <!-- DROPDOWN: Kelola Kelas -->
       <?php
-      $kelolaKelasActive = in_array($judul, ['Daftar Siswa', 'Monitoring Absensi', 'Monitoring Nilai', 'Pembayaran Kelas', 'Kelola Tagihan Kelas', 'Riwayat Pembayaran', 'Input Pembayaran']);
+      $kelolaKelasActive = in_array($judul, ['Daftar Siswa', 'Monitoring Absensi', 'Monitoring Nilai', 'Pembayaran Kelas', 'Kelola Tagihan Kelas', 'Riwayat Pembayaran', 'Input Pembayaran', 'Pembayaran Siswa', 'Checkout Pembayaran']);
       ?>
       <li class="pt-3" x-data="{ open: <?= $kelolaKelasActive ? 'true' : 'false' ?> }">
         <button @click="open = !open"
@@ -118,7 +118,7 @@ function isMenuActive($judul, $keyword)
             </li>
           <?php endif; ?>
           <?php if (defined('MENU_PEMBAYARAN_ENABLED') && MENU_PEMBAYARAN_ENABLED): ?>
-            <?php $isPembayaranActive = in_array($judul, ['Pembayaran Kelas', 'Kelola Tagihan Kelas', 'Riwayat Pembayaran', 'Input Pembayaran']); ?>
+            <?php $isPembayaranActive = in_array($judul, ['Pembayaran Kelas', 'Kelola Tagihan Kelas', 'Riwayat Pembayaran', 'Input Pembayaran', 'Pembayaran Siswa', 'Checkout Pembayaran']); ?>
             <li>
               <a href="<?= BASEURL; ?>/waliKelas/pembayaran"
                 class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= $isPembayaranActive ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-emerald-50 hover:text-emerald-700' ?>">

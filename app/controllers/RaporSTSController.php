@@ -1,6 +1,9 @@
 <?php
 // File: app/controllers/RaporSTSController.php
 
+use Dompdf\Dompdf;
+use Dompdf\Options;
+
 class RaporSTSController extends Controller {
     private $data = [];
 
@@ -104,11 +107,8 @@ class RaporSTSController extends Controller {
         $wali_kelas = $this->model('WaliKelas_model')->getWaliKelasByKelas($siswa['id_kelas'], $id_tp_aktif);
         $pengaturan = $this->model('PengaturanRapor_model')->getPengaturan($id_semester_aktif);
 
-        // Load DOMPDF
+        // Load DOMPDF (class Dompdf & Options sudah di-import di atas file)
         require_once APPROOT . '/app/core/dompdf/autoload.inc.php';
-        
-        use Dompdf\Dompdf;
-        use Dompdf\Options;
 
         $options = new Options();
         $options->set('isRemoteEnabled', true);
@@ -153,11 +153,8 @@ class RaporSTSController extends Controller {
         // Ambil semua siswa di kelas
         $siswa_list = $this->model('Siswa_model')->getSiswaByKelas($waliKelasInfo['id_kelas'], $id_tp_aktif);
         
-        // Load DOMPDF
+        // Load DOMPDF (class Dompdf & Options sudah di-import di atas file)
         require_once APPROOT . '/app/core/dompdf/autoload.inc.php';
-        
-        use Dompdf\Dompdf;
-        use Dompdf\Options;
 
         $options = new Options();
         $options->set('isRemoteEnabled', true);

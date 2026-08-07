@@ -62,7 +62,7 @@ $readOnly = false;
                 <h4 class="font-semibold text-amber-800">Informasi</h4>
                 <ul class="text-xs text-amber-700 mt-1 space-y-1">
                     <li>• Dokumen akan otomatis tersimpan setelah dipilih</li>
-                    <li>• Format yang didukung: JPG, PNG, PDF</li>
+                    <li>• Format yang didukung: JPG, PNG, PDF (maks 2MB)</li>
                     <li>• Dokumen yang diupload ulang akan menggantikan dokumen lama</li>
                 </ul>
             </div>

@@ -744,15 +744,16 @@ class Fonnte
      * @param string $mapel Mata pelajaran (opsional)
      * @return string Pesan yang sudah dibuild dengan random template
      */
-    public function buildAbsensiMessage($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel = '')
+    public function buildAbsensiMessage($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel = '', $isRevisi = false)
     {
-        return $this->getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel);
+        return $this->getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel, $isRevisi);
     }
 
     /**
      * Get random absensi template (10 variasi)
+     * @param bool $isRevisi Tandai pesan sebagai revisi/pembaruan data absensi
      */
-    private function getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel = '')
+    private function getRandomAbsensiTemplate($namaOrtu, $namaSiswa, $kelas, $statusLabel, $tanggal, $namaSekolah, $statusCode, $mapel = '', $isRevisi = false)
     {
         $templates = [
             // Template 1 - Formal
@@ -896,7 +897,16 @@ class Fonnte
 
         // Pick random template
         $randomIndex = rand(0, count($templates) - 1);
-        return $templates[$randomIndex]();
+        $pesan = $templates[$randomIndex]();
+
+        // Jika ini revisi/pembaruan absen, tambahkan banner di atas pesan
+        if ($isRevisi) {
+            $banner = "♻️ *REVISI ABSENSI*\n";
+            $banner .= "_Terdapat pembaruan atas data kehadiran yang sebelumnya kami sampaikan. Berikut data terbarunya:_\n\n";
+            $pesan = $banner . $pesan;
+        }
+
+        return $pesan;
     }
 
     /**
@@ -981,8 +991,13 @@ class Fonnte
      * @param string $namaSekolah
      * @return string
      */
-    public function buildGrupAbsensiMessage($namaKelas, $mapel, $tanggal, $namaGuru, $daftarAbsen, $totalSiswa, $namaSekolah, $jam = '', $topik = '')
+    public function buildGrupAbsensiMessage($namaKelas, $mapel, $tanggal, $namaGuru, $daftarAbsen, $totalSiswa, $namaSekolah, $jam = '', $topik = '', $isRevisi = false)
     {
+        // Banner revisi untuk pesan grup (dipasang di atas pesan bila ini pembaruan)
+        $revisiBanner = $isRevisi
+            ? "♻️ *REVISI ABSENSI*\n_Berikut pembaruan atas data kehadiran yang sebelumnya disampaikan._\n\n"
+            : "";
+
         // Gunakan template kustom jika ada
         if (!empty($this->groupAbsensiTemplate)) {
             $template = $this->groupAbsensiTemplate;
@@ -1061,7 +1076,7 @@ class Fonnte
                 '{{list_terlambat}}' => $listTerlambat
             ];
 
-            return str_replace(array_keys($vars), array_values($vars), $template);
+            return $revisiBanner . str_replace(array_keys($vars), array_values($vars), $template);
         }
 
         // Default Template (Hardcoded)
@@ -1089,7 +1104,8 @@ class Fonnte
         ];
         $tglIndo = strtr($tanggal, $bulanIndo);
 
-        $msg = "*LAPORAN ABSENSI KELAS {$namaKelas}*\n";
+        $msg = $revisiBanner;
+        $msg .= "*LAPORAN ABSENSI KELAS {$namaKelas}*\n";
         $msg .= "-----------------------------------\n";
         $msg .= "Mata Pelajaran: *{$mapel}*\n";
         $msg .= "Tanggal: {$tglIndo}\n";

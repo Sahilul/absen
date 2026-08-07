@@ -1,6 +1,48 @@
 {
     "versions": [
         {
+            "version": "1.19.2",
+            "date": "2026-08-07",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix Fatal Error RaporSTSController: Pernyataan 'use Dompdf' yang berada di dalam method dipindah ke atas file (syntax error 'unexpected token use' di line 110)"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Upload Kop Surat Lembaga PSB: Controller aktif tidak menyimpan kop_gambar meski form dan database sudah mendukung, kini upload kop berfungsi di tambah/edit lembaga"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Kop Surat PDF Formulir PSB: Cetak/kirim formulir kini menampilkan kop surat gambar lembaga (fallback ke nama lembaga jika tidak ada gambar)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Cleanup Duplikasi PSB: Hapus controller dead-code PSBController.php, PsbController-1.php dan .bak (berisiko fatal error redeclare class PsbController)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Keamanan API: JWT secret kini dapat dikonfigurasi via pengaturan_sistem (key: api_secret_key) dengan fallback ke default lama agar token existing tetap valid"
+                }
+            ]
+        },
+        {
+            "version": "1.19.1",
+            "date": "2026-02-28",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix Nilai STS & SAS: Daftar siswa tidak tampil (0 siswa) di halaman Input Nilai Tengah Semester dan Akhir Semester karena model query memakai id_semester bukan id_tp"
+                },
+                {
+                    "type": "fix",
+                    "description": "Fix Auto-Update Timeout: Naikkan timeout cURL download dari 15s ke 300s agar tidak gagal saat koneksi lambat"
+                }
+            ]
+        },
+        {
             "version": "1.19.0",
             "date": "2026-02-15",
             "type": "minor",

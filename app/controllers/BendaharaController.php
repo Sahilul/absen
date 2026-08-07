@@ -41,6 +41,9 @@ class BendaharaController extends Controller
             header('Location: ' . BASEURL . '/guru/dashboard');
             exit;
         }
+
+        // Gunakan sidebar khusus bendahara
+        $this->data['use_bendahara_sidebar'] = true;
     }
 
     /**
@@ -228,10 +231,10 @@ class BendaharaController extends Controller
         if ($id_kelas) {
             $kelas = $this->model('Kelas_model')->getKelasById($id_kelas);
             $this->data['kelas'] = $kelas;
-            $this->data['riwayat'] = $this->model('Pembayaran_model')->getRiwayatByKelas($id_kelas, $id_tp_aktif);
+            $this->data['riwayat'] = $this->model('Pembayaran_model')->getRiwayat($id_kelas, $id_tp_aktif);
         } else {
             $this->data['kelas'] = null;
-            $this->data['riwayat'] = $this->model('Pembayaran_model')->getAllRiwayat($id_tp_aktif);
+            $this->data['riwayat'] = $this->model('Pembayaran_model')->getRiwayatAll($id_tp_aktif);
         }
 
         $this->data['kelas_list'] = $this->model('Kelas_model')->getKelasByTP($id_tp_aktif);
@@ -1148,6 +1151,217 @@ class BendaharaController extends Controller
 
         header('Location: ' . BASEURL . '/bendahara/pembayaranTagihan/' . $tagihan_id);
         exit;
+    }
+
+    /**
+     * Halaman Bayar Siswa (per kelas) - Bendahara
+     */
+    public function bayar($id_kelas)
+    {
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+
+        $kelas = $this->model('Kelas_model')->getKelasById($id_kelas);
+        if (!$kelas) {
+            Flasher::setFlash('Kelas tidak ditemukan.', 'danger');
+            header('Location: ' . BASEURL . '/bendahara/pembayaran');
+            exit;
+        }
+
+        $this->data['judul'] = 'Bendahara - Pembayaran Siswa';
+        $this->data['bendahara_mode'] = true;
+        $this->data['wali_kelas_info'] = [
+            'id_kelas' => $id_kelas,
+            'nama_kelas' => $kelas['nama_kelas']
+        ];
+
+        $search = $_GET['search'] ?? null;
+        $this->data['filter_search'] = $search;
+
+        $this->data['siswa_list'] = $this->model('Siswa_model')->searchSiswaBayar($id_tp_aktif, $id_kelas, $search);
+
+        $this->view('templates/header', $this->data);
+        $this->view('wali_kelas/bayar', $this->data);
+        $this->view('templates/footer');
+    }
+
+    /**
+     * Detail tagihan per siswa - Bendahara
+     */
+    public function bayarSiswa($id_siswa)
+    {
+        $this->data['judul'] = 'Bendahara - Tagihan Siswa';
+        $this->data['bendahara_mode'] = true;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+
+        $siswa = $this->model('Siswa_model')->getSiswaById($id_siswa);
+        if (!$siswa) {
+            Flasher::setFlash('Siswa tidak ditemukan.', 'danger');
+            header('Location: ' . BASEURL . '/bendahara/pembayaran');
+            exit;
+        }
+
+        $this->data['siswa'] = $siswa;
+
+        $keanggotaan = $this->model('Keanggotaan_model')->getKeanggotaanSiswa($id_siswa, $id_tp_aktif);
+        $this->data['keanggotaan'] = $keanggotaan;
+
+        $this->data['wali_kelas_info'] = [
+            'id_kelas' => $keanggotaan['id_kelas'] ?? '',
+            'nama_kelas' => $keanggotaan['nama_kelas'] ?? ''
+        ];
+
+        $this->data['tagihan_list'] = $this->model('Pembayaran_model')->getAllTagihanSiswaWithStatus($id_siswa, $id_tp_aktif);
+
+        $this->view('templates/header', $this->data);
+        $this->view('wali_kelas/bayar_siswa', $this->data);
+        $this->view('templates/footer');
+    }
+
+    /**
+     * Halaman checkout pembayaran bulk - Bendahara
+     */
+    public function bayarCheckout($id_siswa)
+    {
+        $this->data['judul'] = 'Bendahara - Checkout Pembayaran';
+        $this->data['bendahara_mode'] = true;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+
+        $siswa = $this->model('Siswa_model')->getSiswaById($id_siswa);
+        if (!$siswa) {
+            Flasher::setFlash('Siswa tidak ditemukan.', 'danger');
+            header('Location: ' . BASEURL . '/bendahara/pembayaran');
+            exit;
+        }
+
+        $this->data['siswa'] = $siswa;
+        $keanggotaan = $this->model('Keanggotaan_model')->getKeanggotaanSiswa($id_siswa, $id_tp_aktif);
+        $this->data['keanggotaan'] = $keanggotaan;
+
+        $this->data['wali_kelas_info'] = [
+            'id_kelas' => $keanggotaan['id_kelas'] ?? '',
+            'nama_kelas' => $keanggotaan['nama_kelas'] ?? ''
+        ];
+
+        $rawIds = $_GET['ids'] ?? [];
+        $selectedIds = is_array($rawIds) ? $rawIds : explode(',', $rawIds);
+        $selectedIds = array_filter(array_map('intval', $selectedIds));
+
+        if (empty($selectedIds)) {
+            Flasher::setFlash('Pilih minimal satu tagihan untuk dibayar.', 'warning');
+            header('Location: ' . BASEURL . '/bendahara/bayarSiswa/' . $id_siswa);
+            exit;
+        }
+
+        $allTagihan = $this->model('Pembayaran_model')->getAllTagihanSiswaWithStatus($id_siswa, $id_tp_aktif);
+
+        $selectedTagihan = [];
+        $totalTagihan = 0;
+        foreach ($allTagihan as $t) {
+            if (in_array($t['id'], $selectedIds) && $t['status'] !== 'lunas') {
+                $selectedTagihan[] = $t;
+                $totalTagihan += $t['sisa'];
+            }
+        }
+
+        $this->data['selected_tagihan'] = $selectedTagihan;
+        $this->data['total_tagihan'] = $totalTagihan;
+        $this->data['selected_ids'] = implode(',', array_column($selectedTagihan, 'id'));
+
+        $this->view('templates/header', $this->data);
+        $this->view('wali_kelas/bayar_checkout', $this->data);
+        $this->view('templates/footer');
+    }
+
+    /**
+     * Proses pembayaran bulk - Bendahara
+     */
+    public function bayarProses()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/bendahara/pembayaran');
+            exit;
+        }
+
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+        $id_siswa = (int)($_POST['id_siswa'] ?? 0);
+        $selectedIds = isset($_POST['selected_ids']) ? explode(',', $_POST['selected_ids']) : [];
+        $selectedIds = array_filter(array_map('intval', $selectedIds));
+        $mode = $_POST['mode'] ?? 'full';
+        $metode = $_POST['metode'] ?? 'Tunai';
+        $keterangan = trim($_POST['keterangan'] ?? '');
+        $userId = $_SESSION['user_id'] ?? null;
+
+        if (!$id_siswa || empty($selectedIds)) {
+            Flasher::setFlash('Data tidak lengkap.', 'danger');
+            header('Location: ' . BASEURL . '/bendahara/pembayaran');
+            exit;
+        }
+
+        $siswa = $this->model('Siswa_model')->getSiswaById($id_siswa);
+        if (!$siswa) {
+            Flasher::setFlash('Siswa tidak ditemukan.', 'danger');
+            header('Location: ' . BASEURL . '/bendahara/pembayaran');
+            exit;
+        }
+
+        $allTagihan = $this->model('Pembayaran_model')->getAllTagihanSiswaWithStatus($id_siswa, $id_tp_aktif);
+        $totalSisa = 0;
+        $validSelectedIds = [];
+        foreach ($allTagihan as $t) {
+            if (in_array($t['id'], $selectedIds) && $t['status'] !== 'lunas') {
+                $totalSisa += $t['sisa'];
+                $validSelectedIds[] = $t['id'];
+            }
+        }
+
+        if (empty($validSelectedIds)) {
+            Flasher::setFlash('Semua tagihan yang dipilih sudah lunas.', 'warning');
+            header('Location: ' . BASEURL . '/bendahara/bayarSiswa/' . $id_siswa);
+            exit;
+        }
+
+        if ($mode === 'full') {
+            $jumlahBayar = $totalSisa;
+        } else {
+            $jumlahBayar = (int)str_replace(['.', ','], '', $_POST['jumlah_bayar'] ?? '0');
+            if ($jumlahBayar <= 0) {
+                Flasher::setFlash('Jumlah pembayaran tidak valid.', 'danger');
+                header('Location: ' . BASEURL . '/bendahara/bayarCheckout/' . $id_siswa . '?ids=' . implode(',', $validSelectedIds));
+                exit;
+            }
+            if ($jumlahBayar > $totalSisa) {
+                $jumlahBayar = $totalSisa;
+            }
+        }
+
+        $result = $this->model('Pembayaran_model')->prosesBulkPayment(
+            $id_siswa,
+            $validSelectedIds,
+            $jumlahBayar,
+            $metode,
+            $keterangan,
+            $userId
+        );
+
+        if ($result['success']) {
+            $totalDibayar = $result['total_dibayar'];
+            Flasher::setFlash('Pembayaran berhasil. Total dibayar: Rp ' . number_format($totalDibayar, 0, ',', '.'), 'success');
+            header('Location: ' . BASEURL . '/bendahara/bayarSiswa/' . $id_siswa);
+        } else {
+            Flasher::setFlash('Gagal memproses pembayaran.', 'danger');
+            header('Location: ' . BASEURL . '/bendahara/bayarCheckout/' . $id_siswa . '?ids=' . implode(',', $validSelectedIds));
+        }
+        exit;
+    }
+
+    /**
+     * API endpoint untuk data thermal print tagihan siswa (Bendahara)
+     */
+    public function bayarSiswaThermalData($id_siswa)
+    {
+        require_once APPROOT . '/app/controllers/WaliKelasController.php';
+        $waliKelas = new WaliKelasController();
+        $waliKelas->bayarSiswaThermalData($id_siswa);
     }
 }
 

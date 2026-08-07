@@ -6,7 +6,35 @@
 
 class Auth
 {
-    private static $secretKey = 'sabilillah_mobile_app_secret_key_2026';
+    private static $secretKey = null;
+
+    /**
+     * Ambil secret key untuk JWT.
+     * Prioritas: tabel pengaturan_sistem (key: api_secret_key) -> fallback konstanta.
+     * Fallback dipertahankan agar token lama tidak invalid saat upgrade.
+     */
+    private static function getSecretKey()
+    {
+        if (self::$secretKey !== null) {
+            return self::$secretKey;
+        }
+
+        $secret = 'sabilillah_mobile_app_secret_key_2026'; // fallback default
+
+        try {
+            if (function_exists('getSystemSetting')) {
+                $configured = getSystemSetting('api_secret_key', '');
+                if (!empty($configured)) {
+                    $secret = $configured;
+                }
+            }
+        } catch (Throwable $e) {
+            // Gunakan fallback jika pengaturan tidak tersedia
+        }
+
+        self::$secretKey = $secret;
+        return self::$secretKey;
+    }
 
     /**
      * Generate JWT token
@@ -25,7 +53,7 @@ class Auth
         $base64Header = self::base64UrlEncode($header);
         $base64Payload = self::base64UrlEncode($payload);
 
-        $signature = hash_hmac('sha256', $base64Header . '.' . $base64Payload, self::$secretKey, true);
+        $signature = hash_hmac('sha256', $base64Header . '.' . $base64Payload, self::getSecretKey(), true);
         $base64Signature = self::base64UrlEncode($signature);
 
         return $base64Header . '.' . $base64Payload . '.' . $base64Signature;
@@ -46,7 +74,7 @@ class Auth
 
         // Verify signature
         $signature = self::base64UrlDecode($base64Signature);
-        $expectedSignature = hash_hmac('sha256', $base64Header . '.' . $base64Payload, self::$secretKey, true);
+        $expectedSignature = hash_hmac('sha256', $base64Header . '.' . $base64Payload, self::getSecretKey(), true);
 
         if (!hash_equals($signature, $expectedSignature)) {
             return false;

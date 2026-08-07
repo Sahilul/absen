@@ -59,7 +59,24 @@ class KelasGrupWa_model
      */
     public function getActiveGrupByKelas($id_kelas)
     {
-        $this->db->query("SELECT * FROM {$this->table} WHERE id_kelas = :id_kelas AND is_active = 1 ORDER BY created_at ASC");
+        // Grup di-scope ke tahun pelajaran (TP) milik kelas ini.
+        // GUARD: grup dgn grup_wa_id yg juga terdaftar di TP LAIN otomatis disaring,
+        // supaya absensi TP baru TIDAK pernah nyantol ke grup WA milik TP lama.
+        // Begitu admin isi grup_wa_id baru yg unik utk TP ini, grup langsung aktif lagi.
+        $sql = "SELECT g.*
+                FROM {$this->table} g
+                JOIN kelas k ON g.id_kelas = k.id_kelas
+                WHERE g.id_kelas = :id_kelas
+                  AND g.is_active = 1
+                  AND NOT EXISTS (
+                      SELECT 1 FROM {$this->table} d
+                      JOIN kelas dk ON d.id_kelas = dk.id_kelas
+                      WHERE dk.id_tp <> k.id_tp
+                        AND d.is_active = 1
+                        AND REPLACE(d.grup_wa_id, '@g.us', '') = REPLACE(g.grup_wa_id, '@g.us', '')
+                  )
+                ORDER BY g.created_at ASC";
+        $this->db->query($sql);
         $this->db->bind(':id_kelas', $id_kelas);
         return $this->db->resultSet();
     }
@@ -86,8 +103,11 @@ class KelasGrupWa_model
     public function addGrup($id_kelas, $nama_grup, $grup_wa_id)
     {
         try {
-            $this->db->query("INSERT INTO {$this->table} (id_kelas, nama_grup, grup_wa_id) VALUES (:id_kelas, :nama_grup, :grup_wa_id)");
+            // Auto-isi id_tp dari kelas supaya grup ter-scope ke tahun pelajaran yg benar
+            $this->db->query("INSERT INTO {$this->table} (id_kelas, id_tp, nama_grup, grup_wa_id)
+                              VALUES (:id_kelas, (SELECT id_tp FROM kelas WHERE id_kelas = :id_kelas2), :nama_grup, :grup_wa_id)");
             $this->db->bind(':id_kelas', $id_kelas);
+            $this->db->bind(':id_kelas2', $id_kelas);
             $this->db->bind(':nama_grup', trim($nama_grup));
             $this->db->bind(':grup_wa_id', $this->formatNumber(trim($grup_wa_id)));
             $this->db->execute();
@@ -219,7 +239,20 @@ class KelasGrupWa_model
      */
     public function hasActiveGrup($id_kelas)
     {
-        $this->db->query("SELECT COUNT(*) as total FROM {$this->table} WHERE id_kelas = :id_kelas AND is_active = 1");
+        // Konsisten dgn getActiveGrupByKelas: hanya hitung grup yg lolos guard TP.
+        $sql = "SELECT COUNT(*) as total
+                FROM {$this->table} g
+                JOIN kelas k ON g.id_kelas = k.id_kelas
+                WHERE g.id_kelas = :id_kelas
+                  AND g.is_active = 1
+                  AND NOT EXISTS (
+                      SELECT 1 FROM {$this->table} d
+                      JOIN kelas dk ON d.id_kelas = dk.id_kelas
+                      WHERE dk.id_tp <> k.id_tp
+                        AND d.is_active = 1
+                        AND REPLACE(d.grup_wa_id, '@g.us', '') = REPLACE(g.grup_wa_id, '@g.us', '')
+                  )";
+        $this->db->query($sql);
         $this->db->bind(':id_kelas', $id_kelas);
         $result = $this->db->single();
         return ($result['total'] ?? 0) > 0;

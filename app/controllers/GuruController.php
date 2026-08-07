@@ -700,10 +700,17 @@ class GuruController extends Controller
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Snapshot status kehadiran SEBELUM disimpan, agar notif WA hanya
+            // dikirim untuk siswa yang statusnya benar-benar berubah (anti-duplikat).
+            $id_jurnal = $_POST['id_jurnal'] ?? null;
+            $previousStatus = $id_jurnal
+                ? $this->model('Absensi_model')->getStatusKehadiranByJurnal($id_jurnal)
+                : [];
+
             if ($this->model('Absensi_model')->simpanAbsensi($_POST) > 0) {
 
                 // === KIRIM NOTIFIKASI WA UNTUK KETIDAKHADIRAN ===
-                $this->sendAbsensiNotifications($_POST);
+                $this->sendAbsensiNotifications($_POST, $previousStatus);
 
                 // Tambahkan notifikasi sukses
                 if (class_exists('Flasher')) {
@@ -728,7 +735,7 @@ class GuruController extends Controller
      * Kirim notifikasi WA untuk absensi yang tidak hadir (A/I/S/D)
      * Mendukung mode: personal, grup, both, off
      */
-    private function sendAbsensiNotifications($postData)
+    private function sendAbsensiNotifications($postData, $previousStatus = [])
     {
         try {
             error_log("=== sendAbsensiNotifications START ===");
@@ -774,26 +781,66 @@ class GuruController extends Controller
             // Status yang perlu notifikasi
             $statusNotif = ['A', 'I', 'S', 'D'];
 
-            // Kumpulkan siswa yang tidak hadir
-            $siswaNotHadir = [];
+            // Kumpulkan siswa yang tidak hadir.
+            // - $semuaTidakHadir : SELURUH siswa A/I/S/D (dipakai untuk laporan grup agar lengkap)
+            // - $siswaBerubah    : hanya yang statusnya berubah (pemicu notif + notif personal anti-duplikat)
+            $semuaTidakHadir = [];
+            $siswaBerubah = [];
             $statusSiswa = $postData['absensi'] ?? [];
             $keteranganSiswa = $postData['keterangan'] ?? [];
             error_log("statusSiswa count: " . count($statusSiswa));
 
             foreach ($statusSiswa as $id_siswa => $status) {
-                if (in_array($status, $statusNotif)) {
-                    $siswaNotHadir[$id_siswa] = [
-                        'status' => $status,
-                        'keterangan' => $keteranganSiswa[$id_siswa] ?? ''
-                    ];
+                if (!in_array($status, $statusNotif)) {
+                    continue;
+                }
+
+                $entry = [
+                    'status' => $status,
+                    'keterangan' => $keteranganSiswa[$id_siswa] ?? '',
+                    // Revisi jika siswa sudah punya record status sebelumnya (koreksi),
+                    // bukan absen baru pertama kali.
+                    'is_revisi' => isset($previousStatus[$id_siswa])
+                ];
+
+                // Selalu masuk daftar lengkap untuk laporan grup
+                $semuaTidakHadir[$id_siswa] = $entry;
+
+                // Anti-duplikat: hanya siswa yang statusnya BERUBAH dari yang tersimpan
+                // yang memicu notif & dikirimi notif personal (mereka yang sama statusnya
+                // sudah dinotifikasi sebelumnya).
+                if (isset($previousStatus[$id_siswa]) && $previousStatus[$id_siswa] === $status) {
+                    error_log("SKIP notif personal (status tidak berubah) untuk siswa id: {$id_siswa}, status: {$status}");
+                } else {
+                    $siswaBerubah[$id_siswa] = $entry;
                 }
             }
 
-            error_log("siswaNotHadir count: " . count($siswaNotHadir));
-            if (empty($siswaNotHadir)) {
-                error_log("EXIT: Tidak ada siswa yang tidak hadir (semua H)");
+            // Deteksi perubahan apa pun (termasuk absen -> hadir) untuk memicu revisi grup.
+            // $siswaBerubah hanya menampung perubahan MENJADI A/I/S/D (untuk notif personal),
+            // sedangkan revisi grup juga perlu terkirim saat siswa BERUBAH menjadi hadir.
+            $adaPerubahan = !empty($siswaBerubah);
+            if (!$adaPerubahan) {
+                foreach ($previousStatus as $id_siswa => $prevStatus) {
+                    // Sebelumnya tidak hadir, sekarang statusnya berbeda (mis. jadi Hadir)
+                    if (in_array($prevStatus, $statusNotif)) {
+                        $currentStatus = $statusSiswa[$id_siswa] ?? null;
+                        if ($currentStatus !== $prevStatus) {
+                            $adaPerubahan = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            error_log("semuaTidakHadir: " . count($semuaTidakHadir) . ", siswaBerubah: " . count($siswaBerubah) . ", adaPerubahan: " . ($adaPerubahan ? 'ya' : 'tidak'));
+            if (!$adaPerubahan) {
+                error_log("EXIT: Tidak ada perubahan absensi yang perlu dinotifikasi");
                 return;
             }
+
+            // Apakah proses ini adalah revisi/edit atas absensi yang sudah tersimpan?
+            $isEdit = !empty($previousStatus);
 
             // Ambil data siswa dan orang tua
             $siswaModel = $this->model('Siswa_model');
@@ -833,10 +880,11 @@ class GuruController extends Controller
 
                 error_log("Active groups found: " . count($grupList));
 
-                if (!empty($grupList)) {
-                    // Build daftar absen untuk grup
+                if (!empty($grupList) && !empty($semuaTidakHadir)) {
+                    // Build daftar absen untuk grup dari SELURUH siswa tidak hadir
+                    // (laporan kelas harus lengkap, bukan hanya yang berubah).
                     $daftarAbsen = [];
-                    foreach ($siswaNotHadir as $id_siswa => $data) {
+                    foreach ($semuaTidakHadir as $id_siswa => $data) {
                         $siswa = $siswaModel->getSiswaById($id_siswa);
                         if ($siswa) {
                             $daftarAbsen[] = [
@@ -846,6 +894,9 @@ class GuruController extends Controller
                             ];
                         }
                     }
+
+                    // Grup ditandai revisi bila ini edit atas absensi yang sudah tersimpan.
+                    $grupIsRevisi = $isEdit;
 
                     // Kirim ke setiap grup aktif
                     foreach ($grupList as $grup) {
@@ -857,17 +908,17 @@ class GuruController extends Controller
                         $topik = $jurnal['topik_materi'] ?? '';
 
                         // Build message menggunakan Fonnte helper
-                        $pesan = $fonnte->buildGrupAbsensiMessage($namaKelas, $namaMapel, $tanggal, $namaGuru, $daftarAbsen, 0, $namaSekolah, $jam, $topik);
+                        $pesan = $fonnte->buildGrupAbsensiMessage($namaKelas, $namaMapel, $tanggal, $namaGuru, $daftarAbsen, 0, $namaSekolah, $jam, $topik, $grupIsRevisi);
 
                         // Masukkan ke antrian
                         $queueModel->addToQueue(
                             $grupId,
                             $pesan,
                             'notif_absensi_grup',
-                            ['kelas' => $namaKelas, 'mapel' => $namaMapel, 'grup' => $namaGrup, 'jumlah_absen' => count($daftarAbsen)]
+                            ['kelas' => $namaKelas, 'mapel' => $namaMapel, 'grup' => $namaGrup, 'jumlah_absen' => count($daftarAbsen), 'revisi' => $grupIsRevisi]
                         );
                         $queued++;
-                        error_log("Queued group message to: {$namaGrup} ({$grupId})");
+                        error_log("Queued group message to: {$namaGrup} ({$grupId})" . ($grupIsRevisi ? " [REVISI]" : ""));
                     }
                 } else {
                     error_log("No active groups for kelas: " . $id_kelas);
@@ -878,10 +929,11 @@ class GuruController extends Controller
             if (in_array($notifMode, ['personal', 'both'])) {
                 error_log("Processing PERSONAL notification");
 
-                foreach ($siswaNotHadir as $id_siswa => $data) {
+                foreach ($siswaBerubah as $id_siswa => $data) {
                     $status = $data['status'];
+                    $isRevisi = !empty($data['is_revisi']);
                     $siswa = $siswaModel->getSiswaById($id_siswa);
-                    error_log("Processing siswa id: {$id_siswa}, status: {$status}");
+                    error_log("Processing siswa id: {$id_siswa}, status: {$status}" . ($isRevisi ? " [REVISI]" : ""));
 
                     if (!$siswa) {
                         error_log("SKIP: siswa not found for id: {$id_siswa}");
@@ -903,22 +955,22 @@ class GuruController extends Controller
                     // Prioritas: Kirim ke Ibu dulu, jika tidak ada baru ke Ayah
                     if ($ibuNo) {
                         $namaIbu = $siswa['ibu_kandung'] ?? 'Ibu';
-                        $pesan = $fonnte->buildAbsensiMessage($namaIbu, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
+                        $pesan = $fonnte->buildAbsensiMessage($namaIbu, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel, $isRevisi);
                         $queueModel->addToQueue(
                             $ibuNo,
                             $pesan,
                             'notif_absensi',
-                            ['siswa' => $namaSiswa, 'target' => 'Ibu', 'status' => $status]
+                            ['siswa' => $namaSiswa, 'target' => 'Ibu', 'status' => $status, 'revisi' => $isRevisi]
                         );
                         $queued++;
                     } elseif ($ayahNo) {
                         $namaAyah = $siswa['ayah_kandung'] ?? 'Bapak';
-                        $pesan = $fonnte->buildAbsensiMessage($namaAyah, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel);
+                        $pesan = $fonnte->buildAbsensiMessage($namaAyah, $namaSiswa, $namaKelas, $statusLabel, $tanggal, $namaSekolah, $status, $namaMapel, $isRevisi);
                         $queueModel->addToQueue(
                             $ayahNo,
                             $pesan,
                             'notif_absensi',
-                            ['siswa' => $namaSiswa, 'target' => 'Ayah', 'status' => $status]
+                            ['siswa' => $namaSiswa, 'target' => 'Ayah', 'status' => $status, 'revisi' => $isRevisi]
                         );
                         $queued++;
                     }
@@ -1039,10 +1091,16 @@ class GuruController extends Controller
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_jurnal = $_POST['id_jurnal'] ?? null;
 
+            // Snapshot status kehadiran SEBELUM diupdate, agar notif WA hanya
+            // dikirim untuk siswa yang statusnya benar-benar berubah (anti-duplikat).
+            $previousStatus = $id_jurnal
+                ? $this->model('Absensi_model')->getStatusKehadiranByJurnal($id_jurnal)
+                : [];
+
             if ($this->model('Absensi_model')->simpanAbsensi($_POST) > 0) {
 
                 // === KIRIM NOTIFIKASI WA UNTUK KETIDAKHADIRAN ===
-                $this->sendAbsensiNotifications($_POST);
+                $this->sendAbsensiNotifications($_POST, $previousStatus);
 
                 // SUKSES: Set notifikasi dan redirect ke dashboard
                 if (class_exists('Flasher')) {

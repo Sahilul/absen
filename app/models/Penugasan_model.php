@@ -244,8 +244,65 @@ class Penugasan_model
     }
 
     /**
-     * Copy penugasan dari semester sumber ke semester tujuan
-     * Skip jika sudah ada (validasi duplikasi)
+     * Mencari tepat satu kelas ekuivalen pada tahun pelajaran semester tujuan.
+     * Untuk copy dalam TP yang sama, kelas sumber dipertahankan. Untuk lintas
+     * TP, nama dan jenjang harus sama serta hasilnya tidak boleh ambigu.
+     */
+    private function resolveKelasTujuan($id_kelas_sumber, $id_semester_tujuan)
+    {
+        $this->db->query('SELECT
+                            k_sumber.id_kelas AS id_kelas_sumber,
+                            k_sumber.id_tp AS id_tp_sumber,
+                            k_sumber.nama_kelas AS nama_kelas_sumber,
+                            k_sumber.jenjang AS jenjang_sumber,
+                            sem_tujuan.id_tp AS id_tp_tujuan
+                         FROM kelas k_sumber
+                         JOIN semester sem_tujuan
+                            ON sem_tujuan.id_semester = :id_semester_tujuan
+                         WHERE k_sumber.id_kelas = :id_kelas_sumber');
+        $this->db->bind('id_semester_tujuan', $id_semester_tujuan);
+        $this->db->bind('id_kelas_sumber', $id_kelas_sumber);
+        $scope = $this->db->single();
+
+        if (!$scope) {
+            return ['id_kelas_list' => [], 'reason' => 'semester atau kelas sumber tidak ditemukan'];
+        }
+
+        // Copy dalam TP yang sama: pertahankan kelas sumber.
+        if ((int) $scope['id_tp_sumber'] === (int) $scope['id_tp_tujuan']) {
+            return ['id_kelas_list' => [(int) $scope['id_kelas_sumber']], 'reason' => null];
+        }
+
+        // Lintas TP: petakan berdasarkan jenjang yang sama.
+        // Cocokkan by JENJANG saja (bukan nama_kelas), supaya kelas yg berganti
+        // penamaan/pemekaran tetap ketemu. Contoh: IX (lama) -> IX A + IX B (baru).
+        // Semua kelas tujuan dgn jenjang sama akan menerima copy (mapping 1:banyak).
+        $this->db->query('SELECT k_tujuan.id_kelas
+                         FROM kelas k_tujuan
+                         WHERE k_tujuan.id_tp = :id_tp_tujuan
+                           AND k_tujuan.jenjang = :jenjang_sumber
+                         ORDER BY k_tujuan.id_kelas');
+        $this->db->bind('id_tp_tujuan', (int) $scope['id_tp_tujuan']);
+        $this->db->bind('jenjang_sumber', $scope['jenjang_sumber']);
+        $matches = $this->db->resultSet();
+
+        if (empty($matches)) {
+            return [
+                'id_kelas_list' => [],
+                'reason' => "kelas tujuan dgn jenjang '{$scope['jenjang_sumber']}' tidak ditemukan di TP tujuan"
+            ];
+        }
+
+        $ids = array_map(function ($row) {
+            return (int) $row['id_kelas'];
+        }, $matches);
+
+        return ['id_kelas_list' => $ids, 'reason' => null];
+    }
+
+    /**
+     * Copy penugasan dari semester sumber ke semester tujuan.
+     * Kelas dipetakan ke kelas ekuivalen pada TP tujuan dan duplikat dilewati.
      * @param int $id_semester_sumber
      * @param int $id_semester_tujuan
      * @return array ['copied' => int, 'skipped' => int, 'errors' => array]
@@ -262,35 +319,50 @@ class Penugasan_model
         $penugasanSumber = $this->getAllPenugasanBySemester($id_semester_sumber);
 
         foreach ($penugasanSumber as $tugas) {
-            // Cek apakah kombinasi sudah ada di semester tujuan
-            $isDuplicate = $this->cekDuplikasiPenugasan(
-                $tugas['id_guru'],
-                $tugas['id_mapel'],
+            $kelasTujuan = $this->resolveKelasTujuan(
                 $tugas['id_kelas'],
                 $id_semester_tujuan
             );
+            $idKelasTujuanList = $kelasTujuan['id_kelas_list'];
 
-            if ($isDuplicate) {
-                $result['skipped']++;
+            if (empty($idKelasTujuanList)) {
+                $result['errors'][] = "{$tugas['nama_kelas']}: {$kelasTujuan['reason']}";
                 continue;
             }
 
-            // Insert penugasan baru
-            try {
-                $data = [
-                    'id_guru' => $tugas['id_guru'],
-                    'id_mapel' => $tugas['id_mapel'],
-                    'id_kelas' => $tugas['id_kelas'],
-                    'id_semester' => $id_semester_tujuan
-                ];
+            // Satu penugasan sumber bisa dipetakan ke >1 kelas tujuan
+            // (mis. IX lama -> IX A & IX B baru). Copy ke tiap kelas tujuan.
+            foreach ($idKelasTujuanList as $idKelasTujuan) {
+                // Cek apakah kombinasi sudah ada di semester tujuan
+                $isDuplicate = $this->cekDuplikasiPenugasan(
+                    $tugas['id_guru'],
+                    $tugas['id_mapel'],
+                    $idKelasTujuan,
+                    $id_semester_tujuan
+                );
 
-                if ($this->tambahDataPenugasan($data) > 0) {
-                    $result['copied']++;
-                } else {
-                    $result['errors'][] = "Gagal copy: {$tugas['nama_guru']} - {$tugas['nama_mapel']} - {$tugas['nama_kelas']}";
+                if ($isDuplicate) {
+                    $result['skipped']++;
+                    continue;
                 }
-            } catch (Exception $e) {
-                $result['errors'][] = $e->getMessage();
+
+                // Insert penugasan baru menggunakan kelas milik TP tujuan
+                try {
+                    $data = [
+                        'id_guru' => $tugas['id_guru'],
+                        'id_mapel' => $tugas['id_mapel'],
+                        'id_kelas' => $idKelasTujuan,
+                        'id_semester' => $id_semester_tujuan
+                    ];
+
+                    if ($this->tambahDataPenugasan($data) > 0) {
+                        $result['copied']++;
+                    } else {
+                        $result['errors'][] = "Gagal copy: {$tugas['nama_guru']} - {$tugas['nama_mapel']} - {$tugas['nama_kelas']}";
+                    }
+                } catch (Exception $e) {
+                    $result['errors'][] = $e->getMessage();
+                }
             }
         }
 

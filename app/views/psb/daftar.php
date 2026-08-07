@@ -234,7 +234,7 @@
                 </h2>
                 <input type="file" name="foto" accept="image/*"
                     class="w-full px-4 py-3 border border-secondary-300 rounded-lg">
-                <p class="text-xs text-secondary-400 mt-1">Format: JPG, PNG</p>
+                <p class="text-xs text-secondary-400 mt-1">Format: JPG, PNG. Maks: 2MB</p>
             </div>
 
             <!-- Submit -->

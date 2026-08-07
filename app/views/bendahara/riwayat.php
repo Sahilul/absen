@@ -81,10 +81,11 @@ $namaKelas = $kelas ? htmlspecialchars($kelas['nama_kelas']) : 'Semua Kelas';
                                         Rp <?= number_format((int) ($r['jumlah'] ?? 0), 0, ',', '.') ?>
                                     </span>
                                 </td>
-                                <span
-                                    class="inline-flex items-center px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium capitalize">
-                                    <?= htmlspecialchars($r['metode'] ?? 'tunai') ?>
-                                </span>
+                                <td class="p-4">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium capitalize">
+                                        <?= htmlspecialchars($r['metode'] ?? 'tunai') ?>
+                                    </span>
                                 </td>
                                 <td class="p-4">
                                     <span

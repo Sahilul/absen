@@ -37,16 +37,8 @@ class Database {
         $this->stmt = $this->dbh->prepare($query);
     }
 
-        public function bind($param, $value, $type = null)
+    public function bind($param, $value, $type = null)
     {
-        // List of date/datetime fields that should be NULL if empty (safety check)
-        $dateFields = [':tanggal_lahir', ':ayah_tanggal_lahir', ':ibu_tanggal_lahir', ':wali_tanggal_lahir'];
-        
-        // Convert empty strings to NULL for date/datetime fields
-        if (in_array($param, $dateFields) && $value === '') {
-            $value = null;
-        }
-
         if (is_null($type)) {
             switch (true) {
                 case is_int($value):
@@ -64,6 +56,7 @@ class Database {
         }
         $this->stmt->bindValue($param, $value, $type);
     }
+
     public function execute()
     {
         return $this->stmt->execute();

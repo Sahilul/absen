@@ -436,4 +436,129 @@ class Pembayaran_model
         return true;
     }
 
+    // =============================
+    // BAYAR BULK (Admin)
+    // =============================
+
+    /**
+     * Get all tagihan for a student across all classes with their status
+     * @param int $id_siswa
+     * @param int $id_tp
+     * @return array
+     */
+    public function getAllTagihanSiswaWithStatus($id_siswa, $id_tp)
+    {
+        // Get siswa's kelas
+        $this->db->query("SELECT k.id_kelas FROM keanggotaan_kelas kk 
+                          JOIN kelas k ON kk.id_kelas = k.id_kelas 
+                          WHERE kk.id_siswa = :sid AND k.id_tp = :id_tp 
+                          LIMIT 1");
+        $this->db->bind('sid', $id_siswa);
+        $this->db->bind('id_tp', $id_tp);
+        $kelas = $this->db->single();
+        $id_kelas = $kelas ? $kelas['id_kelas'] : 0;
+
+        if (!$id_kelas) {
+            return [];
+        }
+
+        // Get all tagihan for this kelas
+        $this->db->query("SELECT * FROM pembayaran_tagihan 
+                          WHERE id_kelas = :id_kelas AND id_tp = :id_tp 
+                          ORDER BY id ASC");
+        $this->db->bind('id_kelas', $id_kelas);
+        $this->db->bind('id_tp', $id_tp);
+        $tagihanList = $this->db->resultSet();
+
+        $result = [];
+        foreach ($tagihanList as $t) {
+            $pembayaran = $this->getPembayaranSiswa($t['id'], $id_siswa);
+            $nominal = $pembayaran ? (int)($pembayaran['nominal'] ?? $t['nominal_default']) : (int)$t['nominal_default'];
+            $diskon = $pembayaran ? (int)($pembayaran['diskon'] ?? 0) : 0;
+            $terbayar = $pembayaran ? (int)($pembayaran['total_terbayar'] ?? 0) : 0;
+            $target = max(0, $nominal - $diskon);
+            $sisa = max(0, $target - $terbayar);
+            $status = $sisa <= 0 ? 'lunas' : ($terbayar > 0 ? 'sebagian' : 'belum');
+
+            $result[] = [
+                'id' => $t['id'],
+                'nama' => $t['nama'],
+                'nominal_default' => (int)$t['nominal_default'],
+                'tipe' => $t['tipe'],
+                'jatuh_tempo' => $t['jatuh_tempo'],
+                'nominal' => $nominal,
+                'diskon' => $diskon,
+                'total_terbayar' => $terbayar,
+                'sisa' => $sisa,
+                'target' => $target,
+                'status' => $status,
+                'id_kelas' => $t['id_kelas']
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Process bulk payment with cicil logic
+     * Membayar tagihan dari yang paling atas dulu, sisanya ke tagihan berikutnya
+     * 
+     * @param int $id_siswa
+     * @param array $selectedTagihanIds Array of tagihan IDs (ordered)
+     * @param int $totalBayar Total amount to pay
+     * @param string $metode Payment method
+     * @param string $keterangan
+     * @param int $userId
+     * @return array ['success' => bool, 'transaksi_ids' => [], 'details' => []]
+     */
+    public function prosesBulkPayment($id_siswa, $selectedTagihanIds, $totalBayar, $metode = 'Tunai', $keterangan = '', $userId = null)
+    {
+        $transaksiIds = [];
+        $details = [];
+        $sisaBayar = $totalBayar;
+
+        foreach ($selectedTagihanIds as $tagihanId) {
+            if ($sisaBayar <= 0) break;
+
+            $tagihan = $this->getTagihanById($tagihanId);
+            if (!$tagihan) continue;
+
+            // Get current status
+            $pembayaran = $this->getPembayaranSiswa($tagihanId, $id_siswa);
+            $nominal = $pembayaran ? (int)($pembayaran['nominal'] ?? $tagihan['nominal_default']) : (int)$tagihan['nominal_default'];
+            $diskon = $pembayaran ? (int)($pembayaran['diskon'] ?? 0) : 0;
+            $terbayar = $pembayaran ? (int)($pembayaran['total_terbayar'] ?? 0) : 0;
+            $target = max(0, $nominal - $diskon);
+            $sisaTagihan = max(0, $target - $terbayar);
+
+            if ($sisaTagihan <= 0) continue;
+
+            $bayarUntukIni = min($sisaBayar, $sisaTagihan);
+
+            // Create single transaction
+            $ket = $keterangan ?: 'Pembayaran bulk';
+            $lastId = $this->createTransaksi($tagihanId, $id_siswa, $bayarUntukIni, $metode, $ket, null, $userId);
+
+            if ($lastId) {
+                $transaksiIds[] = $lastId;
+                $details[] = [
+                    'tagihan_id' => $tagihanId,
+                    'nama_tagihan' => $tagihan['nama'],
+                    'dibayar' => $bayarUntukIni,
+                    'sisa_tagihan' => $sisaTagihan - $bayarUntukIni,
+                    'transaksi_id' => $lastId
+                ];
+                $sisaBayar -= $bayarUntukIni;
+            }
+        }
+
+        return [
+            'success' => !empty($transaksiIds),
+            'transaksi_ids' => $transaksiIds,
+            'details' => $details,
+            'total_dibayar' => $totalBayar - $sisaBayar,
+            'sisa_uang' => $sisaBayar
+        ];
+    }
+
 }

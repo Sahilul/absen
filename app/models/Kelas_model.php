@@ -308,6 +308,13 @@ class Kelas_model
         $kelas = $this->db->single();
         $id_tp = $kelas['id_tp'];
 
+        // Hapus assignment lama guru ini di TP yang sama (jika ada di kelas lain)
+        $this->db->query("DELETE FROM wali_kelas WHERE id_guru = :id_guru AND id_tp = :id_tp AND id_kelas != :id_kelas");
+        $this->db->bind('id_guru', $id_guru);
+        $this->db->bind('id_tp', $id_tp);
+        $this->db->bind('id_kelas', $id_kelas);
+        $this->db->execute();
+
         // Check if wali_kelas already exists for this class and TP
         $this->db->query("SELECT id_walikelas FROM wali_kelas WHERE id_kelas = :id_kelas AND id_tp = :id_tp");
         $this->db->bind('id_kelas', $id_kelas);
@@ -315,7 +322,7 @@ class Kelas_model
         $existing = $this->db->single();
 
         if ($existing) {
-            // Update existing wali_kelas
+            // Update existing wali_kelas (kelas ini sudah punya wali, ganti gurunya)
             $this->db->query("UPDATE wali_kelas SET id_guru = :id_guru WHERE id_kelas = :id_kelas AND id_tp = :id_tp");
             $this->db->bind('id_guru', $id_guru);
             $this->db->bind('id_kelas', $id_kelas);

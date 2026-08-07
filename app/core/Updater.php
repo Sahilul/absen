@@ -160,7 +160,8 @@ class Updater
     {
         $zipPath = $this->tempDir . "update_v{$version}.zip";
         $this->cleanTempDir();
-        $content = $this->httpGet($url, true);
+        // Timeout 300 detik untuk download file ZIP yang besar
+        $content = $this->httpGet($url, true, 300);
         if ($content === false)
             throw new Exception('Gagal mengunduh file update.');
         if (file_put_contents($zipPath, $content) === false)
@@ -296,7 +297,7 @@ class Updater
         }
     }
 
-    private function httpGet($url, $followRedirect = false)
+    private function httpGet($url, $followRedirect = false, $timeout = 15)
     {
         if (!function_exists('curl_init'))
             throw new Exception('cURL tidak tersedia.');
@@ -304,7 +305,8 @@ class Updater
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 15,
+            CURLOPT_TIMEOUT => $timeout,
+            CURLOPT_CONNECTTIMEOUT => 30,
             CURLOPT_USERAGENT => 'SchoolApp-Updater/1.0',
             CURLOPT_HTTPHEADER => ['Accept: application/vnd.github.v3+json'],
             CURLOPT_SSL_VERIFYPEER => true,

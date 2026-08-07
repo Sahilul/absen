@@ -1,11 +1,13 @@
 <?php
 // File: app/controllers/NilaiController.php
 
-class NilaiController extends Controller {
+class NilaiController extends Controller
+{
     private $nilaiModel;
     private $data = [];
 
-    public function __construct() {
+    public function __construct()
+    {
         // Guard akses: Guru dan Wali Kelas bisa mengakses
         if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? null, ['guru', 'wali_kelas'])) {
             header('Location: ' . BASEURL . '/auth/login');
@@ -36,7 +38,8 @@ class NilaiController extends Controller {
     /**
      * Halaman utama menu Nilai - Redirect ke dashboard
      */
-    public function index() {
+    public function index()
+    {
         // Input nilai sudah dipindahkan ke dashboard guru
         // Redirect ke dashboard
         header('Location: ' . BASEURL . '/guru');
@@ -46,7 +49,8 @@ class NilaiController extends Controller {
     /**
      * Halaman pilih kelas untuk input nilai
      */
-    public function pilihKelas() {
+    public function pilihKelas()
+    {
         // Cek blokir akses RPP
         $blokir = cekBlokirAksesRPP('nilai');
         if ($blokir) {
@@ -84,7 +88,8 @@ class NilaiController extends Controller {
     /**
      * Tampilkan daftar jurnal untuk dipilih sebelum input nilai harian
      */
-    public function tugasHarian() {
+    public function tugasHarian()
+    {
         $id_guru = $_SESSION['id_ref'] ?? null;
         $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? null;
 
@@ -106,17 +111,17 @@ class NilaiController extends Controller {
         // Ambil data penugasan
         $penugasan = $this->model('Penugasan_model')->getPenugasanById($id_penugasan);
         $this->data['penugasan'] = $penugasan;
-        
+
         // Ambil daftar jurnal untuk penugasan ini
         $jurnal_list = $this->model('Jurnal_model')->getJurnalByPenugasan($id_penugasan);
-        
+
         // Cek setiap jurnal apakah sudah ada nilainya
         foreach ($jurnal_list as &$jurnal) {
             $nilai_count = $this->nilaiModel->countNilaiByJurnal($jurnal['id_jurnal']);
             $jurnal['has_nilai'] = $nilai_count > 0;
             $jurnal['jumlah_nilai'] = $nilai_count;
         }
-        
+
         $this->data['jurnal_list'] = $jurnal_list;
 
         // Tampilkan view pilih jurnal
@@ -129,7 +134,8 @@ class NilaiController extends Controller {
     /**
      * Form input nilai harian berdasarkan jurnal yang dipilih
      */
-    public function inputNilaiHarian() {
+    public function inputNilaiHarian()
+    {
         // Cek blokir akses RPP
         $blokir = cekBlokirAksesRPP('nilai');
         if ($blokir) {
@@ -164,14 +170,14 @@ class NilaiController extends Controller {
             exit;
         }
         $this->data['jurnal'] = $jurnal;
-        
+
         // Ambil data penugasan
         $penugasan = $this->model('Penugasan_model')->getPenugasanById($jurnal['id_penugasan']);
         $this->data['penugasan'] = $penugasan;
-        
+
         // Ambil siswa dan absensi berdasarkan jurnal
         $this->data['siswa_list'] = $this->model('Absensi_model')->getSiswaDanAbsensiByJurnal($id_jurnal);
-        
+
         // Ambil nilai yang sudah ada
         $this->data['nilai_tugas_harian'] = $this->nilaiModel->getNilaiTugasHarianByJurnal($id_jurnal);
 
@@ -188,7 +194,8 @@ class NilaiController extends Controller {
     /**
      * Proses penyimpanan nilai tugas harian
      */
-    public function prosesSimpanTugasHarian() {
+    public function prosesSimpanTugasHarian()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // VALIDASI INPUT
             $id_jurnal = InputValidator::sanitizeInt($_POST['id_jurnal'] ?? 0);
@@ -211,16 +218,16 @@ class NilaiController extends Controller {
             // Get jurnal data (with detail including id_semester)
             $jurnal = $this->model('Jurnal_model')->getJurnalDetailById($id_jurnal);
             $penugasan = $this->model('Penugasan_model')->getPenugasanById($id_penugasan);
-            
+
             // Ambil id_semester dari penugasan (lebih reliable)
             $id_semester = $penugasan['id_semester'] ?? null;
-            
+
             if (!$id_semester) {
                 Flasher::setFlash('Data semester tidak ditemukan.', 'danger');
                 header('Location: ' . BASEURL . '/guru');
                 exit;
             }
-            
+
             $sukses = 0;
             $gagal = 0;
 
@@ -233,8 +240,9 @@ class NilaiController extends Controller {
                 }
 
                 // Skip jika nilai kosong
-                if (empty($nilai)) continue;
-                
+                if (empty($nilai))
+                    continue;
+
                 // Validasi dan sanitasi nilai
                 $nilai = InputValidator::sanitizeNilai($nilai);
                 if ($nilai === false) {
@@ -244,9 +252,9 @@ class NilaiController extends Controller {
 
                 $data = [
                     'id_siswa' => $id_siswa,
-                    'id_guru' => (int)$penugasan['id_guru'],
-                    'id_mapel' => (int)$penugasan['id_mapel'],
-                    'id_semester' => (int)$id_semester,
+                    'id_guru' => (int) $penugasan['id_guru'],
+                    'id_mapel' => (int) $penugasan['id_mapel'],
+                    'id_semester' => (int) $id_semester,
                     'jenis_nilai' => 'harian',
                     'keterangan' => $id_jurnal, // Simpan id_jurnal di keterangan
                     'nilai' => $nilai,
@@ -278,7 +286,8 @@ class NilaiController extends Controller {
     /**
      * Proses edit nilai tugas harian
      */
-    public function prosesEditTugasHarian() {
+    public function prosesEditTugasHarian()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // VALIDASI INPUT
             $id_nilai = InputValidator::sanitizeInt($_POST['id_nilai'] ?? 0);
@@ -314,7 +323,8 @@ class NilaiController extends Controller {
     /**
      * Proses hapus nilai tugas harian
      */
-    public function prosesHapusTugasHarian() {
+    public function prosesHapusTugasHarian()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_nilai = $_POST['id_nilai'] ?? null;
 
@@ -342,7 +352,8 @@ class NilaiController extends Controller {
     /**
      * Halaman detail nilai tengah semester
      */
-    public function tengahSemester() {
+    public function tengahSemester()
+    {
         $id_guru = $_SESSION['id_ref'] ?? null;
         $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? null;
 
@@ -364,7 +375,7 @@ class NilaiController extends Controller {
         // Ambil data penugasan dan siswa
         $penugasan = $this->model('Penugasan_model')->getPenugasanById($id_penugasan);
         $this->data['penugasan'] = $penugasan;
-        $this->data['siswa_list'] = $this->model('Siswa_model')->getSiswaByKelas($penugasan['id_kelas'], $id_semester_aktif);
+        $this->data['siswa_list'] = $this->model('Kelas_model')->getSiswaByKelas($penugasan['id_kelas']);
         $this->data['nilai_tengah_semester'] = $this->nilaiModel->getNilaiTengahSemesterByPenugasan($id_penugasan);
 
         // Siapkan data siswa
@@ -380,7 +391,8 @@ class NilaiController extends Controller {
     /**
      * Proses penyimpanan nilai tengah semester
      */
-    public function prosesSimpanTengahSemester() {
+    public function prosesSimpanTengahSemester()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_penugasan = $_POST['id_penugasan'] ?? null;
             $nilai_array = $_POST['nilai'] ?? [];
@@ -399,23 +411,24 @@ class NilaiController extends Controller {
 
             // Get penugasan data
             $penugasan = $this->model('Penugasan_model')->getPenugasanById($id_penugasan);
-            
+
             // Ambil id_semester dari penugasan
             $id_semester = $penugasan['id_semester'] ?? null;
-            
+
             if (!$id_semester) {
                 Flasher::setFlash('Data semester tidak ditemukan.', 'danger');
                 header('Location: ' . BASEURL . '/guru');
                 exit;
             }
-            
+
             $sukses = 0;
             $gagal = 0;
 
             foreach ($nilai_array as $id_siswa => $nilai) {
                 // Skip jika nilai kosong
-                if (empty($nilai)) continue;
-                
+                if (empty($nilai))
+                    continue;
+
                 // Validasi nilai
                 if (!is_numeric($nilai) || $nilai < 0 || $nilai > 100) {
                     $gagal++;
@@ -458,7 +471,8 @@ class NilaiController extends Controller {
     /**
      * Proses edit nilai tengah semester
      */
-    public function prosesEditTengahSemester() {
+    public function prosesEditTengahSemester()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_nilai = $_POST['id_nilai'] ?? null;
             $nilai_baru = $_POST['nilai'] ?? null;
@@ -493,7 +507,8 @@ class NilaiController extends Controller {
     /**
      * Proses hapus nilai tengah semester
      */
-    public function prosesHapusTengahSemester() {
+    public function prosesHapusTengahSemester()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_nilai = $_POST['id_nilai'] ?? null;
 
@@ -521,7 +536,8 @@ class NilaiController extends Controller {
     /**
      * Halaman detail nilai akhir semester
      */
-    public function akhirSemester() {
+    public function akhirSemester()
+    {
         $id_guru = $_SESSION['id_ref'] ?? null;
         $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? null;
 
@@ -543,7 +559,7 @@ class NilaiController extends Controller {
         // Ambil data penugasan dan siswa
         $penugasan = $this->model('Penugasan_model')->getPenugasanById($id_penugasan);
         $this->data['penugasan'] = $penugasan;
-        $this->data['siswa_list'] = $this->model('Siswa_model')->getSiswaByKelas($penugasan['id_kelas'], $id_semester_aktif);
+        $this->data['siswa_list'] = $this->model('Kelas_model')->getSiswaByKelas($penugasan['id_kelas']);
         $this->data['nilai_akhir_semester'] = $this->nilaiModel->getNilaiAkhirSemesterByPenugasan($id_penugasan);
 
         // Siapkan data siswa
@@ -559,7 +575,8 @@ class NilaiController extends Controller {
     /**
      * Proses penyimpanan nilai akhir semester
      */
-    public function prosesSimpanAkhirSemester() {
+    public function prosesSimpanAkhirSemester()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_penugasan = $_POST['id_penugasan'] ?? null;
             $nilai_array = $_POST['nilai'] ?? [];
@@ -578,23 +595,24 @@ class NilaiController extends Controller {
 
             // Get penugasan data
             $penugasan = $this->model('Penugasan_model')->getPenugasanById($id_penugasan);
-            
+
             // Ambil id_semester dari penugasan
             $id_semester = $penugasan['id_semester'] ?? null;
-            
+
             if (!$id_semester) {
                 Flasher::setFlash('Data semester tidak ditemukan.', 'danger');
                 header('Location: ' . BASEURL . '/guru');
                 exit;
             }
-            
+
             $sukses = 0;
             $gagal = 0;
 
             foreach ($nilai_array as $id_siswa => $nilai) {
                 // Skip jika nilai kosong
-                if (empty($nilai)) continue;
-                
+                if (empty($nilai))
+                    continue;
+
                 // Validasi nilai
                 if (!is_numeric($nilai) || $nilai < 0 || $nilai > 100) {
                     $gagal++;
@@ -637,7 +655,8 @@ class NilaiController extends Controller {
     /**
      * Proses edit nilai akhir semester
      */
-    public function prosesEditAkhirSemester() {
+    public function prosesEditAkhirSemester()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_nilai = $_POST['id_nilai'] ?? null;
             $nilai_baru = $_POST['nilai'] ?? null;
@@ -672,7 +691,8 @@ class NilaiController extends Controller {
     /**
      * Proses hapus nilai akhir semester
      */
-    public function prosesHapusAkhirSemester() {
+    public function prosesHapusAkhirSemester()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id_nilai = $_POST['id_nilai'] ?? null;
 
@@ -700,10 +720,11 @@ class NilaiController extends Controller {
     /**
      * Download template Excel untuk import hasil CBT
      */
-    public function downloadTemplateCBT() {
+    public function downloadTemplateCBT()
+    {
         // Validasi parameter
         $id_penugasan = $_GET['id_penugasan'] ?? null;
-        
+
         if (!$id_penugasan) {
             Flasher::setFlash('Parameter tidak lengkap.', 'danger');
             header('Location: ' . BASEURL . '/guru');
@@ -721,10 +742,10 @@ class NilaiController extends Controller {
         $siswa_list = $this->model('Kelas_model')->getSiswaByKelas($penugasan['id_kelas']);
 
         // Filter siswa yang masih aktif dan urutkan berdasarkan nomor absen
-        $filtered_siswa = array_filter($siswa_list, function($siswa) {
+        $filtered_siswa = array_filter($siswa_list, function ($siswa) {
             return $siswa['status_keanggotaan'] === 'aktif';
         });
-        usort($filtered_siswa, function($a, $b) {
+        usort($filtered_siswa, function ($a, $b) {
             return $a['nomor_absen'] - $b['nomor_absen'];
         });
 
@@ -809,9 +830,10 @@ class NilaiController extends Controller {
     /**
      * Download PDF Rekap Nilai Harian
      */
-    public function downloadNilaiHarianPDF() {
+    public function downloadNilaiHarianPDF()
+    {
         $id_penugasan = $_GET['id_penugasan'] ?? null;
-        
+
         if (!$id_penugasan) {
             Flasher::setFlash('Parameter tidak lengkap.', 'danger');
             header('Location: ' . BASEURL . '/guru');
@@ -839,9 +861,9 @@ class NilaiController extends Controller {
         $id_tp = $semester['id_tp'] ?? null;
 
         $siswa_list = $this->model('Siswa_model')->getSiswaByKelas($penugasan['id_kelas'], $id_tp);
-        
+
         // Sort by nomor_absen if available, otherwise by nama_siswa
-        usort($siswa_list, function($a, $b) {
+        usort($siswa_list, function ($a, $b) {
             if (isset($a['nomor_absen']) && isset($b['nomor_absen'])) {
                 return $a['nomor_absen'] - $b['nomor_absen'];
             }
@@ -994,9 +1016,10 @@ class NilaiController extends Controller {
     /**
      * Download PDF Rekap Nilai STS
      */
-    public function downloadNilaiSTSPDF() {
+    public function downloadNilaiSTSPDF()
+    {
         $id_penugasan = $_GET['id_penugasan'] ?? null;
-        
+
         if (!$id_penugasan) {
             Flasher::setFlash('Parameter tidak lengkap.', 'danger');
             header('Location: ' . BASEURL . '/guru');
@@ -1022,9 +1045,9 @@ class NilaiController extends Controller {
         $id_tp = $semester['id_tp'] ?? null;
 
         $siswa_list = $this->model('Siswa_model')->getSiswaByKelas($penugasan['id_kelas'], $id_tp);
-        
+
         // Sort by nomor_absen if available, otherwise by nama_siswa
-        usort($siswa_list, function($a, $b) {
+        usort($siswa_list, function ($a, $b) {
             if (isset($a['nomor_absen']) && isset($b['nomor_absen'])) {
                 return $a['nomor_absen'] - $b['nomor_absen'];
             }
@@ -1171,9 +1194,10 @@ class NilaiController extends Controller {
     /**
      * Download PDF Rekap Nilai SAS
      */
-    public function downloadNilaiSASPDF() {
+    public function downloadNilaiSASPDF()
+    {
         $id_penugasan = $_GET['id_penugasan'] ?? null;
-        
+
         if (!$id_penugasan) {
             Flasher::setFlash('Parameter tidak lengkap.', 'danger');
             header('Location: ' . BASEURL . '/guru');
@@ -1199,9 +1223,9 @@ class NilaiController extends Controller {
         $id_tp = $semester['id_tp'] ?? null;
 
         $siswa_list = $this->model('Siswa_model')->getSiswaByKelas($penugasan['id_kelas'], $id_tp);
-        
+
         // Sort by nomor_absen if available, otherwise by nama_siswa
-        usort($siswa_list, function($a, $b) {
+        usort($siswa_list, function ($a, $b) {
             if (isset($a['nomor_absen']) && isset($b['nomor_absen'])) {
                 return $a['nomor_absen'] - $b['nomor_absen'];
             }

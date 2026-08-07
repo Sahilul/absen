@@ -1594,4 +1594,58 @@ class Siswa_model
             return $this->db->resultSet();
         }
     }
+
+    /**
+     * Search siswa for bayar page with optional kelas filter and keyword
+     * @param int $id_tp
+     * @param int|null $id_kelas
+     * @param string|null $keyword Search by nama or nisn
+     * @return array
+     */
+    public function searchSiswaBayar($id_tp, $id_kelas = null, $keyword = null)
+    {
+        $sql = "SELECT s.id_siswa, s.nisn, s.nama_siswa, k.nama_kelas, k.id_kelas,
+                COALESCE(ps.total_tagihan, 0) as total_tagihan,
+                COALESCE(ps.tagihan_lunas, 0) as tagihan_lunas,
+                COALESCE(ps.tagihan_sebagian, 0) as tagihan_sebagian,
+                COALESCE(ps.tagihan_belum, 0) as tagihan_belum
+                FROM siswa s
+                JOIN keanggotaan_kelas kk ON s.id_siswa = kk.id_siswa
+                JOIN kelas k ON kk.id_kelas = k.id_kelas
+                LEFT JOIN (
+                    SELECT pts.id_siswa,
+                           COUNT(*) as total_tagihan,
+                           SUM(CASE WHEN pts.status = 'lunas' THEN 1 ELSE 0 END) as tagihan_lunas,
+                           SUM(CASE WHEN pts.status = 'sebagian' THEN 1 ELSE 0 END) as tagihan_sebagian,
+                           SUM(CASE WHEN pts.status = 'belum' THEN 1 ELSE 0 END) as tagihan_belum
+                    FROM pembayaran_tagihan_siswa pts
+                    JOIN pembayaran_tagihan pt ON pts.tagihan_id = pt.id
+                    WHERE pt.id_tp = :id_tp_sub
+                    GROUP BY pts.id_siswa
+                ) ps ON ps.id_siswa = s.id_siswa
+                WHERE k.id_tp = :id_tp AND s.status_siswa = 'aktif'";
+
+        if ($id_kelas) {
+            $sql .= " AND k.id_kelas = :id_kelas";
+        }
+        if ($keyword) {
+            $sql .= " AND (s.nama_siswa LIKE :kw OR s.nisn LIKE :kw2)";
+        }
+
+        $sql .= " ORDER BY k.nama_kelas ASC, s.nama_siswa ASC LIMIT 100";
+
+        $this->db->query($sql);
+        $this->db->bind('id_tp_sub', $id_tp);
+        $this->db->bind('id_tp', $id_tp);
+        if ($id_kelas) {
+            $this->db->bind('id_kelas', $id_kelas);
+        }
+        if ($keyword) {
+            $this->db->bind('kw', '%' . $keyword . '%');
+            $this->db->bind('kw2', '%' . $keyword . '%');
+        }
+
+        return $this->db->resultSet();
+    }
+
 }

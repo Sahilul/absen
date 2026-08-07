@@ -11,38 +11,81 @@ class Absensi_model
         $this->db = new Database;
     }
 
-    // PERBAIKAN 1: Fix binding parameter yang salah
+    /**
+     * Mengambil siswa sesuai kelas dan tahun pelajaran penugasan.
+     * Jika penugasan lama tersalin dengan ID kelas dari TP sebelumnya, petakan
+     * ke kelas bernama dan berjenjang sama pada TP semester penugasan.
+     */
     public function getSiswaByPenugasan($id_penugasan)
     {
-        $this->db->query('SELECT siswa.id_siswa, siswa.nisn, siswa.nama_siswa
-                         FROM siswa
-                         JOIN keanggotaan_kelas ON siswa.id_siswa = keanggotaan_kelas.id_siswa
-                         WHERE keanggotaan_kelas.id_kelas = (SELECT id_kelas FROM penugasan WHERE id_penugasan = :id_penugasan)
-                         AND keanggotaan_kelas.id_tp = (SELECT tp.id_tp FROM penugasan JOIN semester ON penugasan.id_semester = semester.id_semester JOIN tp ON semester.id_tp = tp.id_tp WHERE penugasan.id_penugasan = :id_penugasan_tp)
-                         ORDER BY siswa.nama_siswa ASC');
+        $this->db->query('SELECT DISTINCT s.id_siswa, s.nisn, s.nama_siswa
+                         FROM penugasan p
+                         JOIN semester sem ON p.id_semester = sem.id_semester
+                         JOIN kelas k_asal ON p.id_kelas = k_asal.id_kelas
+                         LEFT JOIN (
+                            SELECT id_tp, nama_kelas, jenjang,
+                                   MIN(id_kelas) AS id_kelas,
+                                   COUNT(*) AS jumlah_kecocokan
+                            FROM kelas
+                            GROUP BY id_tp, nama_kelas, jenjang
+                         ) k_tp
+                            ON k_tp.id_tp = sem.id_tp
+                           AND k_tp.nama_kelas = k_asal.nama_kelas
+                           AND k_tp.jenjang = k_asal.jenjang
+                           AND k_tp.jumlah_kecocokan = 1
+                         JOIN keanggotaan_kelas kk
+                            ON kk.id_kelas = CASE
+                                WHEN k_asal.id_tp = sem.id_tp THEN k_asal.id_kelas
+                                ELSE k_tp.id_kelas
+                               END
+                           AND kk.id_tp = sem.id_tp
+                         JOIN siswa s ON s.id_siswa = kk.id_siswa
+                         WHERE p.id_penugasan = :id_penugasan
+                         ORDER BY s.nama_siswa ASC');
 
-        // FIX: Hapus titik dua di awal parameter
         $this->db->bind('id_penugasan', $id_penugasan);
-        $this->db->bind('id_penugasan_tp', $id_penugasan);
         return $this->db->resultSet();
     }
 
-    // PERBAIKAN 2: Tambah method yang hilang - dipanggil di GuruController line 74
+    /**
+     * Mengambil siswa dan status absensi berdasarkan jurnal.
+     * Pemetaan fallback hanya berlaku jika tepat satu kelas dengan nama dan
+     * jenjang yang sama ditemukan pada TP jurnal.
+     */
     public function getSiswaDanAbsensiByJurnal($id_jurnal)
     {
-        $this->db->query('SELECT 
-                            s.id_siswa, 
-                            s.nisn, 
+        $this->db->query('SELECT DISTINCT
+                            s.id_siswa,
+                            s.nisn,
                             s.nama_siswa,
                             a.status_kehadiran,
                             a.keterangan
-                         FROM siswa s
-                         JOIN keanggotaan_kelas kk ON s.id_siswa = kk.id_siswa
-                         JOIN penugasan p ON kk.id_kelas = p.id_kelas
-                         JOIN jurnal j ON p.id_penugasan = j.id_penugasan
-                         LEFT JOIN absensi a ON s.id_siswa = a.id_siswa AND a.id_jurnal = :id_jurnal
+                         FROM jurnal j
+                         JOIN penugasan p ON j.id_penugasan = p.id_penugasan
+                         JOIN semester sem ON p.id_semester = sem.id_semester
+                         JOIN kelas k_asal ON p.id_kelas = k_asal.id_kelas
+                         LEFT JOIN (
+                            SELECT id_tp, nama_kelas, jenjang,
+                                   MIN(id_kelas) AS id_kelas,
+                                   COUNT(*) AS jumlah_kecocokan
+                            FROM kelas
+                            GROUP BY id_tp, nama_kelas, jenjang
+                         ) k_tp
+                            ON k_tp.id_tp = sem.id_tp
+                           AND k_tp.nama_kelas = k_asal.nama_kelas
+                           AND k_tp.jenjang = k_asal.jenjang
+                           AND k_tp.jumlah_kecocokan = 1
+                         JOIN keanggotaan_kelas kk
+                            ON kk.id_kelas = CASE
+                                WHEN k_asal.id_tp = sem.id_tp THEN k_asal.id_kelas
+                                ELSE k_tp.id_kelas
+                               END
+                           AND kk.id_tp = sem.id_tp
+                         JOIN siswa s ON s.id_siswa = kk.id_siswa
+                         LEFT JOIN absensi a
+                            ON a.id_siswa = s.id_siswa
+                           AND a.id_jurnal = :id_jurnal
                          WHERE j.id_jurnal = :id_jurnal_check
-                         AND kk.id_tp = (SELECT tp.id_tp FROM semester JOIN tp ON semester.id_tp = tp.id_tp WHERE semester.id_semester = p.id_semester)
                          ORDER BY s.nama_siswa ASC');
 
         $this->db->bind('id_jurnal', $id_jurnal);
@@ -90,6 +133,26 @@ class Absensi_model
             }
         }
         return $processedCount;
+    }
+
+    /**
+     * Ambil map status kehadiran yang tersimpan saat ini untuk sebuah jurnal.
+     * Dipakai sebagai snapshot "sebelum" agar notifikasi WA hanya dikirim
+     * untuk siswa yang statusnya benar-benar berubah (mencegah notif duplikat saat edit).
+     *
+     * @return array [id_siswa => status_kehadiran]
+     */
+    public function getStatusKehadiranByJurnal($id_jurnal)
+    {
+        $this->db->query('SELECT id_siswa, status_kehadiran FROM absensi WHERE id_jurnal = :id_jurnal');
+        $this->db->bind('id_jurnal', $id_jurnal);
+        $rows = $this->db->resultSet();
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[$row['id_siswa']] = $row['status_kehadiran'];
+        }
+        return $map;
     }
 
     public function getAbsensiByJurnalId($id_jurnal)

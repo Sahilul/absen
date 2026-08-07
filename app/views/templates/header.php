@@ -562,6 +562,8 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             $this->view('templates/sidebar_cms');
         } elseif (isset($data['use_surat_sidebar']) && $data['use_surat_sidebar'] === true) {
             $this->view('surat_tugas/sidebar_surat');
+        } elseif (isset($data['use_bendahara_sidebar']) && $data['use_bendahara_sidebar'] === true) {
+            $this->view('templates/sidebar_bendahara');
         }
         // Memanggil sidebar yang sesuai dengan peran pengguna
         elseif (isset($_SESSION['user_role'])) {
