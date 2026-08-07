@@ -25,6 +25,10 @@ define('APPROOT', dirname(dirname(__FILE__)));
 // MEMANGGIL FILE KONFIGURASI 
 require_once APPROOT . '/config/config.php';
 
+// v1.25.0 - Sinkronisasi kunci session kanonik/legacy (role, nama_lengkap)
+require_once APPROOT . '/app/core/Session.php';
+Session::normalize();
+
 //=======================================
 if (!verifyLicense()) {
     showLicenseBlockedPage();

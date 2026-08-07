@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.25.0",
+            "date": "2026-08-07",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "improvement",
+                    "description": "Konsolidasi kunci session: helper baru Session (app/core/Session.php) menyinkronkan kunci kanonik role/nama_lengkap dengan kunci legacy user_role/user_nama_lengkap secara otomatis di front controller, dan pembaca di seluruh aplikasi kini memakai kunci kanonik dengan fallback legacy"
+                },
+                {
+                    "type": "improvement",
+                    "description": "AdminController (7794 baris) dipecah menjadi beberapa trait per domain (siswa, guru, akademik, laporan, pengaturan, pesan/WA, pembayaran) sehingga lebih mudah dipelihara tanpa mengubah perilaku"
+                }
+            ]
+        },
+        {
             "version": "1.24.0",
             "date": "2026-08-07",
             "type": "minor",

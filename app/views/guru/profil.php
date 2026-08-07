@@ -2,7 +2,7 @@
 // View: app/views/guru/profil.php (Identitas Guru, tanpa ubah NIK)
 $guru = $data['guru'] ?? [];
 $nik = $guru['nik'] ?? '';
-$nama = $guru['nama_guru'] ?? ($_SESSION['user_nama_lengkap'] ?? '');
+$nama = $guru['nama_guru'] ?? ($_SESSION['nama_lengkap'] ?? ($_SESSION['user_nama_lengkap'] ?? ''));
 $email = $guru['email'] ?? '';
 $no_wa = $guru['no_wa'] ?? '';
 ?>

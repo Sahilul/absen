@@ -567,8 +567,9 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             $this->view('templates/sidebar_bendahara');
         }
         // Memanggil sidebar yang sesuai dengan peran pengguna
-        elseif (isset($_SESSION['user_role'])) {
-            switch ($_SESSION['user_role']) {
+        // v1.25.0 - Kunci kanonik 'role' dengan fallback legacy 'user_role'
+        elseif (isset($_SESSION['role']) || isset($_SESSION['user_role'])) {
+            switch ($_SESSION['role'] ?? $_SESSION['user_role']) {
                 case 'admin':
                     $this->view('templates/sidebar_admin');
                     break;
@@ -690,7 +691,8 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             <div class="relative">
                                 <?php
                                 // FIX: Perbaikan untuk urlencode error dengan validasi lengkap
-                                $user_name = $_SESSION['user_nama_lengkap'] ?? null;
+                                // v1.25.0 - Kunci kanonik 'nama_lengkap' dengan fallback legacy
+                                $user_name = $_SESSION['nama_lengkap'] ?? $_SESSION['user_nama_lengkap'] ?? null;
 
                                 // Validasi dan sanitasi nama user
                                 if (empty($user_name) || is_null($user_name)) {
@@ -715,7 +717,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                                 <div class="text-sm font-semibold text-secondary-700"><?= $html_safe_name; ?></div>
                                 <div class="text-xs text-secondary-500 capitalize font-medium">
                                     <?php
-                                    $role_display = $_SESSION['user_role'] ?? 'Role';
+                                    $role_display = $_SESSION['role'] ?? $_SESSION['user_role'] ?? 'Role';
                                     // Convert underscore to space and capitalize properly
                                     $role_display = str_replace('_', ' ', $role_display);
                                     $role_display = ucwords($role_display);

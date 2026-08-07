@@ -160,7 +160,7 @@
         $dt = new DateTime('now', $tz);
         $tanggalWIB = $dt->format('d F Y');
         $jamWIB = $dt->format('H:i');
-        $dicetakOleh = $_SESSION['user_nama_lengkap'] ?? ($_SESSION['nama_lengkap'] ?? 'Pengguna');
+        $dicetakOleh = $_SESSION['nama_lengkap'] ?? ($_SESSION['user_nama_lengkap'] ?? 'Pengguna');
     ?>
     <div class="footer-info" style="border: 1px solid #bbb; padding: 8px; border-radius: 6px; background: #f9fafb;">
         <b>Informasi Dokumen:</b><br>

@@ -10,7 +10,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-3xl font-bold mb-2">
-                    Selamat Datang, <?= htmlspecialchars($_SESSION['user_nama_lengkap'] ?? 'Admin'); ?>! 👋
+                    Selamat Datang, <?= htmlspecialchars($_SESSION['nama_lengkap'] ?? $_SESSION['user_nama_lengkap'] ?? 'Admin'); ?>! 👋
                 </h1>
                 <p class="text-indigo-100 text-lg">
                     <?= date('l, d F Y'); ?> • Sesi: <span class="font-semibold"><?= $_SESSION['nama_semester_aktif'] ?? 'Belum ada sesi aktif'; ?></span>

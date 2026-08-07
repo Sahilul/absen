@@ -387,6 +387,8 @@ class GuruController extends Controller
             // Refresh data guru dari database untuk memastikan session terupdate
             $guruUpdated = $this->model('Guru_model')->getGuruById($id_guru);
             if ($guruUpdated) {
+                // v1.25.0 - Update kunci kanonik dan legacy sekaligus
+                $_SESSION['nama_lengkap'] = $guruUpdated['nama_guru'];
                 $_SESSION['user_nama_lengkap'] = $guruUpdated['nama_guru'];
             }
             Flasher::setFlash('Berhasil', 'Profil berhasil disimpan', 'success');
@@ -2123,7 +2125,7 @@ class GuruController extends Controller
             'kelas' => $rpp['nama_kelas'] ?? '',
             'semester' => $_SESSION['nama_semester_aktif'] ?? '',
             'printed_at' => gmdate('Y-m-d H:i:s'),
-            'printed_by' => ($_SESSION['user_nama_lengkap'] ?? ($_SESSION['nama_lengkap'] ?? 'Pengguna')),
+            'printed_by' => ($_SESSION['nama_lengkap'] ?? ($_SESSION['user_nama_lengkap'] ?? 'Pengguna')),
         ];
         $html = PDFQRHelper::addQRToPDF($html, 'rpp', $rpp['id_rpp'] ?? 0, $meta);
 

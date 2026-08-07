@@ -33,8 +33,9 @@ class PDFQRHelper {
             // Enrich additionalData with user info for provenance if available
             if (session_status() === PHP_SESSION_ACTIVE) {
                 // Try common session keys used across the app for display name
-                $printedBy = $_SESSION['user_nama_lengkap']
-                    ?? $_SESSION['nama_lengkap']
+                // v1.25.0 - Kunci kanonik 'nama_lengkap' diutamakan
+                $printedBy = $_SESSION['nama_lengkap']
+                    ?? $_SESSION['user_nama_lengkap']
                     ?? $_SESSION['nama_guru']
                     ?? $_SESSION['nama_user']
                     ?? $_SESSION['nama']

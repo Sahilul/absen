@@ -662,7 +662,8 @@ class BendaharaController extends Controller
             $sisa = max(0, $nominal - $diskon - $terbayar);
 
             // Penerima (User login)
-            $penerima = $_SESSION['user_nama_lengkap'] ?? 'Bendahara';
+            // v1.25.0 - Kunci kanonik 'nama_lengkap' dengan fallback legacy
+            $penerima = $_SESSION['nama_lengkap'] ?? $_SESSION['user_nama_lengkap'] ?? 'Bendahara';
 
             // Nama Sekolah
             $pengaturan = $this->model('PengaturanAplikasi_model')->getPengaturan();

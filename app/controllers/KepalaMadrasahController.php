@@ -9,8 +9,10 @@ class KepalaMadrasahController extends Controller
     public function __construct()
     {
         // Middleware untuk memastikan hanya kepala madrasah yang bisa akses
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'kepala_madrasah') {
-            error_log("KepalaMadrasahController: Access denied. user_role = " . ($_SESSION['user_role'] ?? 'not set'));
+        // v1.25.0 - Kunci kanonik 'role' dengan fallback legacy 'user_role'
+        $__role = $_SESSION['role'] ?? $_SESSION['user_role'] ?? null;
+        if ($__role !== 'kepala_madrasah') {
+            error_log("KepalaMadrasahController: Access denied. role = " . ($__role ?? 'not set'));
             header('Location: ' . BASEURL . '/auth/login');
             exit;
         }
@@ -580,7 +582,7 @@ class KepalaMadrasahController extends Controller
             'id_semester_aktif' => $_SESSION['id_semester_aktif'] ?? 'NOT SET',
             'id_tp_aktif' => $_SESSION['id_tp_aktif'] ?? 'NOT SET',
             'nama_semester_aktif' => $_SESSION['nama_semester_aktif'] ?? 'NOT SET',
-            'user_role' => $_SESSION['user_role'] ?? 'NOT SET'
+            'role' => $_SESSION['role'] ?? $_SESSION['user_role'] ?? 'NOT SET'
         ]);
         echo "</pre>";
         
@@ -628,7 +630,7 @@ class KepalaMadrasahController extends Controller
                 'id_semester_aktif' => $_SESSION['id_semester_aktif'] ?? null,
                 'id_tp_aktif' => $_SESSION['id_tp_aktif'] ?? null,
                 'nama_semester_aktif' => $_SESSION['nama_semester_aktif'] ?? null,
-                'user_role' => $_SESSION['user_role'] ?? null
+                'role' => $_SESSION['role'] ?? $_SESSION['user_role'] ?? null
             ],
             'server_info' => [
                 'php_version' => PHP_VERSION,

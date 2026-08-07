@@ -19,7 +19,8 @@ function isBendaharaActive($judul, $target)
 }
 
 // Cek role user untuk menentukan link kembali
-$userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'guru';
+// v1.25.0 - Kunci kanonik 'role' dengan fallback legacy 'user_role'
+$userRole = $_SESSION['role'] ?? $_SESSION['user_role'] ?? 'guru';
 if ($userRole === 'wali_kelas') {
     $backUrl = BASEURL . '/waliKelas/dashboard';
     $backText = 'Kembali ke Wali Kelas';

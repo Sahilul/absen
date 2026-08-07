@@ -8,7 +8,9 @@ class PerformaGuruController extends Controller
     public function __construct()
     {
         // Check auth - Allow both admin and kepala_madrasah
-        if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ['admin', 'kepala_madrasah'])) {
+        // v1.25.0 - Kunci kanonik 'role' dengan fallback legacy 'user_role'
+        $__role = $_SESSION['role'] ?? $_SESSION['user_role'] ?? null;
+        if (!$__role || !in_array($__role, ['admin', 'kepala_madrasah'])) {
             header('Location: ' . BASEURL . '/auth/login');
             exit;
         }
@@ -34,7 +36,7 @@ class PerformaGuruController extends Controller
         $this->view('templates/header', $data);
         
         // Load sidebar based on role
-        if ($_SESSION['user_role'] === 'admin') {
+        if (($_SESSION['role'] ?? $_SESSION['user_role'] ?? '') === 'admin') {
             $this->view('templates/sidebar_admin', $data);
         } else {
             $this->view('templates/sidebar_kepala_madrasah', $data);
