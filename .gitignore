@@ -84,3 +84,4 @@ composer.lock
 # Build files
 dist/
 build/
+tmp/foto_cache/

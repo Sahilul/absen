@@ -248,7 +248,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div data-foto-siswa="<?= (int) $siswa['id_siswa']; ?>"
-                                                onclick='openFotoModal(<?= json_encode(["id_siswa" => $siswa["id_siswa"], "nisn" => $siswa["nisn"] ?? "", "nama_siswa" => $siswa["nama_siswa"], "foto" => $siswa["foto"] ?? "", "nama_kelas" => $siswa["nama_kelas"] ?? ""], JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
+                                                onclick='openFotoModal(_siswaData[<?= $siswa["id_siswa"]; ?>])'
                                                 class="relative flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center mr-3 overflow-hidden bg-gray-100 border border-gray-200 shadow-sm cursor-pointer group"
                                                 title="Klik untuk ubah foto">
                                                 <?php if (!empty($siswa['foto'])): ?>
@@ -362,7 +362,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         <div class="flex items-center justify-center space-x-2">
-                                            <button onclick="showDetailSiswa(<?= htmlspecialchars(json_encode($siswa)); ?>)"
+                                            <button onclick="showDetailSiswa(_siswaData[<?= $siswa['id_siswa']; ?>])"
                                                 class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg transition-colors"
                                                 title="Lihat detail siswa">
                                                 <i data-lucide="eye" class="w-3 h-3"></i>
@@ -401,7 +401,7 @@
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex items-center gap-3">
                                     <div data-foto-siswa="<?= (int) $siswa['id_siswa']; ?>"
-                                        onclick='openFotoModal(<?= json_encode(["id_siswa" => $siswa["id_siswa"], "nisn" => $siswa["nisn"] ?? "", "nama_siswa" => $siswa["nama_siswa"], "foto" => $siswa["foto"] ?? "", "nama_kelas" => $siswa["nama_kelas"] ?? ""], JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
+                                        onclick='openFotoModal(_siswaData[<?= $siswa["id_siswa"]; ?>])'
                                         class="relative w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-indigo-100 text-indigo-600 font-bold text-sm shadow-sm cursor-pointer group"
                                         title="Klik untuk ubah foto">
                                         <?php if (!empty($siswa['foto'])): ?>
@@ -488,7 +488,7 @@
 
                             <!-- Action Buttons -->
                             <div class="grid grid-cols-4 gap-2">
-                                <button onclick="showDetailSiswa(<?= htmlspecialchars(json_encode($siswa)); ?>)"
+                                <button onclick="showDetailSiswa(_siswaData[<?= $siswa['id_siswa']; ?>])"
                                     class="flex items-center justify-center px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg">
                                     <i data-lucide="eye" class="w-4 h-4"></i>
                                 </button>
@@ -564,6 +564,9 @@
 
 
     <script>
+        // Siswa data store - single JSON blob instead of per-row inline JSON
+        const _siswaData = <?= json_encode(array_combine(array_column($data['siswa'], 'id_siswa'), $data['siswa']), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+
         // Global variables
         let allRows = [];
         let allCards = [];
