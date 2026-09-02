@@ -205,7 +205,7 @@ function prosesUpdateSiswa()
             return null;
         }
 
-        require_once APPROOT . '/core/R2Storage.php';
+        require_once APPROOT . '/app/core/R2Storage.php';
 
         if (!R2Storage::isConfigured()) {
             Flasher::setFlash('Penyimpanan R2 belum dikonfigurasi. Foto tidak diupload.', 'warning');
@@ -276,7 +276,7 @@ function prosesUpdateSiswa()
         $siswa = $this->model('Siswa_model')->getSiswaById($idSiswa);
         if (empty($siswa['foto'])) return;
 
-        require_once APPROOT . '/core/R2Storage.php';
+        require_once APPROOT . '/app/core/R2Storage.php';
         if (!R2Storage::isConfigured()) return;
 
         $key = $this->extractR2Key($siswa['foto']);

@@ -2193,7 +2193,7 @@ function hapusGrupWaKelas($id)
         $this->data['r2_bucket'] = getSystemSetting('r2_bucket', 'sabilillah');
         $this->data['r2_public_url'] = getSystemSetting('r2_public_url', '');
 
-        require_once APPROOT . '/core/R2Storage.php';
+        require_once APPROOT . '/app/core/R2Storage.php';
         $this->data['r2_configured'] = R2Storage::isConfigured();
 
         $this->view('templates/header', $this->data);
@@ -2229,7 +2229,7 @@ function hapusGrupWaKelas($id)
     {
         header('Content-Type: application/json');
 
-        require_once APPROOT . '/core/R2Storage.php';
+        require_once APPROOT . '/app/core/R2Storage.php';
         if (!R2Storage::isConfigured()) {
             echo json_encode(['success' => false, 'message' => 'R2 belum dikonfigurasi']);
             exit;
