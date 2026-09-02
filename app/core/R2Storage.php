@@ -169,7 +169,7 @@ class R2Storage
 
     // --- Helper: resize + compress image ---
 
-    public static function processImage($source, $maxWidth = 400, $maxHeight = 400, $quality = 85)
+    public static function processImage($source, $maxWidth = 300, $maxHeight = 400, $quality = 85, $cropX = null, $cropY = null, $cropW = null, $cropH = null)
     {
         $info = null;
         $img = null;
@@ -197,6 +197,42 @@ class R2Storage
         $origW = $info[0] ?? imagesx($img);
         $origH = $info[1] ?? imagesy($img);
 
+        // If crop coordinates provided, crop first
+        if ($cropX !== null && $cropY !== null && $cropW !== null && $cropH !== null) {
+            $cx = max(0, min((int)$cropX, $origW - 1));
+            $cy = max(0, min((int)$cropY, $origH - 1));
+            $cw = max(1, min((int)$cropW, $origW - $cx));
+            $ch = max(1, min((int)$cropH, $origH - $cy));
+            $cropped = imagecreatetruecolor($cw, $ch);
+            imagecopyresampled($cropped, $img, 0, 0, $cx, $cy, $cw, $ch, $cw, $ch);
+            imagedestroy($img);
+            $img = $cropped;
+            $origW = $cw;
+            $origH = $ch;
+        } else {
+            // Auto-crop to 3:4 center
+            $targetRatio = 3 / 4;
+            $currentRatio = $origW / $origH;
+            if ($currentRatio > $targetRatio) {
+                $newW = (int)round($origH * $targetRatio);
+                $cx = (int)round(($origW - $newW) / 2);
+                $cropped = imagecreatetruecolor($newW, $origH);
+                imagecopyresampled($cropped, $img, 0, 0, $cx, 0, $newW, $origH, $newW, $origH);
+                imagedestroy($img);
+                $img = $cropped;
+                $origW = $newW;
+            } elseif ($currentRatio < $targetRatio) {
+                $newH = (int)round($origW / $targetRatio);
+                $cy = (int)round(($origH - $newH) / 2);
+                $cropped = imagecreatetruecolor($origW, $newH);
+                imagecopyresampled($cropped, $img, 0, 0, 0, $cy, $origW, $newH, $origW, $newH);
+                imagedestroy($img);
+                $img = $cropped;
+                $origH = $newH;
+            }
+        }
+
+        // Resize to fit within maxWidth x maxHeight
         $ratio = min($maxWidth / $origW, $maxHeight / $origH, 1);
         $newW = (int) round($origW * $ratio);
         $newH = (int) round($origH * $ratio);

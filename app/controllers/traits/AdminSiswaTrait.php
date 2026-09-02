@@ -336,8 +336,19 @@ function prosesUpdateSiswa()
         $nisn = $siswa['nisn'] ?? $idSiswa;
         $key = 'foto-siswa/' . $nisn . '_' . time() . '.jpg';
 
+        // Crop coordinates from frontend cropper (optional)
+        $cropX = isset($_POST['crop_x']) ? (int)$_POST['crop_x'] : null;
+        $cropY = isset($_POST['crop_y']) ? (int)$_POST['crop_y'] : null;
+        $cropW = isset($_POST['crop_w']) ? (int)$_POST['crop_w'] : null;
+        $cropH = isset($_POST['crop_h']) ? (int)$_POST['crop_h'] : null;
+        $hasCrop = ($cropX !== null && $cropY !== null && $cropW !== null && $cropH !== null);
+
         if (!empty($base64)) {
-            $processed = R2Storage::processImage($base64, 400, 400, 85);
+            $processed = R2Storage::processImage(
+                $base64, 300, 400, 85,
+                $hasCrop ? $cropX : null, $hasCrop ? $cropY : null,
+                $hasCrop ? $cropW : null, $hasCrop ? $cropH : null
+            );
             if (!$processed) {
                 echo json_encode(['success' => false, 'message' => 'Gagal memproses foto dari kamera']);
                 exit;
@@ -353,7 +364,11 @@ function prosesUpdateSiswa()
                 echo json_encode(['success' => false, 'message' => 'Ukuran foto maksimal 5MB']);
                 exit;
             }
-            $processed = R2Storage::processImage($_FILES['foto_file']['tmp_name'], 400, 400, 85);
+            $processed = R2Storage::processImage(
+                $_FILES['foto_file']['tmp_name'], 300, 400, 85,
+                $hasCrop ? $cropX : null, $hasCrop ? $cropY : null,
+                $hasCrop ? $cropW : null, $hasCrop ? $cropH : null
+            );
             if (!$processed) {
                 echo json_encode(['success' => false, 'message' => 'Gagal memproses foto']);
                 exit;
