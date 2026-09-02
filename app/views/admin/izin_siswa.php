@@ -15,6 +15,9 @@ $filters = $data['filters'] ?? [];
             </h2>
             <p class="text-secondary-600 mt-1 text-sm">Monitoring izin, sakit, dan dispensasi seluruh siswa</p>
         </div>
+        <a href="<?= BASEURL; ?>/admin/adminTambahIzin" class="btn-primary px-4 py-2.5 flex items-center gap-2 text-sm rounded-xl shadow-sm">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah Izin
+        </a>
     </div>
 
     <!-- Stats Cards -->
