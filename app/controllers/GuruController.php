@@ -682,6 +682,11 @@ class GuruController extends Controller
         $this->data['jurnal'] = $this->model('Jurnal_model')->getJurnalDetailById($id_jurnal);
         $this->data['daftar_siswa'] = $this->model('Absensi_model')->getSiswaDanAbsensiByJurnal($id_jurnal);
 
+        // Load izin aktif dari wali kelas untuk tanggal jurnal ini
+        $tanggalJurnal = $this->data['jurnal']['tanggal'] ?? date('Y-m-d');
+        $siswaIds = array_column($this->data['daftar_siswa'], 'id_siswa');
+        $this->data['izin_map'] = $this->model('IzinSiswa_model')->getIzinAktifBatchByTanggal($siswaIds, $tanggalJurnal);
+
         $this->view('templates/header', $this->data);
         $this->loadSidebar();
         $this->view('guru/absensi', $this->data);
@@ -1078,6 +1083,11 @@ class GuruController extends Controller
         $this->data['judul'] = 'Edit Absensi';
         $this->data['jurnal'] = $this->model('Jurnal_model')->getJurnalDetailById($id_jurnal);
         $this->data['daftar_siswa'] = $this->model('Absensi_model')->getSiswaDanAbsensiByJurnal($id_jurnal);
+
+        // Load izin aktif dari wali kelas untuk tanggal jurnal ini
+        $tanggalJurnal = $this->data['jurnal']['tanggal'] ?? date('Y-m-d');
+        $siswaIds = array_column($this->data['daftar_siswa'], 'id_siswa');
+        $this->data['izin_map'] = $this->model('IzinSiswa_model')->getIzinAktifBatchByTanggal($siswaIds, $tanggalJurnal);
 
         $this->view('templates/header', $this->data);
         $this->loadSidebar();

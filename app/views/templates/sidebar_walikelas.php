@@ -79,7 +79,7 @@ function isMenuActive($judul, $keyword)
 
       <!-- DROPDOWN: Kelola Kelas -->
       <?php
-      $kelolaKelasActive = in_array($judul, ['Daftar Siswa', 'Monitoring Absensi', 'Monitoring Nilai', 'Pembayaran Kelas', 'Kelola Tagihan Kelas', 'Riwayat Pembayaran', 'Input Pembayaran', 'Pembayaran Siswa', 'Checkout Pembayaran']);
+      $kelolaKelasActive = in_array($judul, ['Daftar Siswa', 'Izin Siswa', 'Tambah Izin Siswa', 'Edit Izin Siswa', 'Monitoring Absensi', 'Monitoring Nilai', 'Pembayaran Kelas', 'Kelola Tagihan Kelas', 'Riwayat Pembayaran', 'Input Pembayaran', 'Pembayaran Siswa', 'Checkout Pembayaran']);
       ?>
       <li class="pt-3" x-data="{ open: <?= $kelolaKelasActive ? 'true' : 'false' ?> }">
         <button @click="open = !open"
@@ -99,6 +99,14 @@ function isMenuActive($judul, $keyword)
               class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= ($judul == 'Daftar Siswa') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-green-50 hover:text-green-700' ?>">
               <i data-lucide="users-round" class="w-4 h-4 mr-2"></i>
               Daftar Siswa
+            </a>
+          </li>
+          <?php $isIzinActive = in_array($judul, ['Izin Siswa', 'Tambah Izin Siswa', 'Edit Izin Siswa']); ?>
+          <li>
+            <a href="<?= BASEURL; ?>/waliKelas/izinSiswa"
+              class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= $isIzinActive ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-amber-50 hover:text-amber-700' ?>">
+              <i data-lucide="file-check" class="w-4 h-4 mr-2"></i>
+              Izin Siswa
             </a>
           </li>
           <li>

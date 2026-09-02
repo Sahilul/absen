@@ -4696,4 +4696,238 @@ class WaliKelasController extends Controller
         ]);
         exit;
     }
+
+    // =====================================================
+    // IZIN SISWA — Fitur izin/sakit/dispensasi oleh wali kelas
+    // =====================================================
+
+    public function izinSiswa()
+    {
+        if ($_SESSION['role'] !== 'wali_kelas') {
+            header('Location: ' . BASEURL . '/waliKelas');
+            exit;
+        }
+
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+        $waliKelasInfo = $this->model('WaliKelas_model')->getWaliKelasByGuru($id_guru, $id_tp_aktif);
+
+        if (!$waliKelasInfo) {
+            Flasher::setFlash('Data wali kelas tidak ditemukan.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/dashboard');
+            exit;
+        }
+
+        // Auto-selesaikan izin yang sudah expired
+        $this->model('IzinSiswa_model')->selesaikanIzinExpired();
+
+        $filters = [];
+        if (!empty($_GET['status'])) $filters['status'] = $_GET['status'];
+        if (!empty($_GET['bulan'])) $filters['bulan'] = $_GET['bulan'];
+
+        $this->data['judul'] = 'Izin Siswa';
+        $this->data['wali_kelas_info'] = $waliKelasInfo;
+        $this->data['izin_list'] = $this->model('IzinSiswa_model')->getIzinByKelas($waliKelasInfo['id_kelas'], $id_tp_aktif, $filters);
+        $this->data['count_aktif'] = $this->model('IzinSiswa_model')->countIzinAktif($waliKelasInfo['id_kelas'], $id_tp_aktif);
+
+        $this->view('templates/header', $this->data);
+        $this->view('wali_kelas/izin_siswa', $this->data);
+        $this->view('templates/footer');
+    }
+
+    public function tambahIzin()
+    {
+        if ($_SESSION['role'] !== 'wali_kelas') {
+            header('Location: ' . BASEURL . '/waliKelas');
+            exit;
+        }
+
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+        $waliKelasInfo = $this->model('WaliKelas_model')->getWaliKelasByGuru($id_guru, $id_tp_aktif);
+
+        $this->data['judul'] = 'Tambah Izin Siswa';
+        $this->data['wali_kelas_info'] = $waliKelasInfo;
+        $this->data['siswa_list'] = $this->model('Siswa_model')->getSiswaByKelas($waliKelasInfo['id_kelas'], $id_tp_aktif);
+
+        $this->view('templates/header', $this->data);
+        $this->view('wali_kelas/tambah_izin', $this->data);
+        $this->view('templates/footer');
+    }
+
+    public function prosesTambahIzin()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $_SESSION['role'] !== 'wali_kelas') {
+            header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
+            exit;
+        }
+
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+        $waliKelasInfo = $this->model('WaliKelas_model')->getWaliKelasByGuru($id_guru, $id_tp_aktif);
+
+        $id_siswa = $_POST['id_siswa'] ?? 0;
+        $jenis_izin = $_POST['jenis_izin'] ?? '';
+        $tanggal_mulai = $_POST['tanggal_mulai'] ?? '';
+        $tanggal_selesai = $_POST['tanggal_selesai'] ?? '';
+        $keterangan = trim($_POST['keterangan'] ?? '');
+
+        if (!$id_siswa || !in_array($jenis_izin, ['I', 'S', 'D']) || !$tanggal_mulai || !$tanggal_selesai) {
+            Flasher::setFlash('Data tidak lengkap.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/tambahIzin');
+            exit;
+        }
+
+        if ($tanggal_selesai < $tanggal_mulai) {
+            Flasher::setFlash('Tanggal selesai tidak boleh sebelum tanggal mulai.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/tambahIzin');
+            exit;
+        }
+
+        // Cek overlap
+        if ($this->model('IzinSiswa_model')->cekIzinOverlap($id_siswa, $tanggal_mulai, $tanggal_selesai)) {
+            Flasher::setFlash('Siswa sudah memiliki izin aktif pada rentang tanggal tersebut.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/tambahIzin');
+            exit;
+        }
+
+        $data = [
+            'id_siswa' => $id_siswa,
+            'id_kelas' => $waliKelasInfo['id_kelas'],
+            'id_tp' => $id_tp_aktif,
+            'jenis_izin' => $jenis_izin,
+            'tanggal_mulai' => $tanggal_mulai,
+            'tanggal_selesai' => $tanggal_selesai,
+            'keterangan' => $keterangan,
+            'bukti_file' => null,
+            'id_guru_input' => $id_guru,
+        ];
+
+        if ($this->model('IzinSiswa_model')->tambahIzin($data)) {
+            $jenisLabel = ['I' => 'Izin', 'S' => 'Sakit', 'D' => 'Dispensasi'];
+            Flasher::setFlash('Izin siswa berhasil ditambahkan (' . ($jenisLabel[$jenis_izin] ?? '') . ').', 'success');
+        } else {
+            Flasher::setFlash('Gagal menambahkan izin siswa.', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
+        exit;
+    }
+
+    public function editIzin($id_izin = null)
+    {
+        if ($_SESSION['role'] !== 'wali_kelas' || !$id_izin) {
+            header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
+            exit;
+        }
+
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+        $waliKelasInfo = $this->model('WaliKelas_model')->getWaliKelasByGuru($id_guru, $id_tp_aktif);
+
+        $izin = $this->model('IzinSiswa_model')->getIzinById($id_izin);
+        if (!$izin || $izin['id_kelas'] != $waliKelasInfo['id_kelas']) {
+            Flasher::setFlash('Data izin tidak ditemukan.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
+            exit;
+        }
+
+        $this->data['judul'] = 'Edit Izin Siswa';
+        $this->data['wali_kelas_info'] = $waliKelasInfo;
+        $this->data['izin'] = $izin;
+        $this->data['siswa_list'] = [];
+
+        $this->view('templates/header', $this->data);
+        $this->view('wali_kelas/tambah_izin', $this->data);
+        $this->view('templates/footer');
+    }
+
+    public function prosesEditIzin()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $_SESSION['role'] !== 'wali_kelas') {
+            header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
+            exit;
+        }
+
+        $id_izin = $_POST['id_izin'] ?? 0;
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+        $waliKelasInfo = $this->model('WaliKelas_model')->getWaliKelasByGuru($id_guru, $id_tp_aktif);
+
+        $izin = $this->model('IzinSiswa_model')->getIzinById($id_izin);
+        if (!$izin || $izin['id_kelas'] != $waliKelasInfo['id_kelas']) {
+            Flasher::setFlash('Data izin tidak ditemukan.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
+            exit;
+        }
+
+        $jenis_izin = $_POST['jenis_izin'] ?? '';
+        $tanggal_mulai = $_POST['tanggal_mulai'] ?? '';
+        $tanggal_selesai = $_POST['tanggal_selesai'] ?? '';
+        $keterangan = trim($_POST['keterangan'] ?? '');
+
+        if (!in_array($jenis_izin, ['I', 'S', 'D']) || !$tanggal_mulai || !$tanggal_selesai) {
+            Flasher::setFlash('Data tidak lengkap.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/editIzin/' . $id_izin);
+            exit;
+        }
+
+        if ($tanggal_selesai < $tanggal_mulai) {
+            Flasher::setFlash('Tanggal selesai tidak boleh sebelum tanggal mulai.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/editIzin/' . $id_izin);
+            exit;
+        }
+
+        // Cek overlap (exclude current)
+        if ($this->model('IzinSiswa_model')->cekIzinOverlap($izin['id_siswa'], $tanggal_mulai, $tanggal_selesai, $id_izin)) {
+            Flasher::setFlash('Siswa sudah memiliki izin lain pada rentang tanggal tersebut.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/editIzin/' . $id_izin);
+            exit;
+        }
+
+        $data = [
+            'jenis_izin' => $jenis_izin,
+            'tanggal_mulai' => $tanggal_mulai,
+            'tanggal_selesai' => $tanggal_selesai,
+            'keterangan' => $keterangan,
+        ];
+
+        if ($this->model('IzinSiswa_model')->updateIzin($id_izin, $data)) {
+            Flasher::setFlash('Data izin berhasil diperbarui.', 'success');
+        } else {
+            Flasher::setFlash('Gagal memperbarui data izin.', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
+        exit;
+    }
+
+    public function batalkanIzin()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $_SESSION['role'] !== 'wali_kelas') {
+            header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
+            exit;
+        }
+
+        $id_izin = $_POST['id_izin'] ?? 0;
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+        $waliKelasInfo = $this->model('WaliKelas_model')->getWaliKelasByGuru($id_guru, $id_tp_aktif);
+
+        $izin = $this->model('IzinSiswa_model')->getIzinById($id_izin);
+        if (!$izin || $izin['id_kelas'] != $waliKelasInfo['id_kelas']) {
+            Flasher::setFlash('Data izin tidak ditemukan.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
+            exit;
+        }
+
+        if ($this->model('IzinSiswa_model')->batalkanIzin($id_izin)) {
+            Flasher::setFlash('Izin berhasil dibatalkan.', 'success');
+        } else {
+            Flasher::setFlash('Gagal membatalkan izin.', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
+        exit;
+    }
 }

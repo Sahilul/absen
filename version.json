@@ -1,6 +1,1 @@
-{
-    "version": "1.26.1",
-    "build": 1261,
-    "release_date": "2026-08-07",
-    "app_name": "School App"
-}
+{"app_name":"School App","build":1270,"release_date":"2026-09-01","version":"1.27.0"}

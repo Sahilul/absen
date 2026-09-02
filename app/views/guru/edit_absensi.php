@@ -140,8 +140,17 @@
                         <?php 
                         $current_status = $siswa['status_kehadiran'] ?? 'H';
                         $current_keterangan = $siswa['keterangan'] ?? '';
+                        $izinMap = $data['izin_map'] ?? [];
+                        $hasIzin = isset($izinMap[$siswa['id_siswa']]);
+                        $izinData = $hasIzin ? $izinMap[$siswa['id_siswa']] : null;
+                        $izinJenis = $hasIzin ? $izinData['jenis_izin'] : null;
+                        $izinKet = $hasIzin ? $izinData['keterangan'] : '';
+                        $izinWali = $hasIzin ? ($izinData['nama_wali_kelas'] ?? 'Wali Kelas') : '';
+                        $jenisLabel = ['I' => 'Izin', 'S' => 'Sakit', 'D' => 'Dispensasi'];
+                        // Jika ada izin dan status saat ini sudah sesuai izin, tetap locked
+                        $isOverridden = $hasIzin && $current_status !== $izinJenis;
                         ?>
-                        <div class="student-row p-4 sm:p-6 hover:bg-white/50 transition-all duration-200" 
+                        <div class="student-row p-4 sm:p-6 hover:bg-white/50 transition-all duration-200 <?= $hasIzin ? 'bg-amber-50/50' : '' ?>" 
                              data-name="<?= strtolower(htmlspecialchars($siswa['nama_siswa'])); ?>"
                              style="animation: slideInLeft 0.3s ease-out <?= $index * 0.05; ?>s both;">
                             
@@ -149,7 +158,7 @@
                                 <!-- Student Info -->
                                 <div class="flex items-center space-x-3 sm:space-x-4">
                                     <div class="flex-shrink-0">
-                                        <div class="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-r from-warning-400 to-primary-400 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                                        <div class="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-r <?= $hasIzin ? 'from-amber-400 to-orange-400' : 'from-warning-400 to-primary-400' ?> rounded-xl flex items-center justify-center text-white font-bold text-lg">
                                             <?= substr(htmlspecialchars($siswa['nama_siswa']), 0, 1); ?>
                                         </div>
                                     </div>
@@ -161,18 +170,32 @@
                                             <i data-lucide="id-card" class="w-4 h-4 mr-1"></i>
                                             NISN: <?= htmlspecialchars($siswa['nisn']); ?>
                                         </p>
+                                        <?php if ($hasIzin): ?>
+                                            <div class="flex items-center gap-1.5 mt-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                                                    <i data-lucide="shield-check" class="w-3 h-3 mr-1"></i>
+                                                    <?= $jenisLabel[$izinJenis] ?? $izinJenis ?> via <?= htmlspecialchars($izinWali) ?>
+                                                </span>
+                                                <?php if ($isOverridden): ?>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">Di-override</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
 
                                 <!-- Status Selection -->
-                                <div class="w-full sm:w-auto">
-                                    <div class="grid grid-cols-4 gap-2 sm:gap-4 sm:flex sm:items-center sm:space-x-6" role="radiogroup" aria-label="Status kehadiran">
+                                <div class="w-full sm:w-auto" id="status-wrap-<?= $siswa['id_siswa'] ?>">
+                                    <div class="grid grid-cols-4 gap-2 sm:gap-4 sm:flex sm:items-center sm:space-x-6 <?= ($hasIzin && !$isOverridden) ? 'izin-locked' : '' ?>"
+                                         role="radiogroup" aria-label="Status kehadiran"
+                                         id="radio-group-<?= $siswa['id_siswa'] ?>">
                                         <!-- Hadir -->
                                         <label class="status-option status-hadir group cursor-pointer items-center">
                                             <input type="radio" 
                                                    name="absensi[<?= $siswa['id_siswa']; ?>]" 
                                                    value="H" 
                                                    <?= $current_status === 'H' ? 'checked' : ''; ?>
+                                                   <?= ($hasIzin && !$isOverridden) ? 'disabled' : '' ?>
                                                    class="status-radio sr-only">
                                             <div class="status-button touch-target bg-success-100 border-success-300 text-success-700 group-hover:bg-success-200 group-hover:scale-105">
                                                 <i data-lucide="check" class="w-5 h-5"></i>
@@ -187,6 +210,7 @@
                                                    name="absensi[<?= $siswa['id_siswa']; ?>]" 
                                                    value="I" 
                                                    <?= $current_status === 'I' ? 'checked' : ''; ?>
+                                                   <?= ($hasIzin && !$isOverridden) ? 'disabled' : '' ?>
                                                    class="status-radio sr-only">
                                             <div class="status-button touch-target bg-blue-100 border-blue-300 text-blue-700 group-hover:bg-blue-200 group-hover:scale-105">
                                                 <i data-lucide="info" class="w-5 h-5"></i>
@@ -201,6 +225,7 @@
                                                    name="absensi[<?= $siswa['id_siswa']; ?>]" 
                                                    value="S" 
                                                    <?= $current_status === 'S' ? 'checked' : ''; ?>
+                                                   <?= ($hasIzin && !$isOverridden) ? 'disabled' : '' ?>
                                                    class="status-radio sr-only">
                                             <div class="status-button touch-target bg-yellow-100 border-yellow-300 text-yellow-700 group-hover:bg-yellow-200 group-hover:scale-105">
                                                 <i data-lucide="thermometer" class="w-5 h-5"></i>
@@ -215,6 +240,7 @@
                                                    name="absensi[<?= $siswa['id_siswa']; ?>]" 
                                                    value="A" 
                                                    <?= $current_status === 'A' ? 'checked' : ''; ?>
+                                                   <?= ($hasIzin && !$isOverridden) ? 'disabled' : '' ?>
                                                    class="status-radio sr-only">
                                             <div class="status-button touch-target bg-danger-100 border-danger-300 text-danger-700 group-hover:bg-danger-200 group-hover:scale-105">
                                                 <i data-lucide="x" class="w-5 h-5"></i>
@@ -224,14 +250,37 @@
                                         </label>
                                     </div>
 
-                                    <!-- Keterangan Input -->
-                                    <div class="mt-3 sm:mt-0 sm:ml-6">
-                                        <input type="text" 
-                                               name="keterangan[<?= $siswa['id_siswa']; ?>]"
-                                               value="<?= htmlspecialchars($current_keterangan); ?>"
-                                               placeholder="Keterangan..."
-                                               class="input-modern text-sm w-full sm:w-48 py-2">
-                                    </div>
+                                    <?php if ($hasIzin): ?>
+                                        <!-- Hidden input agar value tetap terkirim saat radio disabled -->
+                                        <input type="hidden" name="absensi[<?= $siswa['id_siswa']; ?>]"
+                                               value="<?= $isOverridden ? $current_status : $izinJenis ?>"
+                                               id="hidden-absensi-<?= $siswa['id_siswa'] ?>"
+                                               <?= $isOverridden ? 'disabled' : '' ?>>
+
+                                        <div class="mt-2 flex flex-col gap-2">
+                                            <button type="button"
+                                                    class="btn-override text-xs px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors inline-flex items-center gap-1 w-fit"
+                                                    onclick="toggleOverride(<?= $siswa['id_siswa'] ?>)">
+                                                <i data-lucide="<?= $isOverridden ? 'lock' : 'lock-open' ?>" class="w-3.5 h-3.5"></i>
+                                                <span><?= $isOverridden ? 'Kunci Kembali' : 'Ubah Status' ?></span>
+                                            </button>
+                                            <div class="override-reason <?= $isOverridden ? '' : 'hidden' ?>" id="override-reason-<?= $siswa['id_siswa'] ?>">
+                                                <textarea name="keterangan[<?= $siswa['id_siswa']; ?>]" rows="2"
+                                                          placeholder="Wajib isi alasan mengubah status izin dari wali kelas..."
+                                                          class="input-modern text-sm w-full py-2 border-amber-300 focus:border-amber-500"
+                                                          id="override-ket-<?= $siswa['id_siswa'] ?>"><?= htmlspecialchars($current_keterangan) ?></textarea>
+                                            </div>
+                                        </div>
+                                    <?php else: ?>
+                                        <!-- Keterangan Input -->
+                                        <div class="mt-3 sm:mt-0 sm:ml-6">
+                                            <input type="text" 
+                                                   name="keterangan[<?= $siswa['id_siswa']; ?>]"
+                                                   value="<?= htmlspecialchars($current_keterangan); ?>"
+                                                   placeholder="Keterangan..."
+                                                   class="input-modern text-sm w-full sm:w-48 py-2">
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -364,6 +413,13 @@
     .btn-warning:hover{ background:#d97706; box-shadow:0 10px 24px rgba(217,119,6,.28); transform: translateY(-1px); }
     .btn-warning:active{ transform: translateY(0); }
     .btn-warning:disabled{ opacity:.7; cursor:not-allowed; }
+    .izin-locked .status-option {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    .izin-locked .status-option .status-radio:checked + .status-button {
+        opacity: 1;
+    }
 </style>
 
 <script src="https://unpkg.com/lucide@latest"></script>
@@ -404,11 +460,11 @@
         });
     });
 
-    // Bulk status setter (global)
+    // Bulk status setter (global) — skip locked rows
     function setBulkStatus(status) {
         const radios = document.querySelectorAll('input.status-radio[value="'+status+'"]');
         radios.forEach(radio => {
-            if (!radio.checked) {
+            if (!radio.disabled && !radio.checked) {
                 radio.checked = true;
                 radio.dispatchEvent(new Event('change', { bubbles: true }));
             }
@@ -448,4 +504,65 @@
         requestAnimationFrame(()=>{ n.style.transform='translateX(0)'; });
         setTimeout(()=>{ n.style.transform='translateX(100%)'; setTimeout(()=>n.remove(),300); }, 3000);
     }
+
+    // Toggle override untuk siswa yang punya izin dari wali kelas
+    function toggleOverride(idSiswa) {
+        const group = document.getElementById('radio-group-' + idSiswa);
+        const reasonDiv = document.getElementById('override-reason-' + idSiswa);
+        const hiddenInput = document.getElementById('hidden-absensi-' + idSiswa);
+        const radios = group.querySelectorAll('.status-radio');
+        const btn = group.closest('[id^="status-wrap"]').querySelector('.btn-override');
+
+        const isLocked = radios[0].disabled;
+
+        if (isLocked) {
+            radios.forEach(r => r.disabled = false);
+            if (hiddenInput) hiddenInput.disabled = true;
+            reasonDiv.classList.remove('hidden');
+            btn.innerHTML = '<i data-lucide="lock" class="w-3.5 h-3.5"></i><span>Kunci Kembali</span>';
+            group.classList.remove('izin-locked');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } else {
+            const izinJenis = hiddenInput ? hiddenInput.value : 'I';
+            radios.forEach(r => {
+                r.disabled = true;
+                r.checked = (r.value === izinJenis);
+            });
+            if (hiddenInput) hiddenInput.disabled = false;
+            reasonDiv.classList.add('hidden');
+            btn.innerHTML = '<i data-lucide="lock-open" class="w-3.5 h-3.5"></i><span>Ubah Status</span>';
+            group.classList.add('izin-locked');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+        updateCounters();
+    }
+
+    // Validasi override keterangan wajib
+    (function() {
+        const form = document.getElementById('editAbsensiForm');
+        if (!form) return;
+        form.addEventListener('submit', function(e) {
+            const overrideReasons = document.querySelectorAll('.override-reason:not(.hidden)');
+            for (const div of overrideReasons) {
+                const textarea = div.querySelector('textarea');
+                if (textarea && !textarea.value.trim()) {
+                    e.preventDefault();
+                    textarea.focus();
+                    textarea.classList.add('border-red-500');
+                    showNotification('Wajib isi alasan perubahan status izin!', 'info');
+                    const submitBtn = document.getElementById('submitBtn');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4 inline mr-2"></i> Update Absensi';
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    return false;
+                }
+                if (textarea && textarea.value.trim()) {
+                    const val = textarea.value.trim();
+                    if (!val.startsWith('[Override Izin WK]')) {
+                        textarea.value = '[Override Izin WK] ' + val;
+                    }
+                }
+            }
+        });
+    })();
 </script>
