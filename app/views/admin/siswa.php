@@ -1390,10 +1390,10 @@
     <!-- Modal Upload Foto Siswa 3x4 -->
     <div id="modalFotoSiswa"
         class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] items-center justify-center p-4"
-        style="align-items: flex-start; padding-top: 2vh;">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[96vh] overflow-y-auto">
+        style="align-items: flex-start; padding-top: 3vh;">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[94vh] overflow-y-auto">
             <!-- Header -->
-            <div class="sticky top-0 bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-3 rounded-t-2xl z-10">
+            <div class="sticky top-0 bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-3.5 rounded-t-2xl z-10">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
@@ -1401,7 +1401,7 @@
                             <span id="fotoModalHeaderInitial" class="text-white font-bold text-base"></span>
                         </div>
                         <div>
-                            <h3 class="text-white font-bold text-base leading-tight" id="fotoModalNama"></h3>
+                            <h3 class="text-white font-bold text-sm leading-tight" id="fotoModalNama"></h3>
                             <p class="text-emerald-100 text-xs" id="fotoModalNisn"></p>
                         </div>
                     </div>
@@ -1413,97 +1413,98 @@
 
             <!-- Body -->
             <div class="p-4">
-                <!-- Current Photo Preview (3:4 ratio) -->
-                <div class="flex justify-center mb-4">
-                    <div id="fotoModalPreviewContainer"
-                        class="w-[120px] h-[160px] rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 shadow-inner">
-                        <img id="fotoModalPreview" src="" alt="" class="w-full h-full object-cover hidden">
-                        <div id="fotoModalPlaceholder" class="text-center">
-                            <i data-lucide="user" class="w-12 h-12 text-gray-300 mx-auto"></i>
-                            <p class="text-[10px] text-gray-400 mt-1">3×4</p>
+                <!-- STEP 1: Input Selection (Camera or Upload) -->
+                <div id="fm-input-step">
+                    <!-- Mode Tabs -->
+                    <div class="flex gap-2 mb-3">
+                        <button type="button" id="fm-btn-camera" onclick="fmSetMode('camera')"
+                            class="flex-1 px-3 py-2 rounded-lg text-sm font-medium border transition-colors bg-emerald-600 text-white border-emerald-600 flex items-center justify-center gap-1.5">
+                            <i data-lucide="camera" class="w-4 h-4"></i> Kamera
+                        </button>
+                        <button type="button" id="fm-btn-upload" onclick="fmSetMode('upload')"
+                            class="flex-1 px-3 py-2 rounded-lg text-sm font-medium border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-1.5">
+                            <i data-lucide="upload" class="w-4 h-4"></i> Upload File
+                        </button>
+                    </div>
+
+                    <!-- Camera View -->
+                    <div id="fm-camera-mode">
+                        <div class="relative rounded-xl overflow-hidden bg-black aspect-[4/3] flex items-center justify-center">
+                            <video id="fm-video" autoplay playsinline
+                                class="w-full h-full object-cover" style="display:none; transform: scaleX(-1);"></video>
+                            <div id="fm-camera-placeholder"
+                                class="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-100 p-4 text-center">
+                                <i data-lucide="video" class="w-10 h-10 mb-2 text-gray-400"></i>
+                                <p class="text-xs text-gray-500">Klik "Buka Kamera" untuk mengambil foto</p>
+                            </div>
+                            <!-- 3:4 guide overlay -->
+                            <div id="fm-rect-guide" class="absolute inset-0 pointer-events-none hidden flex items-center justify-center">
+                                <div style="width:52%; aspect-ratio:3/4; border:2px dashed rgba(255,255,255,0.85); border-radius:8px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.4);"></div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button type="button" id="fm-btn-start" onclick="fmStartCamera()"
+                                class="flex-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 flex items-center justify-center gap-1.5 font-medium">
+                                <i data-lucide="video" class="w-4 h-4"></i> Buka Kamera
+                            </button>
+                            <button type="button" id="fm-btn-capture" onclick="fmCapture()" style="display:none"
+                                class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center justify-center gap-1.5 font-medium">
+                                <i data-lucide="camera" class="w-4 h-4"></i> Ambil Foto
+                            </button>
+                            <button type="button" id="fm-btn-switch" onclick="fmSwitchCamera()" style="display:none"
+                                class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 flex items-center justify-center"
+                                title="Ganti kamera">
+                                <i data-lucide="switch-camera" class="w-4 h-4"></i>
+                            </button>
                         </div>
                     </div>
+
+                    <!-- Upload View -->
+                    <div id="fm-upload-mode" style="display:none">
+                        <label id="fm-dropzone"
+                            class="flex flex-col items-center justify-center w-full py-12 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50 transition-colors">
+                            <i data-lucide="image-plus" class="w-12 h-12 text-gray-400 mb-2"></i>
+                            <span class="text-sm text-gray-700 font-medium">Pilih atau seret foto ke sini</span>
+                            <span class="text-xs text-gray-400 mt-1">JPG, PNG, WebP (maks 5MB)</span>
+                            <input type="file" id="fm-file-input" accept="image/jpeg,image/png,image/webp" class="hidden"
+                                onchange="fmPreviewFile(this)">
+                        </label>
+                    </div>
                 </div>
 
-                <!-- Mode Tabs -->
-                <div class="flex gap-2 mb-3">
-                    <button type="button" id="fm-btn-camera" onclick="fmSetMode('camera')"
-                        class="flex-1 px-3 py-2 rounded-lg text-sm font-medium border transition-colors bg-emerald-600 text-white border-emerald-600 flex items-center justify-center gap-1.5">
-                        <i data-lucide="camera" class="w-4 h-4"></i> Kamera
-                    </button>
-                    <button type="button" id="fm-btn-upload" onclick="fmSetMode('upload')"
-                        class="flex-1 px-3 py-2 rounded-lg text-sm font-medium border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-1.5">
-                        <i data-lucide="upload" class="w-4 h-4"></i> Upload File
-                    </button>
-                </div>
+                <!-- STEP 2: Cropper/Editor (3:4 Canvas) -->
+                <div id="fm-crop-step" style="display:none">
+                    <div class="text-center mb-2">
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                            <i data-lucide="crop" class="w-3 h-3"></i> Pas Foto 3×4
+                        </span>
+                        <p class="text-[11px] text-gray-500 mt-1">Geser foto & atur zoom agar pas di bingkai</p>
+                    </div>
 
-                <!-- Camera Mode -->
-                <div id="fm-camera-mode">
-                    <div class="relative rounded-xl overflow-hidden bg-black aspect-[4/3]">
-                        <video id="fm-video" autoplay playsinline
-                            class="w-full h-full object-cover" style="display:none; transform: scaleX(-1);"></video>
-                        <canvas id="fm-canvas" class="hidden"></canvas>
-                        <div id="fm-camera-placeholder"
-                            class="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-100">
-                            <i data-lucide="video" class="w-12 h-12 mb-2"></i>
-                            <p class="text-sm">Klik tombol di bawah untuk membuka kamera</p>
+                    <!-- Interactive 3:4 Canvas Container -->
+                    <div class="flex justify-center">
+                        <div class="relative rounded-xl overflow-hidden shadow-lg border-2 border-emerald-500 bg-gray-900"
+                            style="width: 240px; height: 320px; touch-action: none;">
+                            <canvas id="fm-crop-canvas" width="300" height="400"
+                                class="w-full h-full cursor-grab active:cursor-grabbing select-none block"></canvas>
                         </div>
-                        <!-- 3:4 guide overlay -->
-                        <div id="fm-rect-guide" class="absolute inset-0 pointer-events-none hidden flex items-center justify-center">
-                            <div style="width:56%; aspect-ratio:3/4; border:2px dashed rgba(255,255,255,0.7); border-radius:8px;"></div>
-                            <div class="absolute inset-0" style="background: linear-gradient(to right, rgba(0,0,0,0.35) 22%, transparent 22%, transparent 78%, rgba(0,0,0,0.35) 78%);"></div>
-                        </div>
                     </div>
-                    <div class="flex gap-2 mt-2">
-                        <button type="button" id="fm-btn-start" onclick="fmStartCamera()"
-                            class="flex-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 flex items-center justify-center gap-1.5 font-medium">
-                            <i data-lucide="video" class="w-4 h-4"></i> Buka Kamera
-                        </button>
-                        <button type="button" id="fm-btn-capture" onclick="fmCapture()" style="display:none"
-                            class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center justify-center gap-1.5 font-medium">
-                            <i data-lucide="camera" class="w-4 h-4"></i> Ambil Foto
-                        </button>
-                        <button type="button" id="fm-btn-retake" onclick="fmRetake()" style="display:none"
-                            class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 flex items-center justify-center gap-1.5 font-medium">
-                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Ulangi
-                        </button>
-                        <button type="button" id="fm-btn-switch" onclick="fmSwitchCamera()" style="display:none"
-                            class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 flex items-center justify-center"
-                            title="Ganti kamera">
-                            <i data-lucide="switch-camera" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Upload Mode -->
-                <div id="fm-upload-mode" style="display:none">
-                    <label id="fm-dropzone"
-                        class="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50 transition-colors">
-                        <i data-lucide="image-plus" class="w-10 h-10 text-gray-400 mb-2"></i>
-                        <span class="text-sm text-gray-600 font-medium">Klik atau seret foto ke sini</span>
-                        <span class="text-xs text-gray-400 mt-1">JPG, PNG, WebP (maks 5MB)</span>
-                        <input type="file" id="fm-file-input" accept="image/jpeg,image/png,image/webp" class="hidden"
-                            onchange="fmPreviewFile(this)">
-                    </label>
-                </div>
-
-                <!-- Cropper Area (shown after capture/upload) -->
-                <div id="fm-cropper-area" style="display:none" class="mt-3">
-                    <p class="text-xs text-gray-500 mb-2 text-center">Geser foto untuk mengatur posisi crop 3×4</p>
-                    <div id="fm-cropper-container" class="relative mx-auto overflow-hidden rounded-xl bg-gray-900 select-none"
-                        style="width:280px; height:280px; touch-action:none;">
-                        <img id="fm-cropper-img" src="" draggable="false"
-                            class="absolute select-none" style="max-width:none; cursor:grab;">
-                        <!-- 3:4 transparent window -->
-                        <div id="fm-crop-window" class="absolute pointer-events-none border-2 border-white/80 rounded-lg"
-                            style="left:50%; top:50%; transform:translate(-50%,-50%); box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);"></div>
-                        <!-- Corner marks -->
-                        <div class="absolute pointer-events-none" id="fm-crop-corners"></div>
+                    <!-- Zoom & Controls -->
+                    <div class="flex items-center justify-center gap-2 mt-3">
+                        <button type="button" onclick="fmZoomAdjust(-0.15)"
+                            class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 flex items-center justify-center font-bold text-sm">−</button>
+                        <input type="range" id="fm-zoom-slider" min="100" max="300" value="100"
+                            class="w-36 accent-emerald-600 cursor-pointer" oninput="fmZoomSliderChange(this.value)">
+                        <button type="button" onclick="fmZoomAdjust(0.15)"
+                            class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 flex items-center justify-center font-bold text-sm">+</button>
                     </div>
-                    <div class="flex items-center justify-center gap-3 mt-2">
-                        <button type="button" onclick="fmCropZoom(-1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 text-lg font-bold">−</button>
-                        <input type="range" id="fm-crop-zoom" min="100" max="300" value="100" class="w-32 accent-emerald-600" oninput="fmCropApplyZoom(this.value)">
-                        <button type="button" onclick="fmCropZoom(1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 text-lg font-bold">+</button>
+
+                    <div class="flex justify-center mt-2">
+                        <button type="button" onclick="fmResetToInput()"
+                            class="text-xs text-gray-500 hover:text-emerald-600 flex items-center gap-1 font-medium py-1 px-2 rounded hover:bg-gray-100 transition-colors">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Ambil Ulang / Ganti Foto
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1511,19 +1512,19 @@
             <!-- Footer -->
             <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between rounded-b-2xl">
                 <button type="button" id="fm-btn-delete" onclick="fmHapusFoto()" style="display:none"
-                    class="px-3 py-2 text-sm font-medium rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center gap-1.5 transition-colors">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus
+                    class="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center gap-1 transition-colors">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus Foto
                 </button>
                 <div class="flex-1"></div>
                 <div class="flex gap-2">
                     <button type="button" onclick="closeFotoModal()"
-                        class="px-3 py-2 text-sm font-medium rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition-colors">
+                        class="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition-colors">
                         Batal
                     </button>
                     <button type="button" id="fm-btn-save" onclick="fmSimpanFoto()" disabled
-                        class="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i data-lucide="save" class="w-4 h-4"></i>
-                        <span id="fm-save-text">Simpan</span>
+                        class="px-4 py-1.5 text-xs font-medium rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                        <span id="fm-save-text">Simpan Foto</span>
                     </button>
                 </div>
             </div>
@@ -1531,30 +1532,28 @@
     </div>
 
     <script>
-        // ===== FOTO MODAL with 3:4 Cropper =====
+        // ===== FOTO MODAL with Interactive 3:4 Canvas Cropper =====
         let fmStream = null;
         let fmSiswaId = null;
         let fmHasFoto = false;
-        let fmBase64 = '';
-        let fmFile = null;
         let fmFacingMode = 'user';
 
-        // Cropper state
-        let fmCropImg = null;
-        let fmCropNatW = 0, fmCropNatH = 0;
-        let fmCropScale = 1;
-        let fmCropX = 0, fmCropY = 0;
-        let fmCropDragging = false;
-        let fmCropStartX = 0, fmCropStartY = 0;
-        let fmCropWinW = 0, fmCropWinH = 0;
-        let fmCropContW = 280, fmCropContH = 280;
+        // Canvas Cropper State
+        let fmImg = null;
+        let fmZoom = 1.0;
+        let fmBaseScale = 1.0;
+        let fmPosX = 0, fmPosY = 0;
+        let fmDragging = false;
+        let fmDragStartX = 0, fmDragStartY = 0;
+        let fmInitialPosX = 0, fmInitialPosY = 0;
+
+        const FM_CW = 300; // Canvas output width (3:4 ratio)
+        const FM_CH = 400; // Canvas output height
 
         function openFotoModal(siswa) {
             fmSiswaId = siswa.id_siswa;
             fmHasFoto = !!siswa.foto;
-            fmBase64 = '';
-            fmFile = null;
-            fmHideCropper();
+            fmResetToInput();
 
             const initial = siswa.nama_siswa ? siswa.nama_siswa.charAt(0).toUpperCase() : 'A';
             document.getElementById('fotoModalNama').textContent = siswa.nama_siswa || '-';
@@ -1563,8 +1562,6 @@
 
             const headerImg = document.getElementById('fotoModalHeaderImg');
             const headerInit = document.getElementById('fotoModalHeaderInitial');
-            const preview = document.getElementById('fotoModalPreview');
-            const placeholder = document.getElementById('fotoModalPlaceholder');
 
             if (fmHasFoto) {
                 const url = '<?= BASEURL; ?>/foto/siswa/' + siswa.id_siswa + '?v=' + Date.now();
@@ -1572,17 +1569,10 @@
                 headerImg.classList.remove('hidden');
                 headerInit.classList.add('hidden');
                 headerImg.onerror = function() { headerImg.classList.add('hidden'); headerInit.classList.remove('hidden'); };
-                preview.src = url;
-                preview.classList.remove('hidden');
-                placeholder.classList.add('hidden');
-                preview.onerror = function() { preview.classList.add('hidden'); placeholder.classList.remove('hidden'); };
                 document.getElementById('fm-btn-delete').style.display = '';
             } else {
                 headerImg.classList.add('hidden');
                 headerInit.classList.remove('hidden');
-                preview.classList.add('hidden');
-                preview.src = '';
-                placeholder.classList.remove('hidden');
                 document.getElementById('fm-btn-delete').style.display = 'none';
             }
 
@@ -1597,13 +1587,11 @@
 
         function closeFotoModal() {
             fmStopCamera();
-            fmHideCropper();
             const modal = document.getElementById('modalFotoSiswa');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             fmSiswaId = null;
-            fmBase64 = '';
-            fmFile = null;
+            fmImg = null;
             const fi = document.getElementById('fm-file-input');
             if (fi) fi.value = '';
         }
@@ -1625,7 +1613,6 @@
                 uplDiv.style.display = '';
                 fmStopCamera();
             }
-            fmHideCropper();
         }
 
         async function fmStartCamera() {
@@ -1633,7 +1620,7 @@
                 const video = document.getElementById('fm-video');
                 const ph = document.getElementById('fm-camera-placeholder');
                 fmStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: fmFacingMode, width: { ideal: 640 }, height: { ideal: 480 } }
+                    video: { facingMode: fmFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } }
                 });
                 video.srcObject = fmStream;
                 video.style.display = 'block';
@@ -1661,8 +1648,6 @@
             if (bs) bs.style.display = '';
             const bc = document.getElementById('fm-btn-capture');
             if (bc) bc.style.display = 'none';
-            const br = document.getElementById('fm-btn-retake');
-            if (br) br.style.display = 'none';
             const bsw = document.getElementById('fm-btn-switch');
             if (bsw) bsw.style.display = 'none';
             const rg = document.getElementById('fm-rect-guide');
@@ -1677,34 +1662,20 @@
 
         function fmCapture() {
             const video = document.getElementById('fm-video');
-            const canvas = document.getElementById('fm-canvas');
-            // Capture full frame (mirrored)
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
+            if (!video || !video.videoWidth) return;
+
+            // Render mirrored frame to offscreen canvas
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = video.videoWidth;
+            offCanvas.height = video.videoHeight;
+            const ctx = offCanvas.getContext('2d');
             ctx.translate(video.videoWidth, 0);
             ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0);
-            const fullDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-            fmBase64 = fullDataUrl;
-            fmFile = null;
 
-            if (fmStream) fmStream.getTracks().forEach(t => t.stop());
-            video.style.display = 'none';
-            document.getElementById('fm-btn-capture').style.display = 'none';
-            document.getElementById('fm-btn-switch').style.display = 'none';
-            document.getElementById('fm-btn-retake').style.display = '';
-            document.getElementById('fm-rect-guide').classList.add('hidden');
-
-            fmShowCropper(fullDataUrl);
-        }
-
-        function fmRetake() {
-            fmBase64 = '';
-            fmHideCropper();
-            document.getElementById('fm-btn-retake').style.display = 'none';
-            document.getElementById('fm-btn-save').disabled = true;
-            fmStartCamera();
+            fmStopCamera();
+            const dataUrl = offCanvas.toDataURL('image/jpeg', 0.95);
+            fmLoadImageIntoCropper(dataUrl);
         }
 
         function fmPreviewFile(input) {
@@ -1714,206 +1685,184 @@
                     input.value = '';
                     return;
                 }
-                fmFile = input.files[0];
-                fmBase64 = '';
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    fmShowCropper(e.target.result);
+                    fmLoadImageIntoCropper(e.target.result);
                 };
-                reader.readAsDataURL(fmFile);
+                reader.readAsDataURL(input.files[0]);
             }
         }
 
-        // ===== CROPPER =====
-        function fmShowCropper(src) {
-            const area = document.getElementById('fm-cropper-area');
-            const img = document.getElementById('fm-cropper-img');
-            const container = document.getElementById('fm-cropper-container');
-            const zoomSlider = document.getElementById('fm-crop-zoom');
-
-            area.style.display = '';
-            zoomSlider.value = 100;
-
-            const tempImg = new Image();
-            tempImg.onload = function() {
-                fmCropNatW = tempImg.naturalWidth;
-                fmCropNatH = tempImg.naturalHeight;
-
-                // Crop window: 3:4 ratio, fit inside container
-                const maxWinH = fmCropContH * 0.85;
-                const maxWinW = fmCropContW * 0.75;
-                fmCropWinH = Math.min(maxWinH, maxWinW / 0.75);
-                fmCropWinW = fmCropWinH * 0.75;
-
-                const cropWin = document.getElementById('fm-crop-window');
-                cropWin.style.width = fmCropWinW + 'px';
-                cropWin.style.height = fmCropWinH + 'px';
-
-                // Fit image so it covers the crop window
-                fmCropScale = 1;
-                fmCropFitImage();
-
-                img.src = src;
-                img.style.width = (fmCropNatW * fmCropScale) + 'px';
-                img.style.height = 'auto';
-
-                // Center image on crop window
-                const dispW = fmCropNatW * fmCropScale;
-                const dispH = fmCropNatH * fmCropScale;
-                const winLeft = (fmCropContW - fmCropWinW) / 2;
-                const winTop = (fmCropContH - fmCropWinH) / 2;
-                fmCropX = winLeft - (dispW - fmCropWinW) / 2;
-                fmCropY = winTop - (dispH - fmCropWinH) / 2;
-                fmCropClamp();
-                fmCropApplyPos();
-
+        // ===== 3:4 CANVAS CROPPER ENGINE =====
+        function fmLoadImageIntoCropper(src) {
+            const img = new Image();
+            img.onload = function() {
+                fmImg = img;
+                document.getElementById('fm-input-step').style.display = 'none';
+                document.getElementById('fm-crop-step').style.display = '';
                 document.getElementById('fm-btn-save').disabled = false;
+
+                // Calculate base scale to fill 300x400
+                const scaleX = FM_CW / img.naturalWidth;
+                const scaleY = FM_CH / img.naturalHeight;
+                fmBaseScale = Math.max(scaleX, scaleY);
+                fmZoom = 1.0;
+                document.getElementById('fm-zoom-slider').value = 100;
+
+                // Center initial position
+                const curW = img.naturalWidth * fmBaseScale;
+                const curH = img.naturalHeight * fmBaseScale;
+                fmPosX = (FM_CW - curW) / 2;
+                fmPosY = (FM_CH - curH) / 2;
+
+                fmClampPos();
+                fmDrawCanvas();
+                fmInitCanvasEvents();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             };
-            tempImg.src = src;
-
-            // Bind drag events
-            fmCropBindEvents(container, img);
+            img.src = src;
         }
 
-        function fmCropFitImage() {
-            // Scale so image covers the crop window
-            const scaleW = fmCropWinW / fmCropNatW;
-            const scaleH = fmCropWinH / fmCropNatH;
-            fmCropScale = Math.max(scaleW, scaleH);
+        function fmResetToInput() {
+            fmImg = null;
+            document.getElementById('fm-input-step').style.display = '';
+            document.getElementById('fm-crop-step').style.display = 'none';
+            document.getElementById('fm-btn-save').disabled = true;
+            const fi = document.getElementById('fm-file-input');
+            if (fi) fi.value = '';
+            fmStopCamera();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        function fmCropClamp() {
-            const dispW = fmCropNatW * fmCropScale;
-            const dispH = fmCropNatH * fmCropScale;
-            const winLeft = (fmCropContW - fmCropWinW) / 2;
-            const winTop = (fmCropContH - fmCropWinH) / 2;
-            // Image must cover the crop window
-            fmCropX = Math.min(winLeft, Math.max(winLeft + fmCropWinW - dispW, fmCropX));
-            fmCropY = Math.min(winTop, Math.max(winTop + fmCropWinH - dispH, fmCropY));
+        function fmClampPos() {
+            if (!fmImg) return;
+            const totalScale = fmBaseScale * fmZoom;
+            const curW = fmImg.naturalWidth * totalScale;
+            const curH = fmImg.naturalHeight * totalScale;
+
+            const minX = FM_CW - curW;
+            const maxX = 0;
+            const minY = FM_CH - curH;
+            const maxY = 0;
+
+            fmPosX = Math.max(minX, Math.min(maxX, fmPosX));
+            fmPosY = Math.max(minY, Math.min(maxY, fmPosY));
         }
 
-        function fmCropApplyPos() {
-            const img = document.getElementById('fm-cropper-img');
-            img.style.left = fmCropX + 'px';
-            img.style.top = fmCropY + 'px';
-            img.style.width = (fmCropNatW * fmCropScale) + 'px';
+        function fmDrawCanvas() {
+            if (!fmImg) return;
+            const canvas = document.getElementById('fm-crop-canvas');
+            const ctx = canvas.getContext('2d');
+            const totalScale = fmBaseScale * fmZoom;
+            const curW = fmImg.naturalWidth * totalScale;
+            const curH = fmImg.naturalHeight * totalScale;
+
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(0, 0, FM_CW, FM_CH);
+            ctx.drawImage(fmImg, fmPosX, fmPosY, curW, curH);
         }
 
-        function fmCropApplyZoom(val) {
-            const baseScale = (function() {
-                const scaleW = fmCropWinW / fmCropNatW;
-                const scaleH = fmCropWinH / fmCropNatH;
-                return Math.max(scaleW, scaleH);
-            })();
-            const newScale = baseScale * (val / 100);
-            if (newScale < baseScale) return;
+        function fmZoomSliderChange(val) {
+            if (!fmImg) return;
+            const oldZoom = fmZoom;
+            const newZoom = val / 100;
+            if (newZoom < 1.0) return;
 
-            // Zoom centered on crop window center
-            const winCX = fmCropContW / 2;
-            const winCY = fmCropContH / 2;
-            const imgCX = (winCX - fmCropX) / fmCropScale;
-            const imgCY = (winCY - fmCropY) / fmCropScale;
+            // Zoom centered on canvas center (150, 200)
+            const cx = FM_CW / 2;
+            const cy = FM_CH / 2;
+            const oldScale = fmBaseScale * oldZoom;
+            const newScale = fmBaseScale * newZoom;
 
-            fmCropScale = newScale;
-            fmCropX = winCX - imgCX * fmCropScale;
-            fmCropY = winCY - imgCY * fmCropScale;
-            fmCropClamp();
-            fmCropApplyPos();
+            const imgX = (cx - fmPosX) / oldScale;
+            const imgY = (cy - fmPosY) / oldScale;
+
+            fmZoom = newZoom;
+            fmPosX = cx - (imgX * newScale);
+            fmPosY = cy - (imgY * newScale);
+
+            fmClampPos();
+            fmDrawCanvas();
         }
 
-        function fmCropZoom(dir) {
-            const slider = document.getElementById('fm-crop-zoom');
-            let v = parseInt(slider.value) + dir * 15;
-            v = Math.max(100, Math.min(300, v));
-            slider.value = v;
-            fmCropApplyZoom(v);
+        function fmZoomAdjust(delta) {
+            const slider = document.getElementById('fm-zoom-slider');
+            let current = parseFloat(slider.value) / 100;
+            let next = Math.max(1.0, Math.min(3.0, current + delta));
+            slider.value = Math.round(next * 100);
+            fmZoomSliderChange(slider.value);
         }
 
-        function fmCropBindEvents(container, img) {
-            // Remove old listeners by cloning
-            const newContainer = container.cloneNode(true);
-            container.parentNode.replaceChild(newContainer, container);
-            const newImg = newContainer.querySelector('#fm-cropper-img');
+        let fmCanvasEventsBound = false;
+        function fmInitCanvasEvents() {
+            const canvas = document.getElementById('fm-crop-canvas');
+            if (fmCanvasEventsBound || !canvas) return;
+            fmCanvasEventsBound = true;
 
-            function onStart(e) {
+            function getCanvasScale() {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    scaleX: FM_CW / rect.width,
+                    scaleY: FM_CH / rect.height
+                };
+            }
+
+            function onPointerDown(e) {
+                if (!fmImg) return;
                 e.preventDefault();
-                fmCropDragging = true;
+                fmDragging = true;
                 const pt = e.touches ? e.touches[0] : e;
-                fmCropStartX = pt.clientX - fmCropX;
-                fmCropStartY = pt.clientY - fmCropY;
-                newImg.style.cursor = 'grabbing';
+                fmDragStartX = pt.clientX;
+                fmDragStartY = pt.clientY;
+                fmInitialPosX = fmPosX;
+                fmInitialPosY = fmPosY;
             }
-            function onMove(e) {
-                if (!fmCropDragging) return;
+
+            function onPointerMove(e) {
+                if (!fmDragging || !fmImg) return;
                 e.preventDefault();
                 const pt = e.touches ? e.touches[0] : e;
-                fmCropX = pt.clientX - fmCropStartX;
-                fmCropY = pt.clientY - fmCropStartY;
-                fmCropClamp();
-                fmCropApplyPos();
+                const s = getCanvasScale();
+                const dx = (pt.clientX - fmDragStartX) * s.scaleX;
+                const dy = (pt.clientY - fmDragStartY) * s.scaleY;
+                fmPosX = fmInitialPosX + dx;
+                fmPosY = fmInitialPosY + dy;
+                fmClampPos();
+                fmDrawCanvas();
             }
-            function onEnd() {
-                fmCropDragging = false;
-                newImg.style.cursor = 'grab';
+
+            function onPointerUp() {
+                fmDragging = false;
             }
 
-            newContainer.addEventListener('mousedown', onStart);
-            newContainer.addEventListener('touchstart', onStart, { passive: false });
-            window.addEventListener('mousemove', onMove);
-            window.addEventListener('touchmove', onMove, { passive: false });
-            window.addEventListener('mouseup', onEnd);
-            window.addEventListener('touchend', onEnd);
-        }
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            window.addEventListener('mousemove', onPointerMove);
+            window.addEventListener('touchmove', onPointerMove, { passive: false });
+            window.addEventListener('mouseup', onPointerUp);
+            window.addEventListener('touchend', onPointerUp);
 
-        function fmHideCropper() {
-            const area = document.getElementById('fm-cropper-area');
-            if (area) area.style.display = 'none';
-        }
-
-        function fmGetCropCoords() {
-            // Convert crop window position back to natural image coordinates
-            const winLeft = (fmCropContW - fmCropWinW) / 2;
-            const winTop = (fmCropContH - fmCropWinH) / 2;
-            const natX = (winLeft - fmCropX) / fmCropScale;
-            const natY = (winTop - fmCropY) / fmCropScale;
-            const natW = fmCropWinW / fmCropScale;
-            const natH = fmCropWinH / fmCropScale;
-            return {
-                x: Math.round(Math.max(0, natX)),
-                y: Math.round(Math.max(0, natY)),
-                w: Math.round(Math.min(natW, fmCropNatW - natX)),
-                h: Math.round(Math.min(natH, fmCropNatH - natY))
-            };
-        }
-
-        function fmUpdatePreview(src) {
-            const preview = document.getElementById('fotoModalPreview');
-            const placeholder = document.getElementById('fotoModalPlaceholder');
-            preview.src = src;
-            preview.classList.remove('hidden');
-            placeholder.classList.add('hidden');
+            // Mouse wheel to zoom
+            canvas.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                const delta = e.deltaY < 0 ? 0.1 : -0.1;
+                fmZoomAdjust(delta);
+            }, { passive: false });
         }
 
         async function fmSimpanFoto() {
-            if (!fmSiswaId) return;
+            if (!fmSiswaId || !fmImg) return;
             const saveBtn = document.getElementById('fm-btn-save');
             const saveText = document.getElementById('fm-save-text');
             saveBtn.disabled = true;
             saveText.textContent = 'Menyimpan...';
 
-            const crop = fmGetCropCoords();
+            const canvas = document.getElementById('fm-crop-canvas');
+            const base64Data = canvas.toDataURL('image/jpeg', 0.90);
+
             const formData = new FormData();
             formData.append('id_siswa', fmSiswaId);
-            formData.append('crop_x', crop.x);
-            formData.append('crop_y', crop.y);
-            formData.append('crop_w', crop.w);
-            formData.append('crop_h', crop.h);
-
-            if (fmBase64) {
-                formData.append('foto_base64', fmBase64);
-            } else if (fmFile) {
-                formData.append('foto_file', fmFile);
-            }
+            formData.append('foto_base64', base64Data);
 
             try {
                 const res = await fetch('<?= BASEURL; ?>/admin/simpanFotoSiswaAjax', {
@@ -1932,7 +1881,7 @@
                 alert('Terjadi kesalahan jaringan');
             } finally {
                 saveBtn.disabled = false;
-                saveText.textContent = 'Simpan';
+                saveText.textContent = 'Simpan Foto';
             }
         }
 
@@ -1947,6 +1896,66 @@
             formData.append('id_siswa', fmSiswaId);
 
             try {
+                const res = await fetch('<?= BASEURL; ?>/admin/hapusFotoSiswaAjax', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    fmRefreshAvatars(fmSiswaId, null);
+                    closeFotoModal();
+                } else {
+                    alert(data.message || 'Gagal menghapus foto');
+                }
+            } catch (e) {
+                alert('Terjadi kesalahan jaringan');
+            } finally {
+                delBtn.disabled = false;
+            }
+        }
+
+        function fmRefreshAvatars(idSiswa, fotoUrl) {
+            document.querySelectorAll('[data-foto-siswa="' + idSiswa + '"]').forEach(el => {
+                const img = el.querySelector('img');
+                const fallback = el.querySelector('.fm-fallback');
+                if (fotoUrl) {
+                    if (img) {
+                        img.src = fotoUrl;
+                        img.classList.remove('hidden');
+                        img.style.display = '';
+                    }
+                    if (fallback) fallback.classList.add('hidden');
+                    el.closest('[data-siswa-row]')?.setAttribute('data-has-foto', '1');
+                } else {
+                    if (img) { img.classList.add('hidden'); img.src = ''; }
+                    if (fallback) fallback.classList.remove('hidden');
+                    el.closest('[data-siswa-row]')?.removeAttribute('data-has-foto');
+                }
+            });
+        }
+
+        document.getElementById('modalFotoSiswa')?.addEventListener('click', function(e) {
+            if (e.target === this) closeFotoModal();
+        });
+
+        // Drag & drop support
+        (function() {
+            const dz = document.getElementById('fm-dropzone');
+            if (!dz) return;
+            ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('border-emerald-400', 'bg-emerald-50'); }));
+            ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('border-emerald-400', 'bg-emerald-50'); }));
+            dz.addEventListener('drop', e => {
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const input = document.getElementById('fm-file-input');
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                    fmPreviewFile(input);
+                }
+            });
+        })();
                 const res = await fetch('<?= BASEURL; ?>/admin/hapusFotoSiswaAjax', {
                     method: 'POST',
                     body: formData,
