@@ -56,6 +56,13 @@ define('MENU_INPUT_NILAI_ENABLED', getSystemSetting('menu_input_nilai_enabled', 
 define('MENU_PEMBAYARAN_ENABLED', getSystemSetting('menu_pembayaran_enabled', '1') == '1');
 define('MENU_RAPOR_ENABLED', getSystemSetting('menu_rapor_enabled', '1') == '1');
 
+// Cloudflare R2 Storage (foto siswa)
+define('R2_ACCOUNT_ID', getSystemSetting('r2_account_id', ''));
+define('R2_ACCESS_KEY_ID', getSystemSetting('r2_access_key_id', ''));
+define('R2_SECRET_ACCESS_KEY', getSystemSetting('r2_secret_access_key', ''));
+define('R2_BUCKET', getSystemSetting('r2_bucket', 'sabilillah'));
+define('R2_PUBLIC_URL', getSystemSetting('r2_public_url', ''));
+
 function getPengaturanAplikasi()
 {
 

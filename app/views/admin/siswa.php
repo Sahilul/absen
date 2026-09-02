@@ -232,8 +232,12 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div
-                                                class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
-                                                <span class="text-xs font-semibold text-indigo-600"><?= $index + 1; ?></span>
+                                                class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mr-3 overflow-hidden <?= empty($siswa['foto']) ? 'bg-indigo-100' : '' ?>">
+                                                <?php if (!empty($siswa['foto'])): ?>
+                                                    <img src="<?= htmlspecialchars($siswa['foto']); ?>" alt="" class="w-full h-full object-cover">
+                                                <?php else: ?>
+                                                    <span class="text-xs font-semibold text-indigo-600"><?= $index + 1; ?></span>
+                                                <?php endif; ?>
                                             </div>
                                             <div>
                                                 <div class="text-sm font-medium text-gray-900">
@@ -388,8 +392,12 @@
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
-                                        <?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?>
+                                        class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden <?= empty($siswa['foto']) ? 'bg-indigo-100 text-indigo-600 font-bold text-sm' : '' ?>">
+                                        <?php if (!empty($siswa['foto'])): ?>
+                                            <img src="<?= htmlspecialchars($siswa['foto']); ?>" alt="" class="w-full h-full object-cover">
+                                        <?php else: ?>
+                                            <?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?>
+                                        <?php endif; ?>
                                     </div>
                                     <div>
                                         <p class="font-semibold text-gray-900 text-sm">
@@ -981,8 +989,9 @@
             <!-- Modal Header -->
             <div class="sticky top-0 bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 py-4 rounded-t-2xl">
                 <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden" id="detailAvatarContainer">
                         <span class="text-2xl font-bold text-white" id="detailAvatar">A</span>
+                        <img id="detailAvatarImg" src="" alt="" class="w-full h-full object-cover hidden">
                     </div>
                     <div class="flex-1">
                         <h3 class="text-xl font-bold text-white" id="detailNama">-</h3>
@@ -1403,8 +1412,19 @@
             };
 
             // Update avatar
-            const initial = siswa.nama_siswa ? siswa.nama_siswa.charAt(0).toUpperCase() : 'A';
-            setText('detailAvatar', initial);
+            const avatarSpan = document.getElementById('detailAvatar');
+            const avatarImg = document.getElementById('detailAvatarImg');
+            if (siswa.foto) {
+                avatarSpan.classList.add('hidden');
+                avatarImg.src = siswa.foto;
+                avatarImg.classList.remove('hidden');
+            } else {
+                const initial = siswa.nama_siswa ? siswa.nama_siswa.charAt(0).toUpperCase() : 'A';
+                avatarSpan.textContent = initial;
+                avatarSpan.classList.remove('hidden');
+                avatarImg.classList.add('hidden');
+                avatarImg.src = '';
+            }
 
             // Update nama dan NISN
             setText('detailNama', siswa.nama_siswa || '-');

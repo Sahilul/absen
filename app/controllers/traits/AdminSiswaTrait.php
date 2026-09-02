@@ -116,6 +116,12 @@ function prosesTambahSiswa()
 
             $idSiswaBaru = $this->model('Siswa_model')->tambahDataSiswa($dataSiswa);
             if ($idSiswaBaru) {
+                // Upload foto if provided
+                $fotoUrl = $this->handleFotoUpload($idSiswaBaru);
+                if ($fotoUrl !== null) {
+                    $this->model('Siswa_model')->updateFotoSiswa($idSiswaBaru, $fotoUrl);
+                }
+
                 $dataAkun = [
                     'username' => $nisn,
                     'password' => $password,
@@ -153,6 +159,25 @@ function editSiswa($id)
 function prosesUpdateSiswa()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $idSiswa = $_POST['id_siswa'] ?? 0;
+
+            // Handle foto upload (webcam base64 or file upload) → R2
+            $hapusFoto = ($_POST['hapus_foto'] ?? '0') === '1';
+            if ($hapusFoto) {
+                // Delete from R2 and clear DB
+                $this->deleteFotoFromR2($idSiswa);
+                $_POST['foto'] = null;
+            } else {
+                $fotoUrl = $this->handleFotoUpload($idSiswa);
+                if ($fotoUrl !== null) {
+                    $_POST['foto'] = $fotoUrl;
+                } else {
+                    // Preserve existing foto if no new upload
+                    $siswa = $this->model('Siswa_model')->getSiswaById($idSiswa);
+                    $_POST['foto'] = $siswa['foto'] ?? null;
+                }
+            }
+
             // Pass all POST data to model (including new fields: tempat_lahir, alamat, no_wa, ayah_kandung, ibu_kandung)
             $this->model('Siswa_model')->updateDataSiswa($_POST);
 
@@ -164,6 +189,100 @@ function prosesUpdateSiswa()
 
             header('Location: ' . BASEURL . '/admin/siswa');
             exit;
+        }
+    }
+
+    /**
+     * Handle foto upload from webcam (base64) or file input.
+     * Returns R2 public URL on success, null if no upload attempted.
+     */
+    private function handleFotoUpload($idSiswa)
+    {
+        $base64 = $_POST['foto_base64'] ?? '';
+        $hasFile = !empty($_FILES['foto_file']['tmp_name']) && $_FILES['foto_file']['error'] === UPLOAD_ERR_OK;
+
+        if (empty($base64) && !$hasFile) {
+            return null;
+        }
+
+        require_once APPROOT . '/core/R2Storage.php';
+
+        if (!R2Storage::isConfigured()) {
+            Flasher::setFlash('Penyimpanan R2 belum dikonfigurasi. Foto tidak diupload.', 'warning');
+            return null;
+        }
+
+        $r2 = new R2Storage();
+
+        // Delete old foto if exists
+        $siswa = $this->model('Siswa_model')->getSiswaById($idSiswa);
+        if (!empty($siswa['foto'])) {
+            $oldKey = $this->extractR2Key($siswa['foto']);
+            if ($oldKey) {
+                $r2->delete($oldKey);
+            }
+        }
+
+        $nisn = $siswa['nisn'] ?? $idSiswa;
+        $key = 'foto-siswa/' . $nisn . '_' . time() . '.jpg';
+
+        if (!empty($base64)) {
+            $processed = R2Storage::processImage($base64, 400, 400, 85);
+            if (!$processed) {
+                Flasher::setFlash('Gagal memproses foto dari kamera', 'danger');
+                return null;
+            }
+            $result = $r2->upload($processed, $key, 'image/jpeg');
+        } else {
+            $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (!in_array($_FILES['foto_file']['type'], $allowed)) {
+                Flasher::setFlash('Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.', 'danger');
+                return null;
+            }
+            if ($_FILES['foto_file']['size'] > 5 * 1024 * 1024) {
+                Flasher::setFlash('Ukuran foto maksimal 5MB', 'danger');
+                return null;
+            }
+            $processed = R2Storage::processImage($_FILES['foto_file']['tmp_name'], 400, 400, 85);
+            if (!$processed) {
+                Flasher::setFlash('Gagal memproses foto', 'danger');
+                return null;
+            }
+            $result = $r2->upload($processed, $key, 'image/jpeg');
+        }
+
+        if ($result['success']) {
+            return $result['url'];
+        }
+
+        Flasher::setFlash('Gagal mengupload foto: ' . ($result['error'] ?? 'Unknown error'), 'danger');
+        return null;
+    }
+
+    private function extractR2Key($url)
+    {
+        if (empty($url) || !defined('R2_PUBLIC_URL') || empty(R2_PUBLIC_URL)) {
+            return null;
+        }
+        $prefix = rtrim(R2_PUBLIC_URL, '/') . '/';
+        if (strpos($url, $prefix) === 0) {
+            return substr($url, strlen($prefix));
+        }
+        return null;
+    }
+
+    private function deleteFotoFromR2($idSiswa)
+    {
+        $siswa = $this->model('Siswa_model')->getSiswaById($idSiswa);
+        if (empty($siswa['foto'])) return;
+
+        require_once APPROOT . '/core/R2Storage.php';
+        if (!R2Storage::isConfigured()) return;
+
+        $key = $this->extractR2Key($siswa['foto']);
+        if ($key) {
+            $r2 = new R2Storage();
+            $r2->delete($key);
         }
     }
 

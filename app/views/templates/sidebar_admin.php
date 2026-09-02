@@ -383,7 +383,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: PENGATURAN -->
             <!-- ============================================== -->
-            <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru', 'Antrian Pesan WhatsApp', 'Riwayat Login', 'Pengaturan WA Gateway', 'Pengaturan Notifikasi Absensi']); ?>
+            <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru', 'Antrian Pesan WhatsApp', 'Riwayat Login', 'Pengaturan WA Gateway', 'Pengaturan Notifikasi Absensi', 'Pengaturan Storage']); ?>
             <li class="pt-2" x-data="{ open: <?= $pengaturanActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $pengaturanActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -451,6 +451,13 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan Fungsi Guru') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-amber-50 hover:text-amber-700' ?>">
                             <i data-lucide="user-cog" class="w-4 h-4 mr-2"></i>
                             Fungsi Guru
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/pengaturanStorage"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan Storage') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-emerald-50 hover:text-emerald-700' ?>">
+                            <i data-lucide="hard-drive" class="w-4 h-4 mr-2"></i>
+                            Pengaturan Storage
                         </a>
                     </li>
                     <li>

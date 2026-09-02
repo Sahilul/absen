@@ -100,6 +100,82 @@
             <div class="p-6">
                 <form action="<?= BASEURL; ?>/admin/prosesTambahSiswa" method="POST" enctype="multipart/form-data">
 
+                    <!-- Section 0: Foto Siswa -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between cursor-pointer p-3 bg-emerald-50 rounded-lg mb-4"
+                            onclick="toggleSection('foto')">
+                            <h3 class="text-lg font-bold text-emerald-800 flex items-center gap-2">
+                                <i data-lucide="camera" class="w-5 h-5"></i> Foto Siswa
+                            </h3>
+                            <i data-lucide="chevron-down" id="icon-foto"
+                                class="w-5 h-5 text-emerald-600 transition-transform"></i>
+                        </div>
+                        <div id="section-foto" class="collapse-content open px-2">
+                            <div class="flex flex-col md:flex-row gap-6 items-start">
+                                <div class="flex flex-col items-center gap-3">
+                                    <div id="foto-preview-container"
+                                        class="w-40 h-40 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
+                                        <div id="foto-placeholder" class="text-center">
+                                            <i data-lucide="user" class="w-16 h-16 text-gray-300 mx-auto"></i>
+                                            <p class="text-xs text-gray-400 mt-1">Belum ada foto</p>
+                                        </div>
+                                        <img id="foto-preview" src="" alt="" class="w-full h-full object-cover hidden">
+                                    </div>
+                                </div>
+                                <div class="flex-1 space-y-4">
+                                    <div class="flex gap-2">
+                                        <button type="button" id="btn-mode-camera" onclick="setFotoMode('camera')"
+                                            class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors bg-emerald-600 text-white border-emerald-600">
+                                            <i data-lucide="camera" class="w-4 h-4 inline mr-1"></i> Kamera
+                                        </button>
+                                        <button type="button" id="btn-mode-upload" onclick="setFotoMode('upload')"
+                                            class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50">
+                                            <i data-lucide="upload" class="w-4 h-4 inline mr-1"></i> Upload File
+                                        </button>
+                                    </div>
+                                    <div id="foto-camera-mode">
+                                        <div class="relative rounded-lg overflow-hidden bg-black" style="max-width:320px">
+                                            <video id="foto-video" autoplay playsinline
+                                                class="w-full rounded-lg" style="display:none; transform: scaleX(-1);"></video>
+                                            <canvas id="foto-canvas" class="hidden"></canvas>
+                                            <div id="foto-camera-placeholder"
+                                                class="w-full flex flex-col items-center justify-center py-10 text-gray-400 bg-gray-100 rounded-lg">
+                                                <i data-lucide="video" class="w-10 h-10 mb-2"></i>
+                                                <p class="text-sm">Klik tombol di bawah untuk membuka kamera</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2 mt-3">
+                                            <button type="button" id="btn-start-camera" onclick="startCamera()"
+                                                class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 flex items-center gap-1">
+                                                <i data-lucide="video" class="w-4 h-4"></i> Buka Kamera
+                                            </button>
+                                            <button type="button" id="btn-capture" onclick="capturePhoto()" style="display:none"
+                                                class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center gap-1">
+                                                <i data-lucide="camera" class="w-4 h-4"></i> Ambil Foto
+                                            </button>
+                                            <button type="button" id="btn-retake" onclick="retakePhoto()" style="display:none"
+                                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 flex items-center gap-1">
+                                                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Ulangi
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="foto-upload-mode" style="display:none">
+                                        <label
+                                            class="flex flex-col items-center justify-center w-full max-w-xs py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-emerald-400 hover:bg-emerald-50 transition-colors">
+                                            <i data-lucide="image-plus" class="w-8 h-8 text-gray-400 mb-2"></i>
+                                            <span class="text-sm text-gray-500">Klik untuk pilih foto</span>
+                                            <span class="text-xs text-gray-400 mt-1">JPG, PNG, WebP (maks 5MB)</span>
+                                            <input type="file" name="foto_file" id="foto-file-input"
+                                                accept="image/jpeg,image/png,image/webp" class="hidden"
+                                                onchange="previewFileUpload(this)">
+                                        </label>
+                                    </div>
+                                    <input type="hidden" name="foto_base64" id="foto-base64-input" value="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Section 1: Data Identitas -->
                     <div class="mb-6">
                         <div class="flex items-center justify-between cursor-pointer p-3 bg-indigo-50 rounded-lg mb-4"
@@ -747,6 +823,113 @@
     </main>
 
     <script>
+        // --- Foto Siswa ---
+        let cameraStream = null;
+        let fotoMode = 'camera';
+
+        function setFotoMode(mode) {
+            fotoMode = mode;
+            const camBtn = document.getElementById('btn-mode-camera');
+            const uplBtn = document.getElementById('btn-mode-upload');
+            const camDiv = document.getElementById('foto-camera-mode');
+            const uplDiv = document.getElementById('foto-upload-mode');
+            if (mode === 'camera') {
+                camBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border transition-colors bg-emerald-600 text-white border-emerald-600';
+                uplBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50';
+                camDiv.style.display = '';
+                uplDiv.style.display = 'none';
+            } else {
+                uplBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border transition-colors bg-emerald-600 text-white border-emerald-600';
+                camBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50';
+                camDiv.style.display = 'none';
+                uplDiv.style.display = '';
+                stopCamera();
+            }
+        }
+
+        async function startCamera() {
+            try {
+                const video = document.getElementById('foto-video');
+                const placeholder = document.getElementById('foto-camera-placeholder');
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+                });
+                video.srcObject = cameraStream;
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+                document.getElementById('btn-start-camera').style.display = 'none';
+                document.getElementById('btn-capture').style.display = '';
+            } catch (e) {
+                alert('Tidak dapat mengakses kamera. Gunakan mode Upload File.');
+                setFotoMode('upload');
+            }
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(t => t.stop());
+                cameraStream = null;
+            }
+            const video = document.getElementById('foto-video');
+            video.style.display = 'none';
+            video.srcObject = null;
+            document.getElementById('foto-camera-placeholder').style.display = '';
+            document.getElementById('btn-start-camera').style.display = '';
+            document.getElementById('btn-capture').style.display = 'none';
+            document.getElementById('btn-retake').style.display = 'none';
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('foto-video');
+            const canvas = document.getElementById('foto-canvas');
+            const size = Math.min(video.videoWidth, video.videoHeight);
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.translate(size, 0);
+            ctx.scale(-1, 1);
+            const offsetX = (video.videoWidth - size) / 2;
+            const offsetY = (video.videoHeight - size) / 2;
+            ctx.drawImage(video, offsetX, offsetY, size, size, 0, 0, size, size);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            document.getElementById('foto-base64-input').value = dataUrl;
+            updatePreview(dataUrl);
+            cameraStream.getTracks().forEach(t => t.stop());
+            video.style.display = 'none';
+            document.getElementById('btn-capture').style.display = 'none';
+            document.getElementById('btn-retake').style.display = '';
+        }
+
+        function retakePhoto() {
+            document.getElementById('foto-base64-input').value = '';
+            document.getElementById('btn-retake').style.display = 'none';
+            startCamera();
+        }
+
+        function previewFileUpload(input) {
+            if (input.files && input.files[0]) {
+                if (input.files[0].size > 5 * 1024 * 1024) {
+                    alert('Ukuran foto maksimal 5MB');
+                    input.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    updatePreview(e.target.result);
+                    document.getElementById('foto-base64-input').value = '';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function updatePreview(src) {
+            const preview = document.getElementById('foto-preview');
+            const placeholder = document.getElementById('foto-placeholder');
+            preview.src = src;
+            preview.classList.remove('hidden');
+            if (placeholder) placeholder.style.display = 'none';
+        }
+
         // Toggle section collapse
         function toggleSection(sectionId) {
             const section = document.getElementById('section-' + sectionId);

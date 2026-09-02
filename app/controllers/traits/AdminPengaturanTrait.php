@@ -2181,4 +2181,70 @@ function hapusGrupWaKelas($id)
         header('Location: ' . BASEURL . '/admin/pengaturanNotifikasiAbsensi');
         exit;
     }
+
+    function pengaturanStorage()
+    {
+        $this->data['judul'] = 'Pengaturan Storage';
+        $pengaturanModel = $this->model('PengaturanAplikasi_model');
+
+        $this->data['r2_account_id'] = getSystemSetting('r2_account_id', '');
+        $this->data['r2_access_key_id'] = getSystemSetting('r2_access_key_id', '');
+        $this->data['r2_secret_access_key'] = getSystemSetting('r2_secret_access_key', '');
+        $this->data['r2_bucket'] = getSystemSetting('r2_bucket', 'sabilillah');
+        $this->data['r2_public_url'] = getSystemSetting('r2_public_url', '');
+
+        require_once APPROOT . '/core/R2Storage.php';
+        $this->data['r2_configured'] = R2Storage::isConfigured();
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/pengaturan_storage', $this->data);
+        $this->view('templates/footer');
+    }
+
+    function simpanPengaturanStorage()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/pengaturanStorage');
+            exit;
+        }
+
+        $db = new Database();
+        $fields = ['r2_account_id', 'r2_access_key_id', 'r2_secret_access_key', 'r2_bucket', 'r2_public_url'];
+
+        foreach ($fields as $key) {
+            $value = trim($_POST[$key] ?? '');
+            $db->query("UPDATE pengaturan_sistem SET value = :value WHERE key_name = :key_name");
+            $db->bind('value', $value);
+            $db->bind('key_name', $key);
+            $db->execute();
+        }
+
+        Flasher::setFlash('Pengaturan storage berhasil disimpan', 'success');
+        header('Location: ' . BASEURL . '/admin/pengaturanStorage');
+        exit;
+    }
+
+    function testR2Connection()
+    {
+        header('Content-Type: application/json');
+
+        require_once APPROOT . '/core/R2Storage.php';
+        if (!R2Storage::isConfigured()) {
+            echo json_encode(['success' => false, 'message' => 'R2 belum dikonfigurasi']);
+            exit;
+        }
+
+        $r2 = new R2Storage();
+        $testKey = '_test/' . time() . '.txt';
+        $result = $r2->upload('test-connection', $testKey, 'text/plain');
+
+        if ($result['success']) {
+            $r2->delete($testKey);
+            echo json_encode(['success' => true, 'message' => 'Koneksi R2 berhasil!']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal: ' . ($result['error'] ?? 'Unknown')]);
+        }
+        exit;
+    }
 }

@@ -211,6 +211,14 @@ class Siswa_model
         return $this->db->lastInsertId();
     }
 
+    public function updateFotoSiswa($idSiswa, $fotoUrl)
+    {
+        $this->db->query('UPDATE siswa SET foto = :foto WHERE id_siswa = :id_siswa');
+        $this->db->bind('foto', $fotoUrl);
+        $this->db->bind('id_siswa', $idSiswa);
+        $this->db->execute();
+    }
+
     public function updateDataSiswa($data)
     {
         $this->db->query('UPDATE siswa SET 
