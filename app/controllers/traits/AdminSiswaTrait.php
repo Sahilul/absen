@@ -11,7 +11,8 @@ function siswa()
         $this->data['siswa'] = $this->model('Siswa_model')->getAllSiswa();
         // v1.26.0 - Masker password_plain agar tidak bocor ke HTML (kecuali kartu login)
         $this->data['siswa'] = PasswordMask::maskRows($this->data['siswa']);
-        $this->data['kelas_list'] = $this->model('Kelas_model')->getAllKelas();
+        $id_tp = $_SESSION['id_tp_aktif'] ?? $this->model('TahunPelajaran_model')->getTahunPelajaranAktif()['id_tp'];
+        $this->data['kelas_list'] = $this->model('Kelas_model')->getAllKelasWithDetails($id_tp);
 
         // Load field configuration
         $pengaturanModel = $this->model('PengaturanAplikasi_model');
