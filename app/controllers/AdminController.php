@@ -10,6 +10,7 @@ require_once __DIR__ . '/traits/AdminPengaturanTrait.php';
 require_once __DIR__ . '/traits/AdminPesanTrait.php';
 require_once __DIR__ . '/traits/AdminWAGatewayTrait.php';
 require_once __DIR__ . '/traits/AdminPembayaranTrait.php';
+require_once __DIR__ . '/traits/AdminKesiswaanTrait.php';
 
 class AdminController extends Controller
 {
@@ -25,4 +26,5 @@ class AdminController extends Controller
     use AdminPesanTrait;
     use AdminWAGatewayTrait;
     use AdminPembayaranTrait;
+    use AdminKesiswaanTrait;
 }

@@ -303,7 +303,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: KESISWAAN -->
             <!-- ============================================== -->
-            <?php $kesiswaanActive = isGroupActive($judul, ['Performa Kehadiran Siswa', 'Naik Kelas', 'Kelulusan']); ?>
+            <?php $kesiswaanActive = isGroupActive($judul, ['Performa Kehadiran Siswa', 'Naik Kelas', 'Kelulusan', 'Izin Siswa']); ?>
             <li class="pt-2" x-data="{ open: <?= $kesiswaanActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $kesiswaanActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -322,6 +322,13 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= ($judul == 'Performa Kehadiran Siswa') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-cyan-50 hover:text-cyan-700' ?>">
                             <i data-lucide="activity" class="w-4 h-4 mr-2"></i>
                             Performa Kehadiran
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/izinSiswa"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Izin Siswa') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-amber-50 hover:text-amber-700' ?>">
+                            <i data-lucide="file-check" class="w-4 h-4 mr-2"></i>
+                            Izin Siswa
                         </a>
                     </li>
                     <li>

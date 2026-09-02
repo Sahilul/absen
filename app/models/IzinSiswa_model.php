@@ -189,4 +189,71 @@ class IzinSiswa_model
         $result = $this->db->single();
         return $result['total'];
     }
+
+    public function getAllIzin($id_tp, $filters = [])
+    {
+        $sql = "SELECT iz.*, s.nama_siswa, s.nisn, k.nama_kelas, g.nama_guru
+                FROM izin_siswa iz
+                JOIN siswa s ON s.id_siswa = iz.id_siswa
+                JOIN kelas k ON k.id_kelas = iz.id_kelas
+                LEFT JOIN guru g ON g.id_guru = iz.id_guru_input
+                WHERE iz.id_tp = :id_tp";
+
+        if (!empty($filters['id_kelas'])) {
+            $sql .= " AND iz.id_kelas = :id_kelas";
+        }
+        if (!empty($filters['status'])) {
+            $sql .= " AND iz.status = :status";
+        }
+        if (!empty($filters['jenis'])) {
+            $sql .= " AND iz.jenis_izin = :jenis";
+        }
+        if (!empty($filters['bulan'])) {
+            $sql .= " AND (MONTH(iz.tanggal_mulai) = :bulan OR MONTH(iz.tanggal_selesai) = :bulan2)";
+        }
+        if (!empty($filters['search'])) {
+            $sql .= " AND (s.nama_siswa LIKE :search OR s.nisn LIKE :search2)";
+        }
+
+        $sql .= " ORDER BY iz.created_at DESC";
+
+        $this->db->query($sql);
+        $this->db->bind('id_tp', $id_tp);
+
+        if (!empty($filters['id_kelas'])) {
+            $this->db->bind('id_kelas', $filters['id_kelas']);
+        }
+        if (!empty($filters['status'])) {
+            $this->db->bind('status', $filters['status']);
+        }
+        if (!empty($filters['jenis'])) {
+            $this->db->bind('jenis', $filters['jenis']);
+        }
+        if (!empty($filters['bulan'])) {
+            $this->db->bind('bulan', $filters['bulan']);
+            $this->db->bind('bulan2', $filters['bulan']);
+        }
+        if (!empty($filters['search'])) {
+            $searchTerm = '%' . $filters['search'] . '%';
+            $this->db->bind('search', $searchTerm);
+            $this->db->bind('search2', $searchTerm);
+        }
+
+        return $this->db->resultSet();
+    }
+
+    public function countAllIzinByStatus($id_tp)
+    {
+        $this->db->query("SELECT
+            COUNT(*) as total,
+            SUM(CASE WHEN status = 'aktif' AND tanggal_selesai >= CURDATE() THEN 1 ELSE 0 END) as aktif,
+            SUM(CASE WHEN jenis_izin = 'I' AND status = 'aktif' AND tanggal_selesai >= CURDATE() THEN 1 ELSE 0 END) as izin,
+            SUM(CASE WHEN jenis_izin = 'S' AND status = 'aktif' AND tanggal_selesai >= CURDATE() THEN 1 ELSE 0 END) as sakit,
+            SUM(CASE WHEN jenis_izin = 'D' AND status = 'aktif' AND tanggal_selesai >= CURDATE() THEN 1 ELSE 0 END) as dispensasi,
+            SUM(CASE WHEN status = 'selesai' THEN 1 ELSE 0 END) as selesai,
+            SUM(CASE WHEN status = 'dibatalkan' THEN 1 ELSE 0 END) as dibatalkan
+            FROM izin_siswa WHERE id_tp = :id_tp");
+        $this->db->bind('id_tp', $id_tp);
+        return $this->db->single();
+    }
 }
