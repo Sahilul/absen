@@ -232,12 +232,8 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div
-                                                class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-3 overflow-hidden <?= empty($siswa['foto']) ? 'bg-indigo-100' : '' ?>">
-                                                <?php if (!empty($siswa['foto'])): ?>
-                                                    <img src="<?= htmlspecialchars($siswa['foto']); ?>" alt="" class="w-10 h-10 rounded-full object-cover">
-                                                <?php else: ?>
-                                                    <span class="text-xs font-semibold text-indigo-600"><?= $index + 1; ?></span>
-                                                <?php endif; ?>
+                                                class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                                                <span class="text-xs font-semibold text-indigo-600"><?= $index + 1; ?></span>
                                             </div>
                                             <div>
                                                 <div class="text-sm font-medium text-gray-900">
@@ -252,8 +248,16 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div
-                                                class="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3">
-                                                <i data-lucide="user" class="w-4 h-4 text-gray-600"></i>
+                                                class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center mr-3 overflow-hidden bg-gray-100 border border-gray-200 shadow-sm">
+                                                <?php if (!empty($siswa['foto'])): ?>
+                                                    <img src="<?= BASEURL; ?>/foto/siswa/<?= (int) $siswa['id_siswa']; ?>"
+                                                        alt="<?= htmlspecialchars($siswa['nama_siswa']); ?>"
+                                                        class="w-full h-full object-cover"
+                                                        onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                                    <span class="text-xs font-bold text-gray-600 hidden"><?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?></span>
+                                                <?php else: ?>
+                                                    <i data-lucide="user" class="w-4 h-4 text-gray-500"></i>
+                                                <?php endif; ?>
                                             </div>
                                             <div>
                                                 <div class="text-sm font-medium text-gray-900">
@@ -392,9 +396,13 @@
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden <?= empty($siswa['foto']) ? 'bg-indigo-100 text-indigo-600 font-bold text-sm' : '' ?>">
+                                        class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-indigo-100 text-indigo-600 font-bold text-sm shadow-sm">
                                         <?php if (!empty($siswa['foto'])): ?>
-                                            <img src="<?= htmlspecialchars($siswa['foto']); ?>" alt="" class="w-10 h-10 rounded-full object-cover">
+                                            <img src="<?= BASEURL; ?>/foto/siswa/<?= (int) $siswa['id_siswa']; ?>"
+                                                alt="<?= htmlspecialchars($siswa['nama_siswa']); ?>"
+                                                class="w-full h-full object-cover"
+                                                onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                            <span class="hidden"><?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?></span>
                                         <?php else: ?>
                                             <?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?>
                                         <?php endif; ?>
@@ -1414,13 +1422,20 @@
             // Update avatar
             const avatarSpan = document.getElementById('detailAvatar');
             const avatarImg = document.getElementById('detailAvatarImg');
+            const initial = siswa.nama_siswa ? siswa.nama_siswa.charAt(0).toUpperCase() : 'A';
+            avatarSpan.textContent = initial;
+
             if (siswa.foto) {
-                avatarSpan.classList.add('hidden');
-                avatarImg.src = siswa.foto;
-                avatarImg.classList.remove('hidden');
+                avatarImg.onerror = function() {
+                    avatarImg.classList.add('hidden');
+                    avatarSpan.classList.remove('hidden');
+                };
+                avatarImg.onload = function() {
+                    avatarSpan.classList.add('hidden');
+                    avatarImg.classList.remove('hidden');
+                };
+                avatarImg.src = '<?= BASEURL; ?>/foto/siswa/' + siswa.id_siswa;
             } else {
-                const initial = siswa.nama_siswa ? siswa.nama_siswa.charAt(0).toUpperCase() : 'A';
-                avatarSpan.textContent = initial;
                 avatarSpan.classList.remove('hidden');
                 avatarImg.classList.add('hidden');
                 avatarImg.src = '';

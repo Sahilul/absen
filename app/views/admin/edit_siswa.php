@@ -120,7 +120,7 @@ $fc = $data['fieldConfig'] ?? [];
                                     <div id="foto-preview-container"
                                         class="w-40 h-40 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
                                         <?php if (!empty($s['foto'])): ?>
-                                            <img id="foto-preview" src="<?= htmlspecialchars($s['foto']); ?>"
+                                            <img id="foto-preview" src="<?= BASEURL; ?>/foto/siswa/<?= (int) $s['id_siswa']; ?>"
                                                 alt="Foto <?= htmlspecialchars($s['nama_siswa'] ?? ''); ?>"
                                                 class="w-full h-full object-cover">
                                         <?php else: ?>
