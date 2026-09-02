@@ -1956,66 +1956,6 @@
                 }
             });
         })();
-                const res = await fetch('<?= BASEURL; ?>/admin/hapusFotoSiswaAjax', {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                const data = await res.json();
-                if (data.success) {
-                    fmRefreshAvatars(fmSiswaId, null);
-                    closeFotoModal();
-                } else {
-                    alert(data.message || 'Gagal menghapus foto');
-                }
-            } catch (e) {
-                alert('Terjadi kesalahan jaringan');
-            } finally {
-                delBtn.disabled = false;
-            }
-        }
-
-        function fmRefreshAvatars(idSiswa, fotoUrl) {
-            document.querySelectorAll('[data-foto-siswa="' + idSiswa + '"]').forEach(el => {
-                const img = el.querySelector('img');
-                const fallback = el.querySelector('.fm-fallback');
-                if (fotoUrl) {
-                    if (img) {
-                        img.src = fotoUrl;
-                        img.classList.remove('hidden');
-                        img.style.display = '';
-                    }
-                    if (fallback) fallback.classList.add('hidden');
-                    el.closest('[data-siswa-row]')?.setAttribute('data-has-foto', '1');
-                } else {
-                    if (img) { img.classList.add('hidden'); img.src = ''; }
-                    if (fallback) fallback.classList.remove('hidden');
-                    el.closest('[data-siswa-row]')?.removeAttribute('data-has-foto');
-                }
-            });
-        }
-
-        document.getElementById('modalFotoSiswa')?.addEventListener('click', function(e) {
-            if (e.target === this) closeFotoModal();
-        });
-
-        // Drag & drop support
-        (function() {
-            const dz = document.getElementById('fm-dropzone');
-            if (!dz) return;
-            ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('border-emerald-400', 'bg-emerald-50'); }));
-            ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('border-emerald-400', 'bg-emerald-50'); }));
-            dz.addEventListener('drop', e => {
-                const file = e.dataTransfer.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    const input = document.getElementById('fm-file-input');
-                    const dt = new DataTransfer();
-                    dt.items.add(file);
-                    input.files = dt.files;
-                    fmPreviewFile(input);
-                }
-            });
-        })();
 
         // v1.26.0 - Lihat password on-demand (khusus admin). Klik lagi untuk menyembunyikan.
         function revealPassword(idRef, role, targetId, btn) {
