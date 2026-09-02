@@ -54,14 +54,35 @@ $izin = $data['izin'] ?? [];
                         <?= htmlspecialchars($izin['nama_siswa']) ?> (<?= htmlspecialchars($izin['nisn']) ?>)
                     </div>
                 <?php else: ?>
-                    <select name="id_siswa" required class="input-modern py-3" id="selectSiswa">
-                        <option value="">-- Pilih Siswa --</option>
-                        <?php foreach ($siswaList as $s): ?>
-                            <option value="<?= $s['id_siswa'] ?>">
-                                <?= htmlspecialchars($s['nama_siswa']) ?> (<?= htmlspecialchars($s['nisn'] ?? '-') ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                    <input type="hidden" name="id_siswa" id="selectedSiswaId" value="" required>
+                    <div class="relative" id="siswaSearchWrap">
+                        <div class="relative">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-secondary-400 pointer-events-none"></i>
+                            <input type="text" id="siswaSearch" autocomplete="off"
+                                   class="input-modern py-3 pl-10 pr-10"
+                                   placeholder="Ketik nama atau NISN siswa...">
+                            <button type="button" id="clearSiswa" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-red-500 hidden">
+                                <i data-lucide="x-circle" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <ul id="siswaDropdown" class="absolute z-50 w-full mt-1 bg-white border border-secondary-200 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
+                            <?php foreach ($siswaList as $i => $s): ?>
+                                <li class="siswa-option px-4 py-3 cursor-pointer hover:bg-primary-50 flex items-center gap-3 transition-colors <?= $i > 0 ? 'border-t border-secondary-100' : '' ?>"
+                                    data-id="<?= $s['id_siswa'] ?>"
+                                    data-nama="<?= htmlspecialchars($s['nama_siswa']) ?>"
+                                    data-nisn="<?= htmlspecialchars($s['nisn'] ?? '-') ?>">
+                                    <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                        <?= strtoupper(substr($s['nama_siswa'], 0, 1)) ?>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-medium text-secondary-800 truncate"><?= htmlspecialchars($s['nama_siswa']) ?></div>
+                                        <div class="text-xs text-secondary-500">NISN: <?= htmlspecialchars($s['nisn'] ?? '-') ?></div>
+                                    </div>
+                                </li>
+                            <?php endforeach; ?>
+                            <li id="siswaEmpty" class="px-4 py-3 text-sm text-secondary-400 text-center hidden">Tidak ditemukan</li>
+                        </ul>
+                    </div>
                 <?php endif; ?>
             </div>
 
@@ -144,6 +165,62 @@ $izin = $data['izin'] ?? [];
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
+    // --- Searchable siswa dropdown ---
+    const searchInput = document.getElementById('siswaSearch');
+    const dropdown = document.getElementById('siswaDropdown');
+    const hiddenId = document.getElementById('selectedSiswaId');
+    const clearBtn = document.getElementById('clearSiswa');
+    const emptyMsg = document.getElementById('siswaEmpty');
+
+    if (searchInput) {
+        const options = dropdown.querySelectorAll('.siswa-option');
+
+        searchInput.addEventListener('focus', () => {
+            dropdown.classList.remove('hidden');
+            filterOptions();
+        });
+
+        searchInput.addEventListener('input', filterOptions);
+
+        function filterOptions() {
+            const q = searchInput.value.toLowerCase().trim();
+            let found = 0;
+            options.forEach(li => {
+                const nama = li.dataset.nama.toLowerCase();
+                const nisn = li.dataset.nisn.toLowerCase();
+                const match = !q || nama.includes(q) || nisn.includes(q);
+                li.classList.toggle('hidden', !match);
+                if (match) found++;
+            });
+            emptyMsg.classList.toggle('hidden', found > 0);
+        }
+
+        options.forEach(li => {
+            li.addEventListener('click', () => {
+                hiddenId.value = li.dataset.id;
+                searchInput.value = li.dataset.nama + ' (' + li.dataset.nisn + ')';
+                searchInput.classList.add('text-secondary-800', 'font-medium');
+                dropdown.classList.add('hidden');
+                clearBtn.classList.remove('hidden');
+            });
+        });
+
+        clearBtn.addEventListener('click', () => {
+            hiddenId.value = '';
+            searchInput.value = '';
+            searchInput.classList.remove('text-secondary-800', 'font-medium');
+            clearBtn.classList.add('hidden');
+            searchInput.focus();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#siswaSearchWrap')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    // --- Durasi calculator ---
     const tglMulai = document.getElementById('tglMulai');
     const tglSelesai = document.getElementById('tglSelesai');
     const durasiText = document.getElementById('durasiText');
@@ -164,7 +241,13 @@ document.addEventListener('DOMContentLoaded', function() {
     tglSelesai.addEventListener('change', updateDurasi);
     updateDurasi();
 
-    document.getElementById('formIzin').addEventListener('submit', function() {
+    document.getElementById('formIzin').addEventListener('submit', function(e) {
+        if (hiddenId && !hiddenId.value) {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.classList.add('border-red-500');
+            return;
+        }
         const btn = document.getElementById('submitBtn');
         btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Menyimpan...';
         btn.disabled = true;
