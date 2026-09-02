@@ -247,17 +247,22 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div
-                                                class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center mr-3 overflow-hidden bg-gray-100 border border-gray-200 shadow-sm">
+                                            <div data-foto-siswa="<?= (int) $siswa['id_siswa']; ?>"
+                                                onclick='openFotoModal(<?= json_encode(["id_siswa" => $siswa["id_siswa"], "nisn" => $siswa["nisn"] ?? "", "nama_siswa" => $siswa["nama_siswa"], "foto" => $siswa["foto"] ?? "", "nama_kelas" => $siswa["nama_kelas"] ?? ""], JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
+                                                class="relative flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center mr-3 overflow-hidden bg-gray-100 border border-gray-200 shadow-sm cursor-pointer group"
+                                                title="Klik untuk ubah foto">
                                                 <?php if (!empty($siswa['foto'])): ?>
                                                     <img src="<?= BASEURL; ?>/foto/siswa/<?= (int) $siswa['id_siswa']; ?>"
                                                         alt="<?= htmlspecialchars($siswa['nama_siswa']); ?>"
                                                         class="w-full h-full object-cover"
                                                         onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
-                                                    <span class="text-xs font-bold text-gray-600 hidden"><?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?></span>
+                                                    <span class="fm-fallback text-xs font-bold text-gray-600 hidden"><?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?></span>
                                                 <?php else: ?>
-                                                    <i data-lucide="user" class="w-4 h-4 text-gray-500"></i>
+                                                    <i data-lucide="user" class="w-4 h-4 text-gray-500 fm-fallback"></i>
                                                 <?php endif; ?>
+                                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                                                    <i data-lucide="camera" class="w-4 h-4 text-white"></i>
+                                                </div>
                                             </div>
                                             <div>
                                                 <div class="text-sm font-medium text-gray-900">
@@ -395,17 +400,22 @@
                             <!-- Header: Name & Status -->
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex items-center gap-3">
-                                    <div
-                                        class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-indigo-100 text-indigo-600 font-bold text-sm shadow-sm">
+                                    <div data-foto-siswa="<?= (int) $siswa['id_siswa']; ?>"
+                                        onclick='openFotoModal(<?= json_encode(["id_siswa" => $siswa["id_siswa"], "nisn" => $siswa["nisn"] ?? "", "nama_siswa" => $siswa["nama_siswa"], "foto" => $siswa["foto"] ?? "", "nama_kelas" => $siswa["nama_kelas"] ?? ""], JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
+                                        class="relative w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-indigo-100 text-indigo-600 font-bold text-sm shadow-sm cursor-pointer group"
+                                        title="Klik untuk ubah foto">
                                         <?php if (!empty($siswa['foto'])): ?>
                                             <img src="<?= BASEURL; ?>/foto/siswa/<?= (int) $siswa['id_siswa']; ?>"
                                                 alt="<?= htmlspecialchars($siswa['nama_siswa']); ?>"
                                                 class="w-full h-full object-cover"
                                                 onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
-                                            <span class="hidden"><?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?></span>
+                                            <span class="fm-fallback hidden"><?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?></span>
                                         <?php else: ?>
-                                            <?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?>
+                                            <span class="fm-fallback"><?= strtoupper(substr($siswa['nama_siswa'], 0, 1)); ?></span>
                                         <?php endif; ?>
+                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                                            <i data-lucide="camera" class="w-4 h-4 text-white"></i>
+                                        </div>
                                     </div>
                                     <div>
                                         <p class="font-semibold text-gray-900 text-sm">
@@ -1377,7 +1387,426 @@
         </div>
     </div>
 
+    <!-- Modal Upload Foto Siswa -->
+    <div id="modalFotoSiswa"
+        class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="sticky top-0 bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4 rounded-t-2xl z-10">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                            <img id="fotoModalHeaderImg" src="" alt="" class="w-full h-full object-cover hidden">
+                            <span id="fotoModalHeaderInitial" class="text-white font-bold text-lg"></span>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-bold text-lg" id="fotoModalNama"></h3>
+                            <p class="text-emerald-100 text-xs" id="fotoModalNisn"></p>
+                        </div>
+                    </div>
+                    <button onclick="closeFotoModal()" class="text-white/80 hover:text-white transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6">
+                <!-- Current Photo Preview -->
+                <div class="flex justify-center mb-5">
+                    <div id="fotoModalPreviewContainer"
+                        class="w-44 h-44 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 shadow-inner">
+                        <img id="fotoModalPreview" src="" alt="" class="w-full h-full object-cover hidden">
+                        <div id="fotoModalPlaceholder" class="text-center">
+                            <i data-lucide="user" class="w-16 h-16 text-gray-300 mx-auto"></i>
+                            <p class="text-xs text-gray-400 mt-1">Belum ada foto</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode Tabs -->
+                <div class="flex gap-2 mb-4">
+                    <button type="button" id="fm-btn-camera" onclick="fmSetMode('camera')"
+                        class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors bg-emerald-600 text-white border-emerald-600 flex items-center justify-center gap-2">
+                        <i data-lucide="camera" class="w-4 h-4"></i> Kamera
+                    </button>
+                    <button type="button" id="fm-btn-upload" onclick="fmSetMode('upload')"
+                        class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2">
+                        <i data-lucide="upload" class="w-4 h-4"></i> Upload File
+                    </button>
+                </div>
+
+                <!-- Camera Mode -->
+                <div id="fm-camera-mode">
+                    <div class="relative rounded-xl overflow-hidden bg-black aspect-[4/3]">
+                        <video id="fm-video" autoplay playsinline
+                            class="w-full h-full object-cover" style="display:none; transform: scaleX(-1);"></video>
+                        <canvas id="fm-canvas" class="hidden"></canvas>
+                        <div id="fm-camera-placeholder"
+                            class="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-100">
+                            <i data-lucide="video" class="w-12 h-12 mb-2"></i>
+                            <p class="text-sm">Klik tombol di bawah untuk membuka kamera</p>
+                        </div>
+                        <!-- Oval guide overlay -->
+                        <div id="fm-oval-guide" class="absolute inset-0 pointer-events-none hidden"
+                            style="background: radial-gradient(ellipse 55% 75% at center, transparent 98%, rgba(0,0,0,0.4) 100%);"></div>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                        <button type="button" id="fm-btn-start" onclick="fmStartCamera()"
+                            class="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 flex items-center justify-center gap-1.5 font-medium">
+                            <i data-lucide="video" class="w-4 h-4"></i> Buka Kamera
+                        </button>
+                        <button type="button" id="fm-btn-capture" onclick="fmCapture()" style="display:none"
+                            class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center justify-center gap-1.5 font-medium">
+                            <i data-lucide="camera" class="w-4 h-4"></i> Ambil Foto
+                        </button>
+                        <button type="button" id="fm-btn-retake" onclick="fmRetake()" style="display:none"
+                            class="px-4 py-2.5 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 flex items-center justify-center gap-1.5 font-medium">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Ulangi
+                        </button>
+                        <button type="button" id="fm-btn-switch" onclick="fmSwitchCamera()" style="display:none"
+                            class="px-3 py-2.5 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 flex items-center justify-center"
+                            title="Ganti kamera">
+                            <i data-lucide="switch-camera" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Upload Mode -->
+                <div id="fm-upload-mode" style="display:none">
+                    <label id="fm-dropzone"
+                        class="flex flex-col items-center justify-center w-full py-10 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50 transition-colors">
+                        <i data-lucide="image-plus" class="w-10 h-10 text-gray-400 mb-2"></i>
+                        <span class="text-sm text-gray-600 font-medium">Klik atau seret foto ke sini</span>
+                        <span class="text-xs text-gray-400 mt-1">JPG, PNG, WebP (maks 5MB)</span>
+                        <input type="file" id="fm-file-input" accept="image/jpeg,image/png,image/webp" class="hidden"
+                            onchange="fmPreviewFile(this)">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between rounded-b-2xl">
+                <button type="button" id="fm-btn-delete" onclick="fmHapusFoto()" style="display:none"
+                    class="px-4 py-2 text-sm font-medium rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center gap-1.5 transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Foto
+                </button>
+                <div class="flex-1"></div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeFotoModal()"
+                        class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" id="fm-btn-save" onclick="fmSimpanFoto()" disabled
+                        class="px-5 py-2 text-sm font-medium rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span id="fm-save-text">Simpan Foto</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // ===== FOTO MODAL =====
+        let fmStream = null;
+        let fmSiswaId = null;
+        let fmHasFoto = false;
+        let fmBase64 = '';
+        let fmFile = null;
+        let fmFacingMode = 'user';
+
+        function openFotoModal(siswa) {
+            fmSiswaId = siswa.id_siswa;
+            fmHasFoto = !!siswa.foto;
+            fmBase64 = '';
+            fmFile = null;
+
+            const initial = siswa.nama_siswa ? siswa.nama_siswa.charAt(0).toUpperCase() : 'A';
+            document.getElementById('fotoModalNama').textContent = siswa.nama_siswa || '-';
+            document.getElementById('fotoModalNisn').textContent = 'NISN: ' + (siswa.nisn || '-') + (siswa.nama_kelas ? ' · ' + siswa.nama_kelas : '');
+            document.getElementById('fotoModalHeaderInitial').textContent = initial;
+
+            const headerImg = document.getElementById('fotoModalHeaderImg');
+            const headerInit = document.getElementById('fotoModalHeaderInitial');
+            const preview = document.getElementById('fotoModalPreview');
+            const placeholder = document.getElementById('fotoModalPlaceholder');
+
+            if (fmHasFoto) {
+                const url = '<?= BASEURL; ?>/foto/siswa/' + siswa.id_siswa + '?v=' + Date.now();
+                headerImg.src = url;
+                headerImg.classList.remove('hidden');
+                headerInit.classList.add('hidden');
+                headerImg.onerror = function() { headerImg.classList.add('hidden'); headerInit.classList.remove('hidden'); };
+                preview.src = url;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                preview.onerror = function() { preview.classList.add('hidden'); placeholder.classList.remove('hidden'); };
+                document.getElementById('fm-btn-delete').style.display = '';
+            } else {
+                headerImg.classList.add('hidden');
+                headerInit.classList.remove('hidden');
+                preview.classList.add('hidden');
+                preview.src = '';
+                placeholder.classList.remove('hidden');
+                document.getElementById('fm-btn-delete').style.display = 'none';
+            }
+
+            document.getElementById('fm-btn-save').disabled = true;
+            fmSetMode('camera');
+
+            const modal = document.getElementById('modalFotoSiswa');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function closeFotoModal() {
+            fmStopCamera();
+            const modal = document.getElementById('modalFotoSiswa');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            fmSiswaId = null;
+            fmBase64 = '';
+            fmFile = null;
+            const fi = document.getElementById('fm-file-input');
+            if (fi) fi.value = '';
+        }
+
+        function fmSetMode(mode) {
+            const camBtn = document.getElementById('fm-btn-camera');
+            const uplBtn = document.getElementById('fm-btn-upload');
+            const camDiv = document.getElementById('fm-camera-mode');
+            const uplDiv = document.getElementById('fm-upload-mode');
+            if (mode === 'camera') {
+                camBtn.className = 'flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors bg-emerald-600 text-white border-emerald-600 flex items-center justify-center gap-2';
+                uplBtn.className = 'flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2';
+                camDiv.style.display = '';
+                uplDiv.style.display = 'none';
+            } else {
+                uplBtn.className = 'flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors bg-emerald-600 text-white border-emerald-600 flex items-center justify-center gap-2';
+                camBtn.className = 'flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2';
+                camDiv.style.display = 'none';
+                uplDiv.style.display = '';
+                fmStopCamera();
+            }
+        }
+
+        async function fmStartCamera() {
+            try {
+                const video = document.getElementById('fm-video');
+                const ph = document.getElementById('fm-camera-placeholder');
+                fmStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: fmFacingMode, width: { ideal: 640 }, height: { ideal: 480 } }
+                });
+                video.srcObject = fmStream;
+                video.style.display = 'block';
+                ph.style.display = 'none';
+                document.getElementById('fm-btn-start').style.display = 'none';
+                document.getElementById('fm-btn-capture').style.display = '';
+                document.getElementById('fm-btn-switch').style.display = '';
+                document.getElementById('fm-oval-guide').classList.remove('hidden');
+            } catch (e) {
+                alert('Tidak dapat mengakses kamera. Gunakan mode Upload File.');
+                fmSetMode('upload');
+            }
+        }
+
+        function fmStopCamera() {
+            if (fmStream) {
+                fmStream.getTracks().forEach(t => t.stop());
+                fmStream = null;
+            }
+            const video = document.getElementById('fm-video');
+            if (video) {
+                video.style.display = 'none';
+                video.srcObject = null;
+            }
+            const ph = document.getElementById('fm-camera-placeholder');
+            if (ph) ph.style.display = '';
+            const bs = document.getElementById('fm-btn-start');
+            if (bs) bs.style.display = '';
+            const bc = document.getElementById('fm-btn-capture');
+            if (bc) bc.style.display = 'none';
+            const br = document.getElementById('fm-btn-retake');
+            if (br) br.style.display = 'none';
+            const bsw = document.getElementById('fm-btn-switch');
+            if (bsw) bsw.style.display = 'none';
+            const og = document.getElementById('fm-oval-guide');
+            if (og) og.classList.add('hidden');
+        }
+
+        async function fmSwitchCamera() {
+            fmFacingMode = fmFacingMode === 'user' ? 'environment' : 'user';
+            fmStopCamera();
+            await fmStartCamera();
+        }
+
+        function fmCapture() {
+            const video = document.getElementById('fm-video');
+            const canvas = document.getElementById('fm-canvas');
+            const size = Math.min(video.videoWidth, video.videoHeight);
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.translate(size, 0);
+            ctx.scale(-1, 1);
+            const offsetX = (video.videoWidth - size) / 2;
+            const offsetY = (video.videoHeight - size) / 2;
+            ctx.drawImage(video, offsetX, offsetY, size, size, 0, 0, size, size);
+            fmBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            fmFile = null;
+            fmUpdatePreview(fmBase64);
+            if (fmStream) fmStream.getTracks().forEach(t => t.stop());
+            video.style.display = 'none';
+            document.getElementById('fm-btn-capture').style.display = 'none';
+            document.getElementById('fm-btn-switch').style.display = 'none';
+            document.getElementById('fm-btn-retake').style.display = '';
+            document.getElementById('fm-oval-guide').classList.add('hidden');
+            document.getElementById('fm-btn-save').disabled = false;
+        }
+
+        function fmRetake() {
+            fmBase64 = '';
+            document.getElementById('fm-btn-retake').style.display = 'none';
+            document.getElementById('fm-btn-save').disabled = true;
+            fmStartCamera();
+        }
+
+        function fmPreviewFile(input) {
+            if (input.files && input.files[0]) {
+                if (input.files[0].size > 5 * 1024 * 1024) {
+                    alert('Ukuran foto maksimal 5MB');
+                    input.value = '';
+                    return;
+                }
+                fmFile = input.files[0];
+                fmBase64 = '';
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fmUpdatePreview(e.target.result);
+                    document.getElementById('fm-btn-save').disabled = false;
+                };
+                reader.readAsDataURL(fmFile);
+            }
+        }
+
+        function fmUpdatePreview(src) {
+            const preview = document.getElementById('fotoModalPreview');
+            const placeholder = document.getElementById('fotoModalPlaceholder');
+            preview.src = src;
+            preview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        }
+
+        async function fmSimpanFoto() {
+            if (!fmSiswaId) return;
+            const saveBtn = document.getElementById('fm-btn-save');
+            const saveText = document.getElementById('fm-save-text');
+            saveBtn.disabled = true;
+            saveText.textContent = 'Menyimpan...';
+
+            const formData = new FormData();
+            formData.append('id_siswa', fmSiswaId);
+            if (fmBase64) {
+                formData.append('foto_base64', fmBase64);
+            } else if (fmFile) {
+                formData.append('foto_file', fmFile);
+            }
+
+            try {
+                const res = await fetch('<?= BASEURL; ?>/admin/simpanFotoSiswaAjax', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    fmRefreshAvatars(fmSiswaId, data.foto_url);
+                    closeFotoModal();
+                } else {
+                    alert(data.message || 'Gagal menyimpan foto');
+                }
+            } catch (e) {
+                alert('Terjadi kesalahan jaringan');
+            } finally {
+                saveBtn.disabled = false;
+                saveText.textContent = 'Simpan Foto';
+            }
+        }
+
+        async function fmHapusFoto() {
+            if (!fmSiswaId) return;
+            if (!confirm('Hapus foto siswa ini?')) return;
+
+            const delBtn = document.getElementById('fm-btn-delete');
+            delBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('id_siswa', fmSiswaId);
+
+            try {
+                const res = await fetch('<?= BASEURL; ?>/admin/hapusFotoSiswaAjax', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    fmRefreshAvatars(fmSiswaId, null);
+                    closeFotoModal();
+                } else {
+                    alert(data.message || 'Gagal menghapus foto');
+                }
+            } catch (e) {
+                alert('Terjadi kesalahan jaringan');
+            } finally {
+                delBtn.disabled = false;
+            }
+        }
+
+        function fmRefreshAvatars(idSiswa, fotoUrl) {
+            document.querySelectorAll('[data-foto-siswa="' + idSiswa + '"]').forEach(el => {
+                const img = el.querySelector('img');
+                const fallback = el.querySelector('.fm-fallback');
+                if (fotoUrl) {
+                    if (img) {
+                        img.src = fotoUrl;
+                        img.classList.remove('hidden');
+                        img.style.display = '';
+                    }
+                    if (fallback) fallback.classList.add('hidden');
+                    el.closest('[data-siswa-row]')?.setAttribute('data-has-foto', '1');
+                } else {
+                    if (img) { img.classList.add('hidden'); img.src = ''; }
+                    if (fallback) fallback.classList.remove('hidden');
+                    el.closest('[data-siswa-row]')?.removeAttribute('data-has-foto');
+                }
+            });
+        }
+
+        document.getElementById('modalFotoSiswa')?.addEventListener('click', function(e) {
+            if (e.target === this) closeFotoModal();
+        });
+
+        // Drag & drop support
+        (function() {
+            const dz = document.getElementById('fm-dropzone');
+            if (!dz) return;
+            ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('border-emerald-400', 'bg-emerald-50'); }));
+            ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('border-emerald-400', 'bg-emerald-50'); }));
+            dz.addEventListener('drop', e => {
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const input = document.getElementById('fm-file-input');
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                    fmPreviewFile(input);
+                }
+            });
+        })();
+
         // v1.26.0 - Lihat password on-demand (khusus admin). Klik lagi untuk menyembunyikan.
         function revealPassword(idRef, role, targetId, btn) {
             const el = document.getElementById(targetId);

@@ -117,12 +117,6 @@ function prosesTambahSiswa()
 
             $idSiswaBaru = $this->model('Siswa_model')->tambahDataSiswa($dataSiswa);
             if ($idSiswaBaru) {
-                // Upload foto if provided
-                $fotoUrl = $this->handleFotoUpload($idSiswaBaru);
-                if ($fotoUrl !== null) {
-                    $this->model('Siswa_model')->updateFotoSiswa($idSiswaBaru, $fotoUrl);
-                }
-
                 $dataAkun = [
                     'username' => $nisn,
                     'password' => $password,
@@ -162,22 +156,9 @@ function prosesUpdateSiswa()
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $idSiswa = $_POST['id_siswa'] ?? 0;
 
-            // Handle foto upload (webcam base64 or file upload) → R2
-            $hapusFoto = ($_POST['hapus_foto'] ?? '0') === '1';
-            if ($hapusFoto) {
-                // Delete from R2 and clear DB
-                $this->deleteFotoFromR2($idSiswa);
-                $_POST['foto'] = null;
-            } else {
-                $fotoUrl = $this->handleFotoUpload($idSiswa);
-                if ($fotoUrl !== null) {
-                    $_POST['foto'] = $fotoUrl;
-                } else {
-                    // Preserve existing foto if no new upload
-                    $siswa = $this->model('Siswa_model')->getSiswaById($idSiswa);
-                    $_POST['foto'] = $siswa['foto'] ?? null;
-                }
-            }
+            // Preserve existing foto (foto dikelola via modal AJAX terpisah)
+            $siswa = $this->model('Siswa_model')->getSiswaById($idSiswa);
+            $_POST['foto'] = $siswa['foto'] ?? null;
 
             // Pass all POST data to model (including new fields: tempat_lahir, alamat, no_wa, ayah_kandung, ibu_kandung)
             $this->model('Siswa_model')->updateDataSiswa($_POST);
@@ -285,6 +266,143 @@ function prosesUpdateSiswa()
             $r2 = new R2Storage();
             $r2->delete($key);
         }
+    }
+
+    private function invalidateFotoCache($idSiswa)
+    {
+        $siswa = $this->model('Siswa_model')->getSiswaById($idSiswa);
+        if (empty($siswa['foto'])) return;
+        $cacheDir = APPROOT . '/tmp/foto_cache';
+        $cacheFile = $cacheDir . '/' . md5($siswa['foto']) . '.jpg';
+        if (file_exists($cacheFile)) {
+            @unlink($cacheFile);
+        }
+    }
+
+    function simpanFotoSiswaAjax()
+    {
+        header('Content-Type: application/json');
+
+        if (($_SESSION['role'] ?? '') !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Akses ditolak.']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+            exit;
+        }
+
+        $idSiswa = filter_var($_POST['id_siswa'] ?? 0, FILTER_VALIDATE_INT);
+        if (!$idSiswa) {
+            echo json_encode(['success' => false, 'message' => 'ID siswa tidak valid']);
+            exit;
+        }
+
+        $siswa = $this->model('Siswa_model')->getSiswaById($idSiswa);
+        if (!$siswa) {
+            echo json_encode(['success' => false, 'message' => 'Siswa tidak ditemukan']);
+            exit;
+        }
+
+        $base64 = $_POST['foto_base64'] ?? '';
+        $hasFile = !empty($_FILES['foto_file']['tmp_name']) && $_FILES['foto_file']['error'] === UPLOAD_ERR_OK;
+
+        if (empty($base64) && !$hasFile) {
+            echo json_encode(['success' => false, 'message' => 'Tidak ada foto yang dikirim']);
+            exit;
+        }
+
+        require_once APPROOT . '/app/core/R2Storage.php';
+
+        if (!R2Storage::isConfigured()) {
+            echo json_encode(['success' => false, 'message' => 'Penyimpanan R2 belum dikonfigurasi']);
+            exit;
+        }
+
+        $r2 = new R2Storage();
+
+        // Invalidate cache & delete old foto
+        $this->invalidateFotoCache($idSiswa);
+        if (!empty($siswa['foto'])) {
+            $oldKey = $this->extractR2Key($siswa['foto']);
+            if ($oldKey) {
+                $r2->delete($oldKey);
+            }
+        }
+
+        $nisn = $siswa['nisn'] ?? $idSiswa;
+        $key = 'foto-siswa/' . $nisn . '_' . time() . '.jpg';
+
+        if (!empty($base64)) {
+            $processed = R2Storage::processImage($base64, 400, 400, 85);
+            if (!$processed) {
+                echo json_encode(['success' => false, 'message' => 'Gagal memproses foto dari kamera']);
+                exit;
+            }
+            $result = $r2->upload($processed, $key, 'image/jpeg');
+        } else {
+            $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (!in_array($_FILES['foto_file']['type'], $allowed)) {
+                echo json_encode(['success' => false, 'message' => 'Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.']);
+                exit;
+            }
+            if ($_FILES['foto_file']['size'] > 5 * 1024 * 1024) {
+                echo json_encode(['success' => false, 'message' => 'Ukuran foto maksimal 5MB']);
+                exit;
+            }
+            $processed = R2Storage::processImage($_FILES['foto_file']['tmp_name'], 400, 400, 85);
+            if (!$processed) {
+                echo json_encode(['success' => false, 'message' => 'Gagal memproses foto']);
+                exit;
+            }
+            $result = $r2->upload($processed, $key, 'image/jpeg');
+        }
+
+        if ($result['success']) {
+            $this->model('Siswa_model')->updateFotoSiswa($idSiswa, $result['url']);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Foto siswa berhasil diperbarui',
+                'foto_url' => BASEURL . '/foto/siswa/' . $idSiswa . '?v=' . time()
+            ]);
+            exit;
+        }
+
+        echo json_encode(['success' => false, 'message' => 'Gagal mengupload foto: ' . ($result['error'] ?? 'Unknown error')]);
+        exit;
+    }
+
+    function hapusFotoSiswaAjax()
+    {
+        header('Content-Type: application/json');
+
+        if (($_SESSION['role'] ?? '') !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Akses ditolak.']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+            exit;
+        }
+
+        $idSiswa = filter_var($_POST['id_siswa'] ?? 0, FILTER_VALIDATE_INT);
+        if (!$idSiswa) {
+            echo json_encode(['success' => false, 'message' => 'ID siswa tidak valid']);
+            exit;
+        }
+
+        $this->invalidateFotoCache($idSiswa);
+        $this->deleteFotoFromR2($idSiswa);
+        $this->model('Siswa_model')->updateFotoSiswa($idSiswa, null);
+
+        echo json_encode(['success' => true, 'message' => 'Foto siswa berhasil dihapus']);
+        exit;
     }
 
 function hapusSiswa($id)
