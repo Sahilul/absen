@@ -21,7 +21,7 @@ trait AdminKesiswaanTrait
 
         $this->data['izin_list'] = $izinModel->getAllIzin($id_tp, $filters);
         $this->data['stats'] = $izinModel->countAllIzinByStatus($id_tp);
-        $this->data['kelas_list'] = $this->model('Kelas_model')->getAllKelas();
+        $this->data['kelas_list'] = $this->model('Kelas_model')->getAllKelasWithDetails($id_tp);
         $this->data['filters'] = $filters;
 
         $this->view('templates/header', $this->data);
@@ -91,7 +91,7 @@ trait AdminKesiswaanTrait
         $this->data['judul'] = 'Tambah Izin Siswa';
         $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
 
-        $this->data['kelas_list'] = $this->model('Kelas_model')->getAllKelas();
+        $this->data['kelas_list'] = $this->model('Kelas_model')->getAllKelasWithDetails($id_tp);
         $this->data['siswa_list'] = [];
 
         $id_kelas = (int) ($_GET['kelas'] ?? 0);
