@@ -279,60 +279,88 @@
 
         // Check for duplicate assignment when all fields are selected
         async function checkDuplicateAssignment() {
-            if (!guruSelect.value || !mapelSelect.value || !kelasSelect.value) {
+            const warningDiv = document.getElementById('duplicate-warning');
+
+            if (!mapelSelect.value || !kelasSelect.value) {
+                warningDiv.style.display = 'none';
                 return;
             }
 
-            const warningDiv = document.getElementById('duplicate-warning');
-            
             try {
-                const response = await fetch('<?= BASEURL; ?>/admin/checkPenugasanDuplikat', {
+                // Cek apakah mapel+kelas sudah ditugaskan ke guru lain
+                const mapelKelasRes = await fetch('<?= BASEURL; ?>/admin/checkPenugasanMapelKelas', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        id_guru: guruSelect.value,
                         id_mapel: mapelSelect.value,
-                        id_kelas: kelasSelect.value,
-                        id_semester: '<?= $_SESSION['id_semester_aktif']; ?>'
+                        id_kelas: kelasSelect.value
                     })
                 });
+                const mapelKelasData = await mapelKelasRes.json();
 
-                const data = await response.json();
+                if (mapelKelasData.exists) {
+                    const namaGuru = mapelKelasData.nama_guru;
+                    const jurnalCount = mapelKelasData.jumlah_jurnal;
+                    const idPenugasan = mapelKelasData.id_penugasan;
 
-                if (data.isDuplicate) {
+                    // Jika guru yang dipilih sama dengan yang sudah ada → duplikat persis
+                    if (guruSelect.value && guruSelect.value == mapelKelasData.id_guru) {
+                        warningDiv.innerHTML = `
+                            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                                <div class="flex items-start">
+                                    <svg class="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-bold text-red-800">Penugasan Sudah Ada!</h4>
+                                        <p class="text-sm text-red-700 mt-1">
+                                            Kombinasi guru, mata pelajaran, dan kelas ini sudah terdaftar.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>`;
+                        warningDiv.style.display = 'block';
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        return;
+                    }
+
+                    // Mapel+kelas sudah ada tapi guru beda → arahkan ke Edit
+                    let pesan = `Mapel dan kelas ini sudah ditugaskan ke <strong>${namaGuru}</strong>.`;
+                    if (jurnalCount > 0) {
+                        pesan += ` Terdapat <strong>${jurnalCount} riwayat jurnal</strong> yang akan hilang jika Anda membuat penugasan baru.`;
+                    }
+                    pesan += ` Gunakan tombol <strong>Edit</strong> pada penugasan yang sudah ada untuk mengganti guru agar riwayat tetap terjaga.`;
+
                     warningDiv.innerHTML = `
-                        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-lg">
                             <div class="flex items-start">
-                                <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500 mr-3 mt-0.5"></i>
+                                <svg class="w-5 h-5 text-amber-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
                                 <div class="flex-1">
-                                    <h4 class="text-sm font-bold text-red-800">Penugasan Sudah Ada!</h4>
-                                    <p class="text-sm text-red-700 mt-1">
-                                        Kombinasi guru, mata pelajaran, dan kelas ini sudah terdaftar untuk semester aktif.
-                                        Silakan pilih kombinasi yang berbeda.
-                                    </p>
+                                    <h4 class="text-sm font-bold text-amber-800">Mapel & Kelas Sudah Ditugaskan</h4>
+                                    <p class="text-sm text-amber-700 mt-1">${pesan}</p>
+                                    <a href="<?= BASEURL; ?>/admin/editPenugasan/${idPenugasan}"
+                                       class="inline-flex items-center mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        Edit Penugasan (Ganti Guru)
+                                    </a>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                     warningDiv.style.display = 'block';
                     submitBtn.disabled = true;
                     submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     submitBtn.classList.remove('hover:bg-indigo-700');
-                    
-                    // Reinitialize lucide icons
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                    }
-                } else {
-                    warningDiv.style.display = 'none';
+                    return;
+                }
+
+                // Tidak ada konflik
+                warningDiv.style.display = 'none';
+                if (guruSelect.value && mapelSelect.value && kelasSelect.value) {
                     submitBtn.disabled = false;
                     submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                     submitBtn.classList.add('hover:bg-indigo-700');
                 }
             } catch (error) {
-                console.error('Error checking duplicate:', error);
+                console.error('Error checking assignment:', error);
             }
         }
 

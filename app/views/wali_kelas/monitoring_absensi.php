@@ -202,7 +202,7 @@
     </div>
 </div>
 
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script>
 // Base URL untuk AJAX
 const BASE_URL = '<?= BASEURL; ?>';

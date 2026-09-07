@@ -12,7 +12,7 @@ class Keanggotaan_model {
 
     public function getSiswaByKelas($id_kelas, $id_tp)
     {
-        $this->db->query('SELECT keanggotaan_kelas.*, siswa.nisn, siswa.nama_siswa 
+        $this->db->query('SELECT keanggotaan_kelas.*, siswa.nisn, siswa.nama_siswa, siswa.status_siswa 
                          FROM keanggotaan_kelas 
                          JOIN siswa ON keanggotaan_kelas.id_siswa = siswa.id_siswa
                          WHERE keanggotaan_kelas.id_kelas = :id_kelas AND keanggotaan_kelas.id_tp = :id_tp

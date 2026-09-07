@@ -140,20 +140,34 @@
                                                         <span class="text-sm font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded">
                                                             <?= htmlspecialchars($tugas['nama_kelas']); ?>
                                                         </span>
+                                                        <?php if ($tugas['jumlah_jurnal'] > 0): ?>
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 ml-1" title="<?= $tugas['jumlah_jurnal']; ?> jurnal">
+                                                                <?= $tugas['jumlah_jurnal']; ?> jurnal
+                                                            </span>
+                                                        <?php endif; ?>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                                         <div class="flex items-center justify-center space-x-3">
                                                             <a href="<?= BASEURL; ?>/admin/editPenugasan/<?= $tugas['id_penugasan']; ?>"
                                                                 class="text-indigo-600 hover:text-indigo-800 transition-colors duration-150"
-                                                                title="Edit Penugasan">
+                                                                title="Edit / Ganti Guru">
                                                                 <i data-lucide="edit-2" class="w-4 h-4"></i>
                                                             </a>
-                                                            <a href="<?= BASEURL; ?>/admin/hapusPenugasan/<?= $tugas['id_penugasan']; ?>"
-                                                                class="text-red-600 hover:text-red-800 transition-colors duration-150"
-                                                                title="Hapus Penugasan"
-                                                                onclick="return confirm('Apakah Anda yakin ingin menghapus tugas ini?')">
-                                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                            </a>
+                                                            <?php if ($tugas['jumlah_jurnal'] > 0): ?>
+                                                                <button type="button"
+                                                                    class="text-gray-400 cursor-not-allowed"
+                                                                    title="Tidak bisa dihapus — ada <?= $tugas['jumlah_jurnal']; ?> jurnal. Gunakan Edit untuk ganti guru."
+                                                                    onclick="alert('Penugasan ini memiliki <?= $tugas['jumlah_jurnal']; ?> riwayat jurnal dan tidak bisa dihapus.\n\nGunakan tombol Edit untuk mengganti guru agar riwayat tetap terjaga.')">
+                                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                                </button>
+                                                            <?php else: ?>
+                                                                <a href="<?= BASEURL; ?>/admin/hapusPenugasan/<?= $tugas['id_penugasan']; ?>"
+                                                                    class="text-red-600 hover:text-red-800 transition-colors duration-150"
+                                                                    title="Hapus Penugasan"
+                                                                    onclick="return confirm('Apakah Anda yakin ingin menghapus penugasan ini?')">
+                                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                                </a>
+                                                            <?php endif; ?>
                                                         </div>
                                                     </td>
                                                 </tr>

@@ -25,7 +25,7 @@
             }
         }
     </script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
     <style>
         .gradient-hero {
             background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);

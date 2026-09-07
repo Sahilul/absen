@@ -147,7 +147,7 @@
     </div>
 </main>
 
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();

@@ -45,6 +45,15 @@
         </div>
 
         <!-- Stats Card -->
+        <?php
+        $count_aktif = count(array_filter($data['siswa'], function ($s) {
+            return ($s['status_siswa'] ?? 'aktif') === 'aktif';
+        }));
+        $count_lulus = count(array_filter($data['siswa'], function ($s) {
+            return ($s['status_siswa'] ?? '') === 'lulus';
+        }));
+        $count_semua = count($data['siswa']);
+        ?>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <div class="bg-white p-4 rounded-lg shadow-sm border">
                 <div class="flex items-center">
@@ -52,8 +61,8 @@
                         <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-600">Total Siswa</p>
-                        <p class="text-xl font-semibold text-gray-900"><?= count($data['siswa']); ?></p>
+                        <p class="text-sm text-gray-600">Total Siswa Aktif</p>
+                        <p class="text-xl font-semibold text-gray-900"><?= $count_aktif; ?> <span class="text-xs font-normal text-gray-500">(Total: <?= $count_semua; ?>)</span></p>
                     </div>
                 </div>
             </div>
@@ -66,7 +75,7 @@
                         <p class="text-sm text-gray-600">Akun Aktif</p>
                         <p class="text-xl font-semibold text-gray-900">
                             <?= count(array_filter($data['siswa'], function ($s) {
-                                return !empty($s['password_plain']);
+                                return !empty($s['password_plain']) && ($s['status_siswa'] ?? 'aktif') === 'aktif';
                             })); ?>
                         </p>
                     </div>
@@ -74,16 +83,12 @@
             </div>
             <div class="bg-white p-4 rounded-lg shadow-sm border">
                 <div class="flex items-center">
-                    <div class="bg-orange-100 p-2 rounded-lg mr-3">
-                        <i data-lucide="alert-circle" class="w-5 h-5 text-orange-600"></i>
+                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                        <i data-lucide="graduation-cap" class="w-5 h-5 text-blue-600"></i>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-600">Belum Ada Password</p>
-                        <p class="text-xl font-semibold text-gray-900">
-                            <?= count(array_filter($data['siswa'], function ($s) {
-                                return empty($s['password_plain']);
-                            })); ?>
-                        </p>
+                        <p class="text-sm text-gray-600">Siswa Lulus / Alumni</p>
+                        <p class="text-xl font-semibold text-gray-900"><?= $count_lulus; ?></p>
                     </div>
                 </div>
             </div>
@@ -142,28 +147,55 @@
                         </div>
                     </div>
 
-                    <!-- Filter Section -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Filter Kelas</label>
-                        <div class="flex gap-2">
-                            <div class="flex-1">
-                                <select id="filter-kelas"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                    onchange="applyFilters()">
-                                    <option value="">-- Pilih Kelas --</option>
-                                    <?php if (!empty($data['kelas_list'])): ?>
-                                        <?php foreach ($data['kelas_list'] as $kls): ?>
-                                            <option value="<?= htmlspecialchars($kls['nama_kelas']); ?>">
-                                                <?= htmlspecialchars($kls['nama_kelas']); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </select>
+                    <!-- Filter Section: Status & Kelas -->
+                    <div class="space-y-3">
+                        <!-- Status Tabs/Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status Siswa</label>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button type="button" onclick="setStatusFilter('aktif')" id="btn-status-aktif"
+                                    class="status-filter-btn px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 bg-indigo-600 text-white border-indigo-600 shadow-sm">
+                                    <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                                    <span>Aktif</span>
+                                    <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20"><?= $count_aktif; ?></span>
+                                </button>
+                                <button type="button" onclick="setStatusFilter('lulus')" id="btn-status-lulus"
+                                    class="status-filter-btn px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 bg-white text-gray-700 border-gray-300 hover:bg-gray-50">
+                                    <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-blue-600"></i>
+                                    <span>Lulus</span>
+                                    <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-blue-100 text-blue-800"><?= $count_lulus; ?></span>
+                                </button>
+                                <button type="button" onclick="setStatusFilter('semua')" id="btn-status-semua"
+                                    class="status-filter-btn px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 bg-white text-gray-700 border-gray-300 hover:bg-gray-50">
+                                    <i data-lucide="users" class="w-3.5 h-3.5 text-gray-500"></i>
+                                    <span>Semua Status</span>
+                                    <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-100 text-gray-700"><?= $count_semua; ?></span>
+                                </button>
                             </div>
-                            <button onclick="clearFilter()"
-                                class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-lg transition-colors">
-                                <i data-lucide="filter-x" class="w-4 h-4"></i>
-                            </button>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Filter Kelas</label>
+                            <div class="flex gap-2">
+                                <div class="flex-1">
+                                    <select id="filter-kelas"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                        onchange="applyFilters()">
+                                        <option value="">-- Pilih Kelas --</option>
+                                        <?php if (!empty($data['kelas_list'])): ?>
+                                            <?php foreach ($data['kelas_list'] as $kls): ?>
+                                                <option value="<?= htmlspecialchars($kls['nama_kelas']); ?>">
+                                                    <?= htmlspecialchars($kls['nama_kelas']); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </select>
+                                </div>
+                                <button onclick="clearFilter()"
+                                    class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-lg transition-colors">
+                                    <i data-lucide="filter-x" class="w-4 h-4"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -200,6 +232,9 @@
                                     Kelas Terakhir
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status Siswa
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Jenis Kelamin
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -216,12 +251,15 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <?php foreach ($data['siswa'] as $index => $siswa): ?>
+                            <?php foreach ($data['siswa'] as $index => $siswa): 
+                                $statusSiswa = strtolower($siswa['status_siswa'] ?? 'aktif');
+                            ?>
                                 <tr class="hover:bg-gray-50 transition-colors duration-150 siswa-row"
                                     data-id="<?= (int) $siswa['id_siswa']; ?>"
                                     data-nisn="<?= htmlspecialchars(strtolower($siswa['nisn'])); ?>"
                                     data-nama="<?= htmlspecialchars(strtolower($siswa['nama_siswa'])); ?>"
-                                    data-kelas="<?= htmlspecialchars(strtolower($siswa['nama_kelas'] ?? '-')); ?>">
+                                    data-kelas="<?= htmlspecialchars(strtolower($siswa['nama_kelas'] ?? '-')); ?>"
+                                    data-status="<?= htmlspecialchars($statusSiswa); ?>">
                                     <td class="px-4 py-4 text-center whitespace-nowrap">
                                         <input type="checkbox"
                                             class="siswa-checkbox w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -280,6 +318,29 @@
                                             <i data-lucide="school" class="w-3 h-3 mr-1"></i>
                                             <?= !empty($siswa['nama_kelas']) ? htmlspecialchars($siswa['nama_kelas']) : '-'; ?>
                                         </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?php if ($statusSiswa === 'lulus'): ?>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                                                <i data-lucide="graduation-cap" class="w-3 h-3 mr-1 text-blue-600"></i>
+                                                Lulus
+                                            </span>
+                                        <?php elseif ($statusSiswa === 'pindah'): ?>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                                                <i data-lucide="arrow-right-left" class="w-3 h-3 mr-1 text-amber-600"></i>
+                                                Pindah
+                                            </span>
+                                        <?php elseif ($statusSiswa === 'nonaktif'): ?>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                                <i data-lucide="x-circle" class="w-3 h-3 mr-1 text-red-600"></i>
+                                                Nonaktif
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                <i data-lucide="check" class="w-3 h-3 mr-1 text-emerald-600"></i>
+                                                Aktif
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
@@ -393,10 +454,13 @@
 
                 <!-- Mobile Cards (hidden on desktop) -->
                 <div class="md:hidden divide-y divide-gray-100" id="siswa-cards">
-                    <?php foreach ($data['siswa'] as $index => $siswa): ?>
+                    <?php foreach ($data['siswa'] as $index => $siswa): 
+                        $statusSiswa = strtolower($siswa['status_siswa'] ?? 'aktif');
+                    ?>
                         <div class="p-4 mobile-card" data-nisn="<?= htmlspecialchars(strtolower($siswa['nisn'])); ?>"
                             data-nama="<?= htmlspecialchars(strtolower($siswa['nama_siswa'])); ?>"
-                            data-kelas="<?= htmlspecialchars(strtolower($siswa['nama_kelas'] ?? '-')); ?>">
+                            data-kelas="<?= htmlspecialchars(strtolower($siswa['nama_kelas'] ?? '-')); ?>"
+                            data-status="<?= htmlspecialchars($statusSiswa); ?>">
                             <!-- Header: Name & Status -->
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex items-center gap-3">
@@ -424,17 +488,31 @@
                                         <p class="text-xs text-gray-500"><?= htmlspecialchars($siswa['nisn']); ?></p>
                                     </div>
                                 </div>
-                                <?php if (!empty($siswa['password_plain'])): ?>
-                                    <span
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                        <i data-lucide="check" class="w-3 h-3 mr-1"></i>Aktif
-                                    </span>
-                                <?php else: ?>
-                                    <span
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
-                                        <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i>Belum
-                                    </span>
-                                <?php endif; ?>
+                                <div class="flex flex-col items-end gap-1">
+                                    <?php if ($statusSiswa === 'lulus'): ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                                            <i data-lucide="graduation-cap" class="w-3 h-3 mr-1 text-blue-600"></i>Lulus
+                                        </span>
+                                    <?php elseif ($statusSiswa === 'pindah'): ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                                            <i data-lucide="arrow-right-left" class="w-3 h-3 mr-1 text-amber-600"></i>Pindah
+                                        </span>
+                                    <?php elseif ($statusSiswa === 'nonaktif'): ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                            <i data-lucide="x-circle" class="w-3 h-3 mr-1 text-red-600"></i>Nonaktif
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                            <i data-lucide="check" class="w-3 h-3 mr-1 text-emerald-600"></i>Aktif
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($siswa['password_plain'])): ?>
+                                        <span class="inline-flex items-center text-[10px] text-green-700">
+                                            <i data-lucide="shield-check" class="w-2.5 h-2.5 mr-0.5"></i>Akun Siap
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
 
                             <!-- Info Tags -->
@@ -571,6 +649,7 @@
         let allRows = [];
         let allCards = [];
         let totalRows = 0;
+        let currentStatusFilter = 'aktif';
 
         // v1.26.0 - Pagination
         let filteredRows = [];
@@ -578,6 +657,34 @@
         let currentPage = 1;
         let perPage = parseInt(localStorage.getItem('siswa_per_page') || '25', 10);
         if (![25, 50, 100].includes(perPage)) perPage = 25;
+
+        function setStatusFilter(status) {
+            currentStatusFilter = status;
+
+            // Update UI buttons
+            const btnAktif = document.getElementById('btn-status-aktif');
+            const btnLulus = document.getElementById('btn-status-lulus');
+            const btnSemua = document.getElementById('btn-status-semua');
+
+            const resetBtn = (btn) => {
+                if (!btn) return;
+                btn.className = 'status-filter-btn px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 bg-white text-gray-700 border-gray-300 hover:bg-gray-50';
+            };
+
+            resetBtn(btnAktif);
+            resetBtn(btnLulus);
+            resetBtn(btnSemua);
+
+            if (status === 'aktif' && btnAktif) {
+                btnAktif.className = 'status-filter-btn px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 bg-indigo-600 text-white border-indigo-600 shadow-sm';
+            } else if (status === 'lulus' && btnLulus) {
+                btnLulus.className = 'status-filter-btn px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 bg-blue-600 text-white border-blue-600 shadow-sm';
+            } else if (status === 'semua' && btnSemua) {
+                btnSemua.className = 'status-filter-btn px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 bg-gray-800 text-white border-gray-800 shadow-sm';
+            }
+
+            applyFilters();
+        }
 
         // Auto refresh dan inisialisasi
         document.addEventListener('DOMContentLoaded', function () {
@@ -626,11 +733,13 @@
                 const nisn = (row.getAttribute('data-nisn') || '').toLowerCase();
                 const nama = (row.getAttribute('data-nama') || '').toLowerCase();
                 const kelas = (row.getAttribute('data-kelas') || '').toLowerCase();
+                const status = (row.getAttribute('data-status') || 'aktif').toLowerCase();
 
                 const matchSearch = !searchTerm || nisn.includes(searchTerm) || nama.includes(searchTerm);
                 const matchKelas = !selectedKelas || kelas === selectedKelas;
+                const matchStatus = currentStatusFilter === 'semua' || status === currentStatusFilter;
 
-                if (matchSearch && matchKelas) {
+                if (matchSearch && matchKelas && matchStatus) {
                     filteredRows.push(row);
                 } else {
                     row.style.display = 'none';
@@ -642,11 +751,13 @@
                 const nisn = (card.getAttribute('data-nisn') || '').toLowerCase();
                 const nama = (card.getAttribute('data-nama') || '').toLowerCase();
                 const kelas = (card.getAttribute('data-kelas') || '').toLowerCase();
+                const status = (card.getAttribute('data-status') || 'aktif').toLowerCase();
 
                 const matchSearch = !searchTerm || nisn.includes(searchTerm) || nama.includes(searchTerm);
                 const matchKelas = !selectedKelas || kelas === selectedKelas;
+                const matchStatus = currentStatusFilter === 'semua' || status === currentStatusFilter;
 
-                if (matchSearch && matchKelas) {
+                if (matchSearch && matchKelas && matchStatus) {
                     filteredCards.push(card);
                 } else {
                     card.style.display = 'none';
@@ -774,6 +885,7 @@
         function resetAll() {
             clearSearch();
             clearFilter();
+            setStatusFilter('aktif');
         }
 
         // Export to Excel function (Server Side via CSV)
@@ -1050,6 +1162,10 @@
                         <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
                             <p class="text-xs text-gray-600 mb-1">Kelas Terakhir</p>
                             <p class="font-semibold text-gray-900" id="detailKelas">-</p>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
+                            <p class="text-xs text-gray-600 mb-1">Status Siswa</p>
+                            <p class="font-semibold text-gray-900 capitalize" id="detailStatusSiswa">-</p>
                         </div>
                     </div>
                 </div>
@@ -2041,6 +2157,8 @@
             }
             setText('detailTglLahir', tglLahir);
             setText('detailKelas', siswa.nama_kelas || '-');
+            const stSiswa = siswa.status_siswa ? siswa.status_siswa.toUpperCase() : 'AKTIF';
+            setText('detailStatusSiswa', stSiswa);
 
             // Kontak
             setText('detailNoWa', siswa.no_wa || '-');

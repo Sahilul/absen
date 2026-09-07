@@ -1,6 +1,25 @@
 {
     "versions": [
         {
+            "version": "1.27.1",
+            "date": "2026-09-07",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Fix siswa yang izin dari wali kelas tetap tampil sebagai hadir di halaman edit absensi guru"
+                },
+                {
+                    "type": "fix",
+                    "description": "Pin CDN Lucide ke versi 0.460.0 di seluruh file untuk mencegah blank screen saat klik tombol status kehadiran"
+                },
+                {
+                    "type": "fix",
+                    "description": "Cegah duplikasi penugasan mapel-kelas saat ganti guru: validasi server dan AJAX warning di form tambah penugasan, badge jumlah jurnal di daftar penugasan, tombol hapus disabled jika ada riwayat jurnal"
+                }
+            ]
+        },
+        {
             "version": "1.26.1",
             "date": "2026-08-07",
             "type": "patch",

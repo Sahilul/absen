@@ -419,15 +419,73 @@ class Siswa_model
         if (empty($daftar_id_siswa))
             return 0;
 
-        $placeholders = implode(',', array_fill(0, count($daftar_id_siswa), '?'));
+        // Bersihkan dan pastikan array berisi ID integer positif
+        $cleaned_ids = array_values(array_filter(array_map('intval', $daftar_id_siswa), function ($id) {
+            return $id > 0;
+        }));
+
+        if (empty($cleaned_ids))
+            return 0;
+
+        $placeholders = implode(',', array_fill(0, count($cleaned_ids), '?'));
         $this->db->query("UPDATE siswa SET status_siswa = 'lulus' WHERE id_siswa IN ($placeholders)");
 
-        foreach ($daftar_id_siswa as $k => $id) {
+        foreach ($cleaned_ids as $k => $id) {
             $this->db->bind($k + 1, $id);
         }
 
         $this->db->execute();
-        return $this->db->rowCount();
+        $affected = $this->db->rowCount();
+
+        // Di MySQL/PDO, jika siswa sudah berstatus 'lulus', UPDATE tidak mengubah baris (affected = 0).
+        // Hitung berapa total siswa yang berstatus 'lulus' dari daftar yang dipilih sebagai konfirmasi.
+        if ($affected === 0) {
+            $this->db->query("SELECT COUNT(*) as total FROM siswa WHERE status_siswa = 'lulus' AND id_siswa IN ($placeholders)");
+            foreach ($cleaned_ids as $k => $id) {
+                $this->db->bind($k + 1, $id);
+            }
+            $res = $this->db->single();
+            return (int)($res['total'] ?? 0);
+        }
+
+        return $affected;
+    }
+
+    /**
+     * Batalkan status kelulusan siswa terpilih (kembalikan ke 'aktif')
+     */
+    public function batalkanKelulusan($daftar_id_siswa)
+    {
+        if (empty($daftar_id_siswa))
+            return 0;
+
+        $cleaned_ids = array_values(array_filter(array_map('intval', $daftar_id_siswa), function ($id) {
+            return $id > 0;
+        }));
+
+        if (empty($cleaned_ids))
+            return 0;
+
+        $placeholders = implode(',', array_fill(0, count($cleaned_ids), '?'));
+        $this->db->query("UPDATE siswa SET status_siswa = 'aktif' WHERE id_siswa IN ($placeholders)");
+
+        foreach ($cleaned_ids as $k => $id) {
+            $this->db->bind($k + 1, $id);
+        }
+
+        $this->db->execute();
+        $affected = $this->db->rowCount();
+
+        if ($affected === 0) {
+            $this->db->query("SELECT COUNT(*) as total FROM siswa WHERE status_siswa = 'aktif' AND id_siswa IN ($placeholders)");
+            foreach ($cleaned_ids as $k => $id) {
+                $this->db->bind($k + 1, $id);
+            }
+            $res = $this->db->single();
+            return (int)($res['total'] ?? 0);
+        }
+
+        return $affected;
     }
 
     // ALIAS untuk compatibility dengan kode lama

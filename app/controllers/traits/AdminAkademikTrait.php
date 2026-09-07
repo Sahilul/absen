@@ -436,6 +436,24 @@ function prosesTambahPenugasan()
                 }
             }
 
+            // Cek apakah mapel+kelas sudah ditugaskan ke guru lain
+            if (empty($errors)) {
+                $existing = $this->model('Penugasan_model')->cekPenugasanMapelKelasExist(
+                    $_POST['id_mapel'],
+                    $_POST['id_kelas'],
+                    $_POST['id_semester']
+                );
+                if ($existing && $existing['id_guru'] != $_POST['id_guru']) {
+                    $pesan = 'Mapel dan kelas ini sudah ditugaskan ke ' . htmlspecialchars($existing['nama_guru']) . '.';
+                    if ($existing['jumlah_jurnal'] > 0) {
+                        $pesan .= ' Terdapat ' . $existing['jumlah_jurnal'] . ' riwayat jurnal. Gunakan Edit pada penugasan yang sudah ada agar riwayat tidak hilang.';
+                    } else {
+                        $pesan .= ' Hapus penugasan lama terlebih dahulu, atau gunakan Edit untuk mengganti guru.';
+                    }
+                    $errors[] = $pesan;
+                }
+            }
+
             if (!empty($errors)) {
                 Flasher::setFlash(implode(', ', $errors), 'danger');
                 header('Location: ' . BASEURL . '/admin/tambahPenugasan');
@@ -498,9 +516,56 @@ function checkPenugasanDuplikat()
         exit;
     }
 
+function checkPenugasanMapelKelas()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['error' => 'Invalid request method']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (!$input) {
+            echo json_encode(['error' => 'Invalid JSON']);
+            exit;
+        }
+
+        $id_mapel = $input['id_mapel'] ?? '';
+        $id_kelas = $input['id_kelas'] ?? '';
+        $id_semester = $_SESSION['id_semester_aktif'] ?? '';
+
+        if (empty($id_mapel) || empty($id_kelas) || empty($id_semester)) {
+            echo json_encode(['exists' => false]);
+            exit;
+        }
+
+        $existing = $this->model('Penugasan_model')->cekPenugasanMapelKelasExist($id_mapel, $id_kelas, $id_semester);
+
+        if ($existing) {
+            echo json_encode([
+                'exists' => true,
+                'id_penugasan' => $existing['id_penugasan'],
+                'nama_guru' => $existing['nama_guru'],
+                'jumlah_jurnal' => (int)$existing['jumlah_jurnal']
+            ]);
+        } else {
+            echo json_encode(['exists' => false]);
+        }
+        exit;
+    }
+
 function hapusPenugasan($id)
     {
+        $jumlahJurnal = $this->model('Penugasan_model')->hitungJurnalByPenugasan($id);
+        if ($jumlahJurnal > 0) {
+            Flasher::setFlash('Penugasan ini memiliki ' . $jumlahJurnal . ' riwayat jurnal dan tidak bisa dihapus. Gunakan tombol Edit untuk mengganti guru.', 'danger');
+            header('Location: ' . BASEURL . '/admin/penugasan');
+            exit;
+        }
+
         if ($this->model('Penugasan_model')->hapusDataPenugasan($id) > 0) {
+            Flasher::setFlash('Penugasan berhasil dihapus.', 'success');
             header('Location: ' . BASEURL . '/admin/penugasan');
             exit;
         }
@@ -743,9 +808,12 @@ function kelulusan()
     {
         $this->data['judul'] = 'Kelulusan Siswa';
         $this->data['daftar_tp'] = $this->model('TahunPelajaran_model')->getAllTahunPelajaran();
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['tampilkan_siswa'])) {
-            $id_tp = $_POST['id_tp'];
-            $id_kelas = $_POST['id_kelas'];
+        
+        $id_tp = $_POST['id_tp'] ?? ($_SESSION['kelulusan_id_tp'] ?? null);
+        $id_kelas = $_POST['id_kelas'] ?? ($_SESSION['kelulusan_id_kelas'] ?? null);
+
+        if ($id_tp && $id_kelas) {
+            unset($_SESSION['kelulusan_id_tp'], $_SESSION['kelulusan_id_kelas']);
             $this->data['id_tp_pilihan'] = $id_tp;
             $this->data['id_kelas_pilihan'] = $id_kelas;
             $this->data['daftar_siswa'] = $this->model('Keanggotaan_model')->getSiswaByKelas($id_kelas, $id_tp);
@@ -760,6 +828,12 @@ function prosesKelulusan()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['siswa_terpilih'])) {
             $daftar_siswa = $_POST['siswa_terpilih'];
+            $id_tp = $_POST['id_tp'] ?? null;
+            $id_kelas = $_POST['id_kelas'] ?? null;
+            if ($id_tp && $id_kelas) {
+                $_SESSION['kelulusan_id_tp'] = $id_tp;
+                $_SESSION['kelulusan_id_kelas'] = $id_kelas;
+            }
             $jumlahSiswa = $this->model('Siswa_model')->luluskanSiswaByIds($daftar_siswa);
             Flasher::setFlash("Proses kelulusan berhasil. Sebanyak $jumlahSiswa siswa telah diubah statusnya menjadi Lulus.", 'success');
             header('Location: ' . BASEURL . '/admin/kelulusan');
@@ -767,6 +841,47 @@ function prosesKelulusan()
         } else {
             Flasher::setFlash('Gagal! Tidak ada siswa yang dipilih.', 'danger');
             header('Location: ' . BASEURL . '/admin/kelulusan');
+            exit;
+        }
+    }
+
+function batalLulus()
+    {
+        $this->data['judul'] = 'Batal Lulus';
+        $this->data['daftar_tp'] = $this->model('TahunPelajaran_model')->getAllTahunPelajaran();
+        
+        $id_tp = $_POST['id_tp'] ?? ($_SESSION['batal_lulus_id_tp'] ?? null);
+        $id_kelas = $_POST['id_kelas'] ?? ($_SESSION['batal_lulus_id_kelas'] ?? null);
+
+        if ($id_tp && $id_kelas) {
+            unset($_SESSION['batal_lulus_id_tp'], $_SESSION['batal_lulus_id_kelas']);
+            $this->data['id_tp_pilihan'] = $id_tp;
+            $this->data['id_kelas_pilihan'] = $id_kelas;
+            $this->data['daftar_siswa'] = $this->model('Keanggotaan_model')->getSiswaByKelas($id_kelas, $id_tp);
+        }
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/batal_lulus', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+function prosesBatalLulus()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['siswa_terpilih'])) {
+            $daftar_siswa = $_POST['siswa_terpilih'];
+            $id_tp = $_POST['id_tp'] ?? null;
+            $id_kelas = $_POST['id_kelas'] ?? null;
+            if ($id_tp && $id_kelas) {
+                $_SESSION['batal_lulus_id_tp'] = $id_tp;
+                $_SESSION['batal_lulus_id_kelas'] = $id_kelas;
+            }
+            $jumlahSiswa = $this->model('Siswa_model')->batalkanKelulusan($daftar_siswa);
+            Flasher::setFlash("Pembatalan kelulusan berhasil. Sebanyak $jumlahSiswa siswa telah dikembalikan statusnya menjadi Aktif.", 'success');
+            header('Location: ' . BASEURL . '/admin/batalLulus');
+            exit;
+        } else {
+            Flasher::setFlash('Gagal! Tidak ada siswa yang dipilih.', 'danger');
+            header('Location: ' . BASEURL . '/admin/batalLulus');
             exit;
         }
     }

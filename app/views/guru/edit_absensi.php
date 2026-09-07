@@ -138,16 +138,15 @@
                 <div class="divide-y divide-secondary-100" id="students-list" role="list">
                     <?php foreach ($data['daftar_siswa'] as $index => $siswa) : ?>
                         <?php 
-                        $current_status = $siswa['status_kehadiran'] ?? 'H';
-                        $current_keterangan = $siswa['keterangan'] ?? '';
                         $izinMap = $data['izin_map'] ?? [];
                         $hasIzin = isset($izinMap[$siswa['id_siswa']]);
                         $izinData = $hasIzin ? $izinMap[$siswa['id_siswa']] : null;
                         $izinJenis = $hasIzin ? $izinData['jenis_izin'] : null;
                         $izinKet = $hasIzin ? $izinData['keterangan'] : '';
                         $izinWali = $hasIzin ? ($izinData['nama_wali_kelas'] ?? 'Wali Kelas') : '';
+                        $current_status = $siswa['status_kehadiran'] ?? ($hasIzin ? $izinJenis : 'H');
+                        $current_keterangan = $siswa['keterangan'] ?? '';
                         $jenisLabel = ['I' => 'Izin', 'S' => 'Sakit', 'D' => 'Dispensasi'];
-                        // Jika ada izin dan status saat ini sudah sesuai izin, tetap locked
                         $isOverridden = $hasIzin && $current_status !== $izinJenis;
                         ?>
                         <div class="student-row p-4 sm:p-6 hover:bg-white/50 transition-all duration-200 <?= $hasIzin ? 'bg-amber-50/50' : '' ?>" 
@@ -422,11 +421,11 @@
     }
 </style>
 
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        lucide.createIcons();
-        updateCounters(); // hitung status awal
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        updateCounters();
 
         // Search (debounce + toggle)
         const searchInput = document.getElementById('search-siswa');

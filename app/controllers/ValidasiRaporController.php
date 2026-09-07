@@ -98,7 +98,7 @@ class ValidasiRaporController extends Controller
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title><?= $data['judul'] ?? 'Validasi Rapor' ?> - Madrasah Sabilillah</title>
             <script src="https://cdn.tailwindcss.com"></script>
-            <script src="https://unpkg.com/lucide@latest"></script>
+            <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
         </head>
         <body class="antialiased">
             <?php require_once APPROOT . '/app/views/' . $view . '.php'; ?>

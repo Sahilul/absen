@@ -160,7 +160,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
     <?php endif; ?>
 
     <!-- Lucide Icons - Single load -->
-    <script src="https://unpkg.com/lucide@latest" defer></script>
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
 
     <!-- Alpine.js for interactivity -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

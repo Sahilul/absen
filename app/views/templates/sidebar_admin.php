@@ -124,7 +124,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: APLIKASI LAIN -->
             <!-- ============================================== -->
-            <?php $aplikasiLainActive = isGroupActive($judul, ['Pesan', 'Buku Tamu', 'PSB', 'Persuratan', 'Surat Tugas', 'Surat Penerimaan', 'Website']); ?>
+            <?php $aplikasiLainActive = isGroupActive($judul, ['Buku Tamu', 'PSB', 'Persuratan', 'Surat Tugas', 'Surat Penerimaan', 'Website']); ?>
             <li class="pt-4" x-data="{ open: <?= $aplikasiLainActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $aplikasiLainActive ? 'bg-purple-50 text-purple-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -138,13 +138,6 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                         :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <ul x-show="open" x-collapse class="mt-1 ml-4 space-y-1 border-l-2 border-purple-200 pl-3">
-                    <li>
-                        <a href="<?= BASEURL; ?>/admin/pesan"
-                            class="group flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pesan') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-indigo-50 hover:text-indigo-700' ?>">
-                            <i data-lucide="mail" class="w-4 h-4 mr-2 text-indigo-600"></i>
-                            Pesan
-                        </a>
-                    </li>
                     <li>
                         <a href="<?= BASEURL; ?>/bukuTamu"
                             class="group flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Buku Tamu') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-teal-50 hover:text-teal-700' ?>">
@@ -303,7 +296,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: KESISWAAN -->
             <!-- ============================================== -->
-            <?php $kesiswaanActive = isGroupActive($judul, ['Performa Kehadiran Siswa', 'Naik Kelas', 'Kelulusan', 'Izin Siswa']); ?>
+            <?php $kesiswaanActive = isGroupActive($judul, ['Performa Kehadiran Siswa', 'Naik Kelas', 'Kelulusan', 'Batal Lulus', 'Batal Kelulusan', 'Izin Siswa']); ?>
             <li class="pt-2" x-data="{ open: <?= $kesiswaanActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $kesiswaanActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -343,6 +336,13 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Kelulusan') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-amber-50 hover:text-amber-700' ?>">
                             <i data-lucide="graduation-cap" class="w-4 h-4 mr-2"></i>
                             Kelulusan
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/batalLulus"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Batal Lulus') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-red-50 hover:text-red-700' ?>">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2"></i>
+                            Batal Lulus
                         </a>
                     </li>
                 </ul>

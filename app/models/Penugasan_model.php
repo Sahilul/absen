@@ -25,7 +25,8 @@ class Penugasan_model
                     penugasan.id_kelas,
                     guru.nama_guru, 
                     mapel.nama_mapel, 
-                    kelas.nama_kelas
+                    kelas.nama_kelas,
+                    (SELECT COUNT(*) FROM jurnal j WHERE j.id_penugasan = penugasan.id_penugasan) as jumlah_jurnal
                   FROM penugasan
                   JOIN guru ON penugasan.id_guru = guru.id_guru
                   JOIN mapel ON penugasan.id_mapel = mapel.id_mapel
@@ -65,6 +66,38 @@ class Penugasan_model
         $this->db->bind('id_semester', $data['id_semester']);
         $this->db->execute();
         return $this->db->rowCount();
+    }
+
+    /**
+     * Cek apakah penugasan memiliki jurnal terkait.
+     * @param int $id ID penugasan.
+     * @return int Jumlah jurnal yang terkait.
+     */
+    public function hitungJurnalByPenugasan($id)
+    {
+        $this->db->query('SELECT COUNT(*) as total FROM jurnal WHERE id_penugasan = :id');
+        $this->db->bind('id', $id);
+        $result = $this->db->single();
+        return (int)$result['total'];
+    }
+
+    /**
+     * Cek apakah mapel+kelas+semester sudah ditugaskan ke guru lain.
+     * @return array|false Data penugasan yang ada, atau false jika belum ada.
+     */
+    public function cekPenugasanMapelKelasExist($id_mapel, $id_kelas, $id_semester)
+    {
+        $this->db->query('SELECT p.id_penugasan, p.id_guru, g.nama_guru,
+                                 (SELECT COUNT(*) FROM jurnal j WHERE j.id_penugasan = p.id_penugasan) as jumlah_jurnal
+                          FROM penugasan p
+                          JOIN guru g ON p.id_guru = g.id_guru
+                          WHERE p.id_mapel = :id_mapel AND p.id_kelas = :id_kelas AND p.id_semester = :id_semester
+                          LIMIT 1');
+        $this->db->bind('id_mapel', $id_mapel);
+        $this->db->bind('id_kelas', $id_kelas);
+        $this->db->bind('id_semester', $id_semester);
+        $result = $this->db->single();
+        return $result ?: false;
     }
 
     /**

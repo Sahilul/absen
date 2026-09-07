@@ -1,11 +1,11 @@
-const CACHE_NAME = 'smart-absen-v1';
+const CACHE_NAME = 'smart-absen-v2';
 const urlsToCache = [
     '/',
     '/public/offline.html',
     '/public/img/app/logo_1767425774.png',
     'https://cdn.tailwindcss.com',
     'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap',
-    'https://unpkg.com/lucide@latest',
+    'https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js',
     'https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js',
     'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'
 ];

@@ -41,7 +41,7 @@ $jenisLabels = $dokumenConfigModel->getAsArray();
     <title>Detail Pendaftaran - PSB <?= $namaSekolah; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="<?= BASEURL; ?>/public/css/custom-styles.css">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
