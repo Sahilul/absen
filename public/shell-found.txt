@@ -1,3 +1,0 @@
-/www/wwwroot/sabilillah.id/public/img/app/index.php
-/www/wwwroot/sabilillah.id/public/scanner.php
-/www/wwwroot/sabilillah.id/public/uploads/psb/brosur/class-ftp-module.php

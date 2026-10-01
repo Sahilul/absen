@@ -1,1 +1,0 @@
-NENEK KAU

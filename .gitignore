@@ -85,3 +85,13 @@ composer.lock
 dist/
 build/
 tmp/foto_cache/
+
+# Backups (jangan commit - berisi snapshot lama)
+backups/
+
+# Security artifacts
+public/shell-found.txt
+shell-found.txt
+
+# Google site verification (opsional)
+google*.html
