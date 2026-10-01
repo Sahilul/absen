@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.31.3",
+            "date": "2026-10-01",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "security",
+                    "description": "Pulihkan index.php sebagai front controller (47 baris) yang sebelumnya tertimpa snapshot HTML homepage dari insiden keamanan 2026-09-18; menghapus CSRF token hardcoded yang terdeteksi GitGuardian"
+                },
+                {
+                    "type": "chore",
+                    "description": "Hentikan pelacakan folder backups/ dan artefak keamanan (shell-found.txt, file verifikasi Google) dari git; perbarui .gitignore"
+                }
+            ]
+        },
+        {
             "version": "1.31.2",
             "date": "2026-10-01",
             "type": "patch",
