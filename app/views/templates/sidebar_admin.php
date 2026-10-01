@@ -234,7 +234,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: AKADEMIK -->
             <!-- ============================================== -->
-            <?php $akademikActive = isGroupActive($judul, ['Penugasan', 'Anggota Kelas', 'Monitoring Nilai', 'Review RPP', 'Pengaturan RPP', 'Pengaturan Rapor']); ?>
+            <?php $akademikActive = isGroupActive($judul, ['Penugasan', 'Anggota Kelas', 'Monitoring Nilai', 'Review RPP', 'Pengaturan RPP', 'Pengaturan Rapor', 'Soal STS']); ?>
             <li class="pt-2" x-data="{ open: <?= $akademikActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $akademikActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -290,13 +290,20 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             Pengaturan Rapor
                         </a>
                     </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/soalSts"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Soal STS') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-violet-50 hover:text-violet-700' ?>">
+                            <i data-lucide="file-question" class="w-4 h-4 mr-2"></i>
+                            Soal STS
+                        </a>
+                    </li>
                 </ul>
             </li>
 
             <!-- ============================================== -->
             <!-- DROPDOWN: KESISWAAN -->
             <!-- ============================================== -->
-            <?php $kesiswaanActive = isGroupActive($judul, ['Performa Kehadiran Siswa', 'Naik Kelas', 'Kelulusan', 'Batal Lulus', 'Batal Kelulusan', 'Izin Siswa']); ?>
+            <?php $kesiswaanActive = isGroupActive($judul, ['Performa Kehadiran Siswa', 'Naik Kelas', 'Kelulusan', 'Batal Lulus', 'Batal Kelulusan', 'Izin Siswa', 'Bimbingan Konseling', 'Detail Kasus BK']); ?>
             <li class="pt-2" x-data="{ open: <?= $kesiswaanActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $kesiswaanActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -343,6 +350,13 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Batal Lulus') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-red-50 hover:text-red-700' ?>">
                             <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2"></i>
                             Batal Lulus
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/bimbinganKonseling"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= (isActive($judul, 'Bimbingan Konseling') || isActive($judul, 'Detail Kasus BK')) ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-rose-50 hover:text-rose-700' ?>">
+                            <i data-lucide="heart-handshake" class="w-4 h-4 mr-2"></i>
+                            Bimbingan Konseling
                         </a>
                     </li>
                 </ul>

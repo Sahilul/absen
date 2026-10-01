@@ -63,6 +63,117 @@ define('R2_SECRET_ACCESS_KEY', getSystemSetting('r2_secret_access_key', ''));
 define('R2_BUCKET', getSystemSetting('r2_bucket', 'sabilillah'));
 define('R2_PUBLIC_URL', getSystemSetting('r2_public_url', ''));
 
+/**
+ * Deteksi MIME type gambar dengan aman (tanpa bergantung pada ekstensi fileinfo).
+ * Fallback ke ekstensi nama file jika getimagesize tidak tersedia.
+ */
+function safeImageMime($path, $fallbackExt = '')
+{
+    if (function_exists('getimagesize')) {
+        $info = @getimagesize($path);
+        if ($info && !empty($info['mime'])) {
+            return $info['mime'];
+        }
+    }
+    if (function_exists('mime_content_type')) {
+        $mime = @mime_content_type($path);
+        if ($mime) {
+            return $mime;
+        }
+    }
+    $ext = strtolower($fallbackExt ?: pathinfo($path, PATHINFO_EXTENSION));
+    $map = [
+        'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
+        'png' => 'image/png', 'gif' => 'image/gif',
+        'webp' => 'image/webp', 'bmp' => 'image/bmp',
+    ];
+    return $map[$ext] ?? 'application/octet-stream';
+}
+
+/**
+ * Resolve URL gambar soal STS.
+ * Mendukung gambar baru (URL R2 lengkap) dan gambar lama (nama file lokal).
+ */
+function soalGambarUrl($value)
+{
+    if (empty($value)) {
+        return '';
+    }
+    // Gambar baru: URL lengkap (R2)
+    if (preg_match('#^https?://#i', $value)) {
+        return $value;
+    }
+    // Gambar lama: nama file di public/uploads/soal_sts/
+    return BASEURL . '/public/uploads/soal_sts/' . rawurlencode(basename($value));
+}
+
+/**
+ * Ambil object key R2 dari URL gambar soal (untuk hapus).
+ * Return null jika bukan URL R2.
+ */
+function soalGambarKey($value)
+{
+    if (empty($value) || !defined('R2_PUBLIC_URL') || R2_PUBLIC_URL === '') {
+        return null;
+    }
+    $prefix = rtrim(R2_PUBLIC_URL, '/') . '/';
+    if (strpos($value, $prefix) === 0) {
+        return substr($value, strlen($prefix));
+    }
+    return null;
+}
+
+/**
+ * Sumber gambar soal untuk cetak (preview/PDF/Dompdf).
+ * - Gambar R2: kembalikan data URI base64 (fetch sekali) agar cetak andal.
+ * - Gambar lokal lama: data URI base64 dari file.
+ * - Gagal/ tidak ada: '' (lewati).
+ */
+function soalGambarPrintSrc($value)
+{
+    if (empty($value)) {
+        return '';
+    }
+
+    $data = null;
+    $mime = 'image/jpeg';
+
+    if (preg_match('#^https?://#i', $value)) {
+        // Gambar R2 — ambil konten via curl/file_get_contents
+        $data = @file_get_contents($value);
+        if ($data === false && function_exists('curl_init')) {
+            $ch = curl_init($value);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT => 15,
+            ]);
+            $data = curl_exec($ch);
+            $ct = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+            curl_close($ch);
+            if ($ct) { $mime = $ct; }
+        }
+        if ($data === false) {
+            return '';
+        }
+        // Tebak mime dari magic bytes jika belum dari curl
+        if ($mime === 'image/jpeg' && function_exists('getimagesizefromstring')) {
+            $info = @getimagesizefromstring($data);
+            if ($info && !empty($info['mime'])) { $mime = $info['mime']; }
+        }
+    } else {
+        // Gambar lokal lama
+        $path = APPROOT . '/public/uploads/soal_sts/' . basename($value);
+        if (!file_exists($path)) {
+            return '';
+        }
+        $data = file_get_contents($path);
+        $mime = safeImageMime($path);
+    }
+
+    return 'data:' . $mime . ';base64,' . base64_encode($data);
+}
+
 function getPengaturanAplikasi()
 {
 

@@ -71,6 +71,14 @@ class GuruFungsi_model
     }
 
     /**
+     * Check if guru is Guru BK for given TP
+     */
+    public function isGuruBK($id_guru, $id_tp)
+    {
+        return $this->hasFungsi($id_guru, 'guru_bk', $id_tp);
+    }
+
+    /**
      * Check if guru has specific function
      */
     public function hasFungsi($id_guru, $fungsi, $id_tp)
@@ -183,7 +191,8 @@ class GuruFungsi_model
             'petugas_buku_tamu' => 'Petugas Buku Tamu',
             'admin_cms' => 'Admin CMS',
             'kurikulum' => 'Kurikulum',
-            'kesiswaan' => 'Kesiswaan'
+            'kesiswaan' => 'Kesiswaan',
+            'guru_bk' => 'Guru BK'
         ];
     }
 }

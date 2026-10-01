@@ -16,6 +16,7 @@ $isBendahara = false;
 $isPetugasPSB = false;
 $isAdminCms = false;
 $isPetugasBukuTamu = false;
+$isGuruBK = false;
 $id_guru = $_SESSION['id_ref'] ?? 0;
 $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
 
@@ -28,6 +29,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'guru') {
     $isPetugasPSB = $guruFungsiModel->isPetugasPSB($id_guru, $id_tp_aktif);
     $isAdminCms = $guruFungsiModel->isAdminCMS($id_guru, $id_tp_aktif);
     $isPetugasBukuTamu = $guruFungsiModel->isPetugasBukuTamu($id_guru, $id_tp_aktif);
+    $isGuruBK = $guruFungsiModel->isGuruBK($id_guru, $id_tp_aktif);
   }
 }
 ?>
@@ -102,7 +104,28 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'guru') {
         </a>
       </li>
 
-      <?php if ($isBendahara || $isPetugasPSB || $isAdminCms): ?>
+      <!-- Section: Kesiswaan -->
+      <li class="pt-6 pb-2">
+        <div class="flex items-center px-3">
+          <i data-lucide="users" class="w-4 h-4 text-secondary-400 mr-2"></i>
+          <span class="text-xs font-bold text-secondary-400 uppercase tracking-wider">Kesiswaan</span>
+        </div>
+      </li>
+
+      <!-- Laporan BK -->
+      <li>
+        <a href="<?= BASEURL; ?>/guru/laporSiswa"
+          class="group flex items-center p-3 text-sm font-medium rounded-xl transition-all duration-200 <?= ($judul == 'Laporan BK') ? 'gradient-warning text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
+          <div
+            class="<?= ($judul == 'Laporan BK') ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-amber-100'; ?> p-2 rounded-lg transition-colors duration-200">
+            <i data-lucide="alert-triangle"
+              class="w-4 h-4 <?= ($judul == 'Laporan BK') ? 'text-white' : 'text-secondary-500 group-hover:text-amber-600'; ?>"></i>
+          </div>
+          <span class="ml-3 whitespace-nowrap">Laporan BK</span>
+        </a>
+      </li>
+
+      <?php if ($isBendahara || $isPetugasPSB || $isAdminCms || $isGuruBK): ?>
       <!-- Section: Tugas Tambahan -->
         <li class="pt-6 pb-2">
           <div class="flex items-center px-3">
@@ -171,6 +194,22 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'guru') {
               </div>
               <span class="ml-3 whitespace-nowrap">Buku Tamu</span>
               <span class="ml-auto bg-indigo-100 text-indigo-700 py-0.5 px-2 rounded-full text-xs font-medium">Extra</span>
+            </a>
+          </li>
+        <?php endif; ?>
+
+        <?php if ($isGuruBK): ?>
+          <!-- Menu Guru BK -->
+          <li>
+            <a href="<?= BASEURL; ?>/bk"
+              class="group flex items-center p-3 text-sm font-medium rounded-xl transition-all duration-200 <?= (strpos($judul, 'BK') !== false || strpos($judul, 'Bimbingan') !== false || strpos($judul, 'Konseling') !== false) ? 'gradient-primary text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
+              <div
+                class="<?= (strpos($judul, 'BK') !== false || strpos($judul, 'Bimbingan') !== false || strpos($judul, 'Konseling') !== false) ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-rose-100'; ?> p-2 rounded-lg transition-colors duration-200">
+                <i data-lucide="heart-handshake"
+                  class="w-4 h-4 <?= (strpos($judul, 'BK') !== false || strpos($judul, 'Bimbingan') !== false || strpos($judul, 'Konseling') !== false) ? 'text-white' : 'text-secondary-500 group-hover:text-rose-600'; ?>"></i>
+              </div>
+              <span class="ml-3 whitespace-nowrap">Bimbingan Konseling</span>
+              <span class="ml-auto bg-rose-100 text-rose-700 py-0.5 px-2 rounded-full text-xs font-medium">Extra</span>
             </a>
           </li>
         <?php endif; ?>

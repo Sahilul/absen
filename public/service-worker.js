@@ -1,6 +1,5 @@
-const CACHE_NAME = 'smart-absen-v2';
+const CACHE_NAME = 'smart-absen-v3';
 const urlsToCache = [
-    '/',
     '/public/offline.html',
     '/public/img/app/logo_1767425774.png',
     'https://cdn.tailwindcss.com',

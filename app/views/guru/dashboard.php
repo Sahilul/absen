@@ -172,6 +172,7 @@
     $rppIdByPenugasan           = []; // Track RPP ID for download
     $rppApprovedByPenugasan     = []; // Track RPP approval status per penugasan
     $rppStatusByPenugasan       = []; // Track RPP status per penugasan
+    $soalStsPengaturanByMapelKelas = []; // Track Soal STS pengaturan per mapel+kelas
     $kelasOptions = [];
     $jadwalSorted = $data['jadwal_mengajar'] ?? [];
     
@@ -229,6 +230,35 @@
                     $rppIdByPenugasan[$pid] = (int)$rr['id_rpp'];
                     $rppStatusByPenugasan[$pid] = $rr['status'] ?? 'draft';
                     $rppApprovedByPenugasan[$pid] = ($rr['status'] === 'approved');
+                }
+            }
+
+            // 3b) Cek pengaturan Soal STS per mapel+kelas
+            $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? null;
+            if ($id_semester_aktif) {
+                // Kumpulkan pasangan unik mapel+kelas
+                $mapelKelasKeys = [];
+                foreach ($jadwalSorted as $row) {
+                    $mk = ($row['id_mapel'] ?? '') . '_' . ($row['id_kelas'] ?? '');
+                    if (!isset($mapelKelasKeys[$mk])) {
+                        $mapelKelasKeys[$mk] = ['id_mapel' => $row['id_mapel'], 'id_kelas' => $row['id_kelas']];
+                    }
+                }
+                // Query soal_sts_pengaturan
+                foreach ($mapelKelasKeys as $mk => $pair) {
+                    $sqlSoal = "SELECT sp.id, sp.jumlah_pilihan_ganda, sp.jumlah_essay, sp.jumlah_isian_singkat,
+                                       (SELECT COUNT(*) FROM soal_sts WHERE id_pengaturan = sp.id) AS total_soal
+                                FROM soal_sts_pengaturan sp
+                                WHERE sp.id_mapel = :id_mapel AND sp.id_kelas = :id_kelas AND sp.id_semester = :id_semester
+                                LIMIT 1";
+                    $db->query($sqlSoal);
+                    $db->bind('id_mapel', $pair['id_mapel']);
+                    $db->bind('id_kelas', $pair['id_kelas']);
+                    $db->bind('id_semester', $id_semester_aktif);
+                    $result = $db->single();
+                    if ($result) {
+                        $soalStsPengaturanByMapelKelas[$mk] = $result;
+                    }
                 }
             }
         }
@@ -325,6 +355,10 @@
                         $hideJurnal = !empty($pengaturanWajibRPP['wajib_rpp_untuk_jurnal']) && !$rppApproved;
                         $hideAbsen = !empty($pengaturanWajibRPP['wajib_rpp_untuk_absen']) && !$rppApproved;
                         $hideNilai = !empty($pengaturanWajibRPP['wajib_rpp_untuk_nilai']) && !$rppApproved;
+                        
+                        // Soal STS data
+                        $mkKey = $id_mapel . '_' . $id_kelas;
+                        $soalStsData = $soalStsPengaturanByMapelKelas[$mkKey] ?? null;
                     ?>
                     <div class="class-card rounded-xl border border-white/20 shadow-md overflow-hidden card-hover group animate-slide-up"
                          data-kelas-label="<?= htmlspecialchars($kelas) ?>"
@@ -572,6 +606,46 @@
                                     <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                                 </div>
                             </div>
+
+                            <?php if ($soalStsData): ?>
+                            <!-- Section: Soal STS -->
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <div class="flex items-center mb-3">
+                                    <i data-lucide="file-question" class="w-4 h-4 mr-1.5 text-secondary-400"></i>
+                                    <span class="text-xs font-bold text-secondary-600 uppercase tracking-wider">Soal STS</span>
+                                    <?php
+                                    $totalTarget = ($soalStsData['jumlah_pilihan_ganda'] ?? 0) + ($soalStsData['jumlah_essay'] ?? 0) + ($soalStsData['jumlah_isian_singkat'] ?? 0);
+                                    $totalSoalSts = (int)($soalStsData['total_soal'] ?? 0);
+                                    $soalComplete = $totalTarget > 0 && $totalSoalSts >= $totalTarget;
+                                    ?>
+                                    <?php if ($soalComplete): ?>
+                                        <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full">✓ Lengkap</span>
+                                    <?php elseif ($totalSoalSts > 0): ?>
+                                        <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-700 rounded-full"><?= $totalSoalSts; ?>/<?= $totalTarget; ?></span>
+                                    <?php else: ?>
+                                        <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-500 rounded-full">Belum diisi</span>
+                                    <?php endif; ?>
+                                </div>
+                                <!-- Desktop: Single Button -->
+                                <div class="hidden sm:block">
+                                    <a href="<?= BASEURL; ?>/soalSts/inputSoal/<?= $soalStsData['id']; ?>" class="seg-btn seg-solo seg-indigo" title="Input Soal STS">
+                                        <div class="seg-left">
+                                            <span class="seg-icon">
+                                                <i data-lucide="edit-3" class="w-5 h-5"></i>
+                                            </span>
+                                            <span class="seg-label">Isi Soal</span>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 seg-right ml-4"></i>
+                                    </a>
+                                </div>
+                                <!-- Mobile -->
+                                <div class="sm:hidden">
+                                    <a href="<?= BASEURL; ?>/soalSts/inputSoal/<?= $soalStsData['id']; ?>" class="block w-full px-4 py-3 bg-indigo-50 border border-indigo-200 rounded-lg text-sm font-medium text-indigo-700 text-center">
+                                        ✏️ Isi Soal
+                                    </a>
+                                </div>
+                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -829,6 +903,8 @@ function showNotification(message, type = 'info') {
     box-shadow: 0 4px 14px rgba(2,6,23,.06);
     transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
+/* Tombol tunggal (bukan dalam grid) — lebarnya menyesuaikan konten */
+.seg-btn.seg-solo { width: auto; display: inline-flex; max-width: 100%; }
 .seg-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(2,6,23,.10); filter: brightness(1.02); }
 .seg-left { display: inline-flex; align-items: center; gap: .6rem; }
 .seg-label { font-size: .9rem; font-weight: 700; letter-spacing: .2px; }
@@ -854,6 +930,7 @@ function showNotification(message, type = 'info') {
 .seg-primary { background: linear-gradient(135deg,#eff6ff,#dbeafe); border-color: rgba(59,130,246,.25); }
 .seg-primary .seg-icon { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
 .seg-primary .seg-label { color:#1e40af; }
+.seg-primary .seg-badge { background:#3b82f6; }
 
 .seg-secondary { background: linear-gradient(135deg,#f1f5f9,#e2e8f0); border-color: rgba(100,116,139,.25); }
 .seg-secondary .seg-icon { background: linear-gradient(135deg,#64748b,#475569); }

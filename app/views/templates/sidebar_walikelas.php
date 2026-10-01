@@ -79,7 +79,7 @@ function isMenuActive($judul, $keyword)
 
       <!-- DROPDOWN: Kelola Kelas -->
       <?php
-      $kelolaKelasActive = in_array($judul, ['Daftar Siswa', 'Izin Siswa', 'Tambah Izin Siswa', 'Edit Izin Siswa', 'Monitoring Absensi', 'Monitoring Nilai', 'Pembayaran Kelas', 'Kelola Tagihan Kelas', 'Riwayat Pembayaran', 'Input Pembayaran', 'Pembayaran Siswa', 'Checkout Pembayaran']);
+      $kelolaKelasActive = in_array($judul, ['Daftar Siswa', 'Izin Siswa', 'Tambah Izin Siswa', 'Edit Izin Siswa', 'Monitoring Absensi', 'Monitoring Nilai', 'Pembayaran Kelas', 'Kelola Tagihan Kelas', 'Riwayat Pembayaran', 'Input Pembayaran', 'Pembayaran Siswa', 'Checkout Pembayaran', 'Lapor Kasus BK']);
       ?>
       <li class="pt-3" x-data="{ open: <?= $kelolaKelasActive ? 'true' : 'false' ?> }">
         <button @click="open = !open"
@@ -135,6 +135,13 @@ function isMenuActive($judul, $keyword)
               </a>
             </li>
           <?php endif; ?>
+          <li>
+            <a href="<?= BASEURL; ?>/waliKelas/laporKasusBK"
+              class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= ($judul == 'Lapor Kasus BK') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-rose-50 hover:text-rose-700' ?>">
+              <i data-lucide="alert-triangle" class="w-4 h-4 mr-2"></i>
+              Lapor Kasus BK
+            </a>
+          </li>
         </ul>
       </li>
 
@@ -178,6 +185,7 @@ function isMenuActive($judul, $keyword)
       $isPetugasPSB = false;
       $isAdminCms = false;
       $isPetugasBukuTamu = false;
+      $isGuruBK = false;
       if (isset($_SESSION['id_ref']) && isset($_SESSION['id_tp_aktif'])) {
         require_once APPROOT . '/app/models/GuruFungsi_model.php';
         $guruFungsiModel = new GuruFungsi_model();
@@ -185,13 +193,14 @@ function isMenuActive($judul, $keyword)
         $isPetugasPSB = $guruFungsiModel->isPetugasPSB($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
         $isAdminCms = $guruFungsiModel->isAdminCMS($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
         $isPetugasBukuTamu = $guruFungsiModel->isPetugasBukuTamu($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
+        $isGuruBK = $guruFungsiModel->isGuruBK($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
       }
       ?>
 
-      <?php if ($isBendahara || $isPetugasPSB || $isAdminCms || $isPetugasBukuTamu): ?>
+      <?php if ($isBendahara || $isPetugasPSB || $isAdminCms || $isPetugasBukuTamu || $isGuruBK): ?>
         <!-- DROPDOWN: Tugas Tambahan -->
         <?php
-        $tugasTambahanActive = strpos($judul, 'Bendahara') !== false || strpos($judul, 'PSB') !== false || strpos($judul, 'Penerimaan') !== false || strpos($judul, 'CMS') !== false || strpos($judul, 'Berita') !== false || strpos($judul, 'Post') !== false || strpos($judul, 'Buku Tamu') !== false;
+        $tugasTambahanActive = strpos($judul, 'Bendahara') !== false || strpos($judul, 'PSB') !== false || strpos($judul, 'Penerimaan') !== false || strpos($judul, 'CMS') !== false || strpos($judul, 'Berita') !== false || strpos($judul, 'Post') !== false || strpos($judul, 'Buku Tamu') !== false || strpos($judul, 'BK') !== false || strpos($judul, 'Bimbingan') !== false || strpos($judul, 'Konseling') !== false;
         ?>
         <li class="pt-2" x-data="{ open: <?= $tugasTambahanActive ? 'true' : 'false' ?> }">
           <button @click="open = !open"
@@ -240,6 +249,15 @@ function isMenuActive($judul, $keyword)
                   class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= strpos($judul, 'Buku Tamu') !== false ? 'bg-indigo-100 text-indigo-700' : 'text-secondary-600 hover:bg-indigo-50 hover:text-indigo-700' ?>">
                   <i data-lucide="book-open" class="w-4 h-4 mr-2"></i>
                   Buku Tamu
+                </a>
+              </li>
+            <?php endif; ?>
+            <?php if ($isGuruBK): ?>
+              <li>
+                <a href="<?= BASEURL; ?>/bk"
+                  class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= (strpos($judul, 'BK') !== false || strpos($judul, 'Bimbingan') !== false || strpos($judul, 'Konseling') !== false) ? 'bg-rose-100 text-rose-700' : 'text-secondary-600 hover:bg-rose-50 hover:text-rose-700' ?>">
+                  <i data-lucide="heart-handshake" class="w-4 h-4 mr-2"></i>
+                  Bimbingan Konseling
                 </a>
               </li>
             <?php endif; ?>

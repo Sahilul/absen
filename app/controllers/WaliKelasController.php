@@ -4930,4 +4930,75 @@ class WaliKelasController extends Controller
         header('Location: ' . BASEURL . '/waliKelas/izinSiswa');
         exit;
     }
+
+    public function laporKasusBK()
+    {
+        $this->data['judul'] = 'Lapor Kasus BK';
+        $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+
+        $kelasModel = $this->model('Kelas_model');
+        $waliKelasModel = $this->model('WaliKelas_model');
+        $waliKelasData = $waliKelasModel->getWaliKelasByGuru($id_guru, $id_tp);
+
+        $this->data['kelas_list'] = [];
+        $this->data['siswa_list'] = [];
+        $this->data['selected_kelas'] = '';
+
+        if ($waliKelasData) {
+            $id_kelas = $waliKelasData['id_kelas'];
+            $this->data['kelas_list'] = [['id_kelas' => $id_kelas, 'nama_kelas' => $waliKelasData['nama_kelas'] ?? 'Kelas']];
+            $this->data['selected_kelas'] = $id_kelas;
+            $bkModel = $this->model('BK_model');
+            $this->data['siswa_list'] = $bkModel->getSiswaByKelas($id_kelas, $id_tp);
+        }
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_walikelas', $this->data);
+        $this->view('wali_kelas/lapor_kasus_bk', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    public function prosesLaporKasusBK()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/waliKelas/dashboard');
+            exit;
+        }
+
+        $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+        $id_semester = $_SESSION['id_semester_aktif'] ?? 0;
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+
+        $data = [
+            'id_siswa' => (int) ($_POST['id_siswa'] ?? 0),
+            'id_kelas' => (int) ($_POST['id_kelas'] ?? 0),
+            'id_tp' => $id_tp,
+            'id_semester' => $id_semester,
+            'kategori' => $_POST['kategori'] ?? 'pelanggaran',
+            'judul' => trim($_POST['judul'] ?? ''),
+            'deskripsi' => trim($_POST['deskripsi'] ?? ''),
+            'tingkat' => $_POST['tingkat'] ?? 'ringan',
+            'poin' => (int) ($_POST['poin'] ?? 0),
+            'status' => 'baru',
+            'id_guru_pelapor' => $id_guru,
+            'id_guru_bk' => null,
+        ];
+
+        if (!$data['id_siswa'] || !$data['id_kelas'] || !$data['judul']) {
+            Flasher::setFlash('Data tidak lengkap.', 'danger');
+            header('Location: ' . BASEURL . '/waliKelas/laporKasusBK');
+            exit;
+        }
+
+        $bkModel = $this->model('BK_model');
+        if ($bkModel->tambahKasus($data)) {
+            Flasher::setFlash('Berhasil', 'Kasus berhasil dilaporkan ke BK.', 'success');
+        } else {
+            Flasher::setFlash('Gagal', 'Gagal melaporkan kasus.', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/waliKelas/dashboard');
+        exit;
+    }
 }

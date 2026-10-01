@@ -1569,7 +1569,7 @@ class PsbController extends Controller
             $kopPath = APPROOT . '/public/img/psb_lembaga/' . $lembaga['kop_gambar'];
             if (file_exists($kopPath)) {
                 $kopData = base64_encode(file_get_contents($kopPath));
-                $kopMime = mime_content_type($kopPath);
+                $kopMime = safeImageMime($kopPath);
                 $kopSuratHtml = '
     <div style="text-align: center; margin-bottom: 15px; border-bottom: 3px double #333; padding-bottom: 10px;">
         <img src="data:' . $kopMime . ';base64,' . $kopData . '" style="max-width: 100%; height: auto; max-height: 120px;">

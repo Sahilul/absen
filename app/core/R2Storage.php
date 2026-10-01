@@ -62,7 +62,11 @@ class R2Storage
         }
 
         if (!$contentType) {
-            $contentType = mime_content_type($filePath) ?: 'application/octet-stream';
+            if (function_exists('mime_content_type')) {
+                $contentType = @mime_content_type($filePath) ?: 'application/octet-stream';
+            } else {
+                $contentType = 'application/octet-stream';
+            }
         }
 
         $fileContent = file_get_contents($filePath);

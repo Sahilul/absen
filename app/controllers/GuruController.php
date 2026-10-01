@@ -2203,5 +2203,97 @@ class GuruController extends Controller
         $this->view('guru/detail_pesan', $this->data);
         $this->view('templates/footer', $this->data);
     }
+
+    /**
+     * Laporan BK — daftar riwayat + form tambah (gabungan)
+     */
+    public function laporSiswa()
+    {
+        $this->data['judul'] = 'Laporan BK';
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+        $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+        $id_semester = $_SESSION['id_semester_aktif'] ?? 0;
+
+        $bkModel = $this->model('BK_model');
+
+        // Data riwayat
+        $filters = [];
+        if (!empty($_GET['status'])) $filters['status'] = $_GET['status'];
+        $this->data['laporan_list'] = $bkModel->getKasusByPelapor($id_guru, $id_tp, $filters);
+        $this->data['stats'] = $bkModel->countKasusByPelapor($id_guru, $id_tp);
+        $this->data['filters'] = $filters;
+
+        // Data form tambah
+        $this->data['kelas_list'] = $bkModel->getKelasByGuru($id_guru, $id_semester);
+        $this->data['siswa_list'] = [];
+        $this->data['selected_kelas'] = '';
+        $this->data['show_form'] = isset($_GET['tambah']);
+
+        $id_kelas = (int) ($_GET['kelas'] ?? 0);
+        if ($id_kelas) {
+            $this->data['siswa_list'] = $bkModel->getSiswaByKelas($id_kelas, $id_tp);
+            $this->data['selected_kelas'] = $id_kelas;
+            $this->data['show_form'] = true;
+        }
+
+        $this->view('templates/header', $this->data);
+        $this->loadSidebar();
+        $this->view('guru/lapor_siswa', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Proses form lapor siswa ke BK
+     */
+    public function prosesLaporSiswa()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/guru/laporSiswa');
+            exit;
+        }
+
+        $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+        $id_semester = $_SESSION['id_semester_aktif'] ?? 0;
+        $id_guru = $_SESSION['id_ref'] ?? 0;
+
+        $data = [
+            'id_siswa' => (int) ($_POST['id_siswa'] ?? 0),
+            'id_kelas' => (int) ($_POST['id_kelas'] ?? 0),
+            'id_tp' => $id_tp,
+            'id_semester' => $id_semester,
+            'kategori' => $_POST['kategori'] ?? 'pelanggaran',
+            'judul' => trim($_POST['judul'] ?? ''),
+            'deskripsi' => trim($_POST['deskripsi'] ?? ''),
+            'tingkat' => $_POST['tingkat'] ?? 'ringan',
+            'poin' => (int) ($_POST['poin'] ?? 0),
+            'status' => 'baru',
+            'id_guru_pelapor' => $id_guru,
+            'id_guru_bk' => null,
+        ];
+
+        if (!$data['id_siswa'] || !$data['id_kelas'] || !$data['judul']) {
+            Flasher::setFlash('Data tidak lengkap.', 'danger');
+            header('Location: ' . BASEURL . '/guru/laporSiswa?tambah&kelas=' . $data['id_kelas']);
+            exit;
+        }
+
+        $bkModel = $this->model('BK_model');
+        if ($bkModel->tambahKasus($data)) {
+            Flasher::setFlash('Berhasil', 'Laporan siswa berhasil dikirim ke BK.', 'success');
+        } else {
+            Flasher::setFlash('Gagal', 'Gagal mengirim laporan.', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/guru/laporSiswa');
+        exit;
+    }
+
+    /**
+     * Redirect lama → halaman gabungan
+     */
+    public function riwayatLaporan()
+    {
+        header('Location: ' . BASEURL . '/guru/laporSiswa');
+        exit;
+    }
 }
-?>

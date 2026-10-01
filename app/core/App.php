@@ -61,7 +61,6 @@ class App
         $url = $this->parseURL();
 
         // DEBUG: Log URL parsing
-        error_log("App.php - URL parsed: " . print_r($url, true));
 
         // TAMBAHAN: Handle Public Routes (no login required)
         // ================================================================
@@ -70,14 +69,12 @@ class App
 
         // 2. QR Code Validation (PUBLIC ACCESS - no login required)
         if (isset($url[0]) && $url[0] == 'validate') {
-            error_log("App.php - QR Validate route detected (PUBLIC)");
             $this->handlePublicRoute('ValidateController', $url);
             return;
         }
 
         // 3. Validasi Rapor (QR Code validation - PUBLIC ACCESS)
         if (isset($url[0]) && $url[0] == 'validasiRapor') {
-            error_log("App.php - Validasi Rapor route detected (PUBLIC)");
             $this->handlePublicRoute('ValidasiRaporController', $url);
             return;
         }
@@ -88,7 +85,6 @@ class App
             $method = $url[1] ?? 'index';
 
             if (in_array($method, $publicMethods)) {
-                error_log("App.php - PSB public route detected: " . $method);
                 $this->handlePublicRoute('PsbController', $url);
                 return;
             }
@@ -99,14 +95,11 @@ class App
         // EXISTING CONTROLLER ROUTING - TETAP SAMA
         if (isset($url[0])) {
             $controllerName = ucfirst($url[0]) . 'Controller';
-            error_log("App.php - Looking for controller: " . $controllerName);
 
             if (file_exists(APPROOT . '/app/controllers/' . $controllerName . '.php')) {
                 $this->controller = $controllerName;
                 unset($url[0]);
-                error_log("App.php - Controller found: " . $controllerName);
             } else {
-                error_log("App.php - Controller NOT found: " . $controllerName);
             }
         }
 
@@ -116,14 +109,11 @@ class App
         // Method routing
         if (isset($url[1])) {
             $methodName = $url[1];
-            error_log("App.php - Looking for method: " . $methodName);
 
             if (method_exists($this->controller, $methodName)) {
                 $this->method = $methodName;
                 unset($url[1]);
-                error_log("App.php - Method found: " . $methodName);
             } else {
-                error_log("App.php - Method NOT found: " . $methodName . " - Available methods: " . implode(', ', get_class_methods($this->controller)));
             }
         }
 
@@ -132,7 +122,6 @@ class App
             $this->params = array_values($url);
         }
 
-        error_log("App.php - Final routing: Controller=" . get_class($this->controller) . ", Method=" . $this->method . ", Params=" . print_r($this->params, true));
 
         // Call the method
         call_user_func_array([$this->controller, $this->method], $this->params);
@@ -142,12 +131,10 @@ class App
     // ================================================================
     private function handlePublicMonitoring($url)
     {
-        error_log("App.php - handlePublicMonitoring called with URL: " . print_r($url, true));
 
         // Check if PublicController exists
         $publicControllerPath = APPROOT . '/app/controllers/PublicController.php';
         if (!file_exists($publicControllerPath)) {
-            error_log("App.php - PublicController.php NOT found at: " . $publicControllerPath);
             $this->showError('PublicController.php tidak ditemukan di: ' . $publicControllerPath . '<br><br>Pastikan file sudah dibuat dengan benar.');
             return;
         }
@@ -157,24 +144,20 @@ class App
 
         // Check if class exists
         if (!class_exists('PublicController')) {
-            error_log("App.php - PublicController class NOT found after including file");
             $this->showError('Class PublicController tidak ditemukan. Periksa syntax di file PublicController.php');
             return;
         }
 
         try {
             $controller = new PublicController();
-            error_log("App.php - PublicController instantiated successfully");
 
             // Determine action based on URL structure
             if (isset($url[1]) && $url[0] == 'public') {
                 // URL: /public/monitoring/action
                 $action = isset($url[2]) ? $url[2] : 'index';
-                error_log("App.php - Public URL format, action: " . $action);
             } else {
                 // URL: /monitoring/action  
                 $action = isset($url[1]) ? $url[1] : 'index';
-                error_log("App.php - Direct monitoring URL format, action: " . $action);
             }
 
             // Route to appropriate method
@@ -184,12 +167,10 @@ class App
                     break;
 
                 case 'export':
-                    error_log("App.php - Calling exportCSV");
                     $controller->exportCSV();
                     break;
 
                 case 'test':
-                    error_log("App.php - Calling test method");
                     if (method_exists($controller, 'test')) {
                         $controller->test();
                     } else {
@@ -202,7 +183,6 @@ class App
                 case 'index':
                 case 'monitoring':
                 default:
-                    error_log("App.php - Calling monitoringAbsensi (default)");
                     $controller->monitoringAbsensi();
                     break;
             }
@@ -217,11 +197,9 @@ class App
     // ================================================================
     private function handlePublicRoute($controllerName, $url)
     {
-        error_log("App.php - handlePublicRoute called: " . $controllerName);
 
         $controllerPath = APPROOT . '/app/controllers/' . $controllerName . '.php';
         if (!file_exists($controllerPath)) {
-            error_log("App.php - Controller NOT found: " . $controllerPath);
             $this->showError('Controller tidak ditemukan: ' . $controllerName);
             return;
         }
@@ -229,7 +207,6 @@ class App
         require_once $controllerPath;
 
         if (!class_exists($controllerName)) {
-            error_log("App.php - Class NOT found: " . $controllerName);
             $this->showError('Class tidak ditemukan: ' . $controllerName);
             return;
         }
@@ -251,12 +228,10 @@ class App
                 $method = 'index';
             }
 
-            error_log("App.php - Public route: method={$method}, params=" . print_r($params, true));
 
             if (method_exists($controller, $method)) {
                 call_user_func_array([$controller, $method], $params);
             } else {
-                error_log("App.php - Method NOT found: " . $method);
                 $this->showError('Method tidak ditemukan: ' . $method . ' di ' . $controllerName);
             }
 
@@ -278,7 +253,6 @@ class App
             $apiMethod = isset($url[2]) ? $url[2] : '';
         }
 
-        error_log("App.php - API method: " . $apiMethod);
 
         switch ($apiMethod) {
             case 'getStudentData':
@@ -325,12 +299,8 @@ class App
     public static function debugRouting($message = '')
     {
         if (!empty($message)) {
-            error_log("ROUTING DEBUG: " . $message);
         }
 
-        error_log("ROUTING DEBUG - Current URL: " . ($_SERVER['REQUEST_URI'] ?? 'undefined'));
-        error_log("ROUTING DEBUG - GET params: " . print_r($_GET, true));
-        error_log("ROUTING DEBUG - BASEURL: " . (defined('BASEURL') ? BASEURL : 'undefined'));
 
         // Show debug info in development
         if (defined('ENVIRONMENT') && ENVIRONMENT === 'development') {

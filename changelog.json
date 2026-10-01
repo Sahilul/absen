@@ -1,6 +1,40 @@
 {
     "versions": [
         {
+            "version": "1.31.1",
+            "date": "2026-10-01",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "improvement",
+                    "description": "Format cetak Soal STS dibuat lebih hemat kertas: margin halaman minimalis (0.8cm x 1cm), line spacing rapat (1.15), ukuran font 11pt, jarak antar soal lebih kecil, dan gambar soal diperkecil (maks 180x120px)"
+                },
+                {
+                    "type": "fix",
+                    "description": "Gambar soal yang sudah tersimpan kini langsung tampil di halaman input soal (preview tidak lagi tersembunyi di balik tombol Tambah Gambar)"
+                }
+            ]
+        },
+        {
+            "version": "1.31.0",
+            "date": "2026-10-01",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur baru Buat Soal STS (Sumatif Tengah Semester): pengaturan jumlah soal PG/Isian/Essay per mapel-kelas, input soal dengan gambar, preview cetak, dan cetak PDF beserta kunci jawaban; guru & wali kelas dapat mengisi soal untuk mapel yang diampu langsung dari dashboard"
+                },
+                {
+                    "type": "fix",
+                    "description": "Gambar soal STS kini diupload ke Cloudflare R2 (bucket sabilillah, prefix soal-sts/) sehingga tampil andal di daftar soal, preview cetak, dan PDF; mendukung kompatibilitas gambar lama (path lokal) secara mundur"
+                },
+                {
+                    "type": "fix",
+                    "description": "Perbaiki fatal error mime_content_type() pada server tanpa ekstensi fileinfo: gunakan helper safeImageMime() berbasis getimagesize() untuk deteksi tipe gambar (upload soal STS, kop rapor, dan kop PSB)"
+                }
+            ]
+        },
+        {
             "version": "1.27.1",
             "date": "2026-09-07",
             "type": "patch",
