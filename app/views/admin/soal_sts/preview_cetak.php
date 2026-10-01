@@ -329,12 +329,6 @@
                             <br><img src="<?= $imgSrc; ?>" class="gambar-soal" alt="Gambar soal">
                         <?php endif; ?>
                     <?php endif; ?>
-                    <div class="jawaban-line">
-                        <div class="line"></div>
-                        <div class="line"></div>
-                        <div class="line"></div>
-                        <div class="line"></div>
-                    </div>
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>

@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.31.2",
+            "date": "2026-10-01",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "improvement",
+                    "description": "Soal Essay pada cetak Soal STS tidak lagi menyediakan garis jawaban di bawah soal — hanya menampilkan soal saja, sehingga siswa menjawab di lembar terpisah"
+                }
+            ]
+        },
+        {
             "version": "1.31.1",
             "date": "2026-10-01",
             "type": "patch",
