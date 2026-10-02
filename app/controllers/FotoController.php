@@ -84,6 +84,94 @@ class FotoController extends Controller
         $this->servePlaceholder();
     }
 
+    /**
+     * Serve gambar soal STS via local streaming proxy.
+     * URL: /foto/soal/{base64url_object_key}
+     * Mencegah blokir ISP terhadap domain r2.dev langsung.
+     */
+    public function soal($token = null)
+    {
+        if (empty($token)) {
+            $this->servePlaceholder();
+            return;
+        }
+
+        // Decode base64url → object key
+        $b64 = strtr($token, '-_', '+/');
+        $pad = strlen($b64) % 4;
+        if ($pad) {
+            $b64 .= str_repeat('=', 4 - $pad);
+        }
+        $key = base64_decode($b64, true);
+
+        if ($key === false || $key === '') {
+            $this->servePlaceholder();
+            return;
+        }
+
+        // Hanya izinkan prefix soal-sts/ dan cegah path traversal
+        if (strpos($key, 'soal-sts/') !== 0 || strpos($key, '..') !== false) {
+            $this->servePlaceholder();
+            return;
+        }
+
+        if (!defined('R2_PUBLIC_URL') || R2_PUBLIC_URL === '') {
+            $this->servePlaceholder();
+            return;
+        }
+
+        $url = rtrim(R2_PUBLIC_URL, '/') . '/' . $key;
+        $this->serveR2Image($url);
+    }
+
+    /**
+     * Fetch gambar dari R2 dengan cache lokal, lalu kirim ke client.
+     */
+    private function serveR2Image($url)
+    {
+        $cacheDir = APPROOT . '/tmp/foto_cache';
+        if (!is_dir($cacheDir)) {
+            @mkdir($cacheDir, 0755, true);
+        }
+
+        $cacheKey = md5($url);
+        $cacheFile = $cacheDir . '/' . $cacheKey . '.img';
+
+        // Serve dari cache jika masih segar (7 hari)
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < 86400 * 7)) {
+            $this->outputImageFile($cacheFile);
+            return;
+        }
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_USERAGENT => 'SabilillahApp/1.0',
+        ]);
+        $imageData = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/jpeg';
+        curl_close($ch);
+
+        if ($httpCode === 200 && !empty($imageData)) {
+            @file_put_contents($cacheFile, $imageData);
+            $this->outputImage($imageData, $contentType);
+            return;
+        }
+
+        // Jika fetch gagal tapi ada cache lama, pakai itu
+        if (file_exists($cacheFile)) {
+            $this->outputImageFile($cacheFile);
+            return;
+        }
+
+        $this->servePlaceholder();
+    }
+
     private function outputImage($data, $contentType = 'image/jpeg')
     {
         $etag = '"' . md5($data) . '"';
@@ -108,7 +196,15 @@ class FotoController extends Controller
             exit;
         }
 
-        header('Content-Type: image/jpeg');
+        $contentType = 'image/jpeg';
+        if (function_exists('getimagesize')) {
+            $info = @getimagesize($filePath);
+            if ($info && !empty($info['mime'])) {
+                $contentType = $info['mime'];
+            }
+        }
+
+        header('Content-Type: ' . $contentType);
         header('Content-Length: ' . filesize($filePath));
         header('Cache-Control: public, max-age=604800, immutable');
         header('ETag: ' . $etag);

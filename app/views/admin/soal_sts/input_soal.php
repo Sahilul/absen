@@ -159,10 +159,15 @@
                             </button>
                             <div x-show="showImage" x-transition class="mt-2">
                                 <?php if (!empty($existing['gambar_soal'])): ?>
-                                    <div class="mb-2">
+                                    <div class="mb-2" x-data="{ imgDeleted: false }" x-show="!imgDeleted">
                                         <img src="<?= soalGambarUrl($existing['gambar_soal']); ?>"
                                              class="max-h-32 rounded border" alt="Gambar soal">
                                         <input type="hidden" name="soal[<?= $key; ?>][gambar_existing]" value="<?= htmlspecialchars($existing['gambar_soal']); ?>">
+                                        <input type="hidden" name="soal[<?= $key; ?>][hapus_gambar]" :value="imgDeleted ? 1 : 0">
+                                        <button type="button" @click="imgDeleted = true"
+                                                class="mt-1 text-xs text-red-600 hover:text-red-800 flex items-center">
+                                            <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i> Hapus Gambar
+                                        </button>
                                     </div>
                                 <?php endif; ?>
                                 <input type="file" name="gambar_<?= $key; ?>" accept="image/*"
@@ -244,10 +249,15 @@
                                 </button>
                                 <div x-show="showImage" x-transition class="mt-2">
                                     <?php if (!empty($existing['gambar_soal'])): ?>
-                                        <div class="mb-2">
+                                        <div class="mb-2" x-data="{ imgDeleted: false }" x-show="!imgDeleted">
                                             <img src="<?= soalGambarUrl($existing['gambar_soal']); ?>"
                                                  class="max-h-32 rounded border" alt="Gambar soal">
                                             <input type="hidden" name="soal[<?= $key; ?>][gambar_existing]" value="<?= htmlspecialchars($existing['gambar_soal']); ?>">
+                                            <input type="hidden" name="soal[<?= $key; ?>][hapus_gambar]" :value="imgDeleted ? 1 : 0">
+                                            <button type="button" @click="imgDeleted = true"
+                                                    class="mt-1 text-xs text-red-600 hover:text-red-800 flex items-center">
+                                                <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i> Hapus Gambar
+                                            </button>
                                         </div>
                                     <?php endif; ?>
                                     <input type="file" name="gambar_<?= $key; ?>" accept="image/*"
@@ -312,10 +322,15 @@
                                 </button>
                                 <div x-show="showImage" x-transition class="mt-2">
                                     <?php if (!empty($existing['gambar_soal'])): ?>
-                                        <div class="mb-2">
+                                        <div class="mb-2" x-data="{ imgDeleted: false }" x-show="!imgDeleted">
                                             <img src="<?= soalGambarUrl($existing['gambar_soal']); ?>"
                                                  class="max-h-32 rounded border" alt="Gambar soal">
                                             <input type="hidden" name="soal[<?= $key; ?>][gambar_existing]" value="<?= htmlspecialchars($existing['gambar_soal']); ?>">
+                                            <input type="hidden" name="soal[<?= $key; ?>][hapus_gambar]" :value="imgDeleted ? 1 : 0">
+                                            <button type="button" @click="imgDeleted = true"
+                                                    class="mt-1 text-xs text-red-600 hover:text-red-800 flex items-center">
+                                                <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i> Hapus Gambar
+                                            </button>
                                         </div>
                                     <?php endif; ?>
                                     <input type="file" name="gambar_<?= $key; ?>" accept="image/*"

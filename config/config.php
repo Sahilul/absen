@@ -93,14 +93,22 @@ function safeImageMime($path, $fallbackExt = '')
 /**
  * Resolve URL gambar soal STS.
  * Mendukung gambar baru (URL R2 lengkap) dan gambar lama (nama file lokal).
+ * Gambar R2 diarahkan ke proxy lokal /foto/soal/ agar tidak diblokir ISP
+ * (domain r2.dev sering diblokir di sebagian jaringan/HP).
  */
 function soalGambarUrl($value)
 {
     if (empty($value)) {
         return '';
     }
-    // Gambar baru: URL lengkap (R2)
+    // Gambar baru: URL lengkap (R2) → arahkan ke proxy lokal
     if (preg_match('#^https?://#i', $value)) {
+        $key = soalGambarKey($value);
+        if ($key !== null) {
+            // base64url agar aman dari pemisah '/' pada routing
+            $token = rtrim(strtr(base64_encode($key), '+/', '-_'), '=');
+            return BASEURL . '/foto/soal/' . $token;
+        }
         return $value;
     }
     // Gambar lama: nama file di public/uploads/soal_sts/

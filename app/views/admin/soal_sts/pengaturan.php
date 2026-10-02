@@ -206,6 +206,11 @@
                                    class="flex-1 text-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-medium py-2 px-2 rounded-lg transition-colors">
                                     <i data-lucide="printer" class="w-3 h-3 inline mr-1"></i> Cetak
                                 </a>
+                                <a href="<?= BASEURL; ?>/soalSts/previewCetakNama/<?= $data['id_kelas']; ?>/<?= $mapel['id_mapel']; ?>"
+                                   class="flex-1 text-center bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-medium py-2 px-2 rounded-lg transition-colors"
+                                   title="Cetak 1 lembar per siswa dengan nama otomatis">
+                                    <i data-lucide="users" class="w-3 h-3 inline mr-1"></i> + Nama
+                                </a>
                             </div>
                         </div>
                     <?php endforeach; ?>

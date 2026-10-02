@@ -456,8 +456,22 @@ class SoalStsController extends Controller
                 }
             }
 
-            // Jika tidak ada upload baru, pertahankan gambar lama
-            if (!$data['gambar_soal'] && !empty($soal['gambar_existing'])) {
+            // Jika user menandai hapus gambar dan tidak upload baru → hapus gambar lama
+            if (!$data['gambar_soal'] && !empty($soal['hapus_gambar']) && !empty($soal['gambar_existing'])) {
+                $oldKey = soalGambarKey($soal['gambar_existing']);
+                if ($oldKey && $r2) {
+                    $r2->delete($oldKey);
+                }
+                // Hapus juga file lokal legacy jika ada
+                $localPath = APPROOT . '/public/uploads/soal_sts/' . basename($soal['gambar_existing']);
+                if (is_file($localPath)) {
+                    @unlink($localPath);
+                }
+                $data['gambar_soal'] = null;
+            }
+
+            // Jika tidak ada upload baru dan tidak dihapus, pertahankan gambar lama
+            if (!$data['gambar_soal'] && empty($soal['hapus_gambar']) && !empty($soal['gambar_existing'])) {
                 $data['gambar_soal'] = $soal['gambar_existing'];
             }
 
@@ -531,6 +545,44 @@ class SoalStsController extends Controller
         $this->loadSidebar();
         $this->view('admin/soal_sts/daftar_soal', $this->data);
         $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Preview cetak soal dengan nama siswa (1 lembar per siswa)
+     */
+    public function previewCetakNama($id_kelas, $id_mapel)
+    {
+        $this->data['judul'] = 'Soal STS - Cetak dengan Nama';
+        $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? 0;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+
+        if (!$this->cekAksesMapelKelas($id_mapel, $id_kelas)) {
+            $this->guruAccessDenied();
+        }
+
+        $kelas = $this->model('Kelas_model')->getKelasById($id_kelas);
+        $pengaturan = $this->soalModel->getPengaturanByMapelKelas($id_mapel, $id_kelas, $id_semester_aktif);
+
+        if (!$kelas || !$pengaturan) {
+            Flasher::setFlash('Data tidak ditemukan!', 'danger');
+            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            exit;
+        }
+
+        $kopRapor = $this->model('PengaturanRapor_model')->getPengaturanByKelas($id_kelas, $id_tp_aktif);
+        $semester = $this->model('TahunPelajaran_model')->getSemesterById($id_semester_aktif);
+        $siswaList = $this->model('Siswa_model')->getSiswaByKelas($id_kelas, $id_tp_aktif);
+
+        $this->data['kelas'] = $kelas;
+        $this->data['pengaturan'] = $pengaturan;
+        $this->data['kop_rapor'] = $kopRapor;
+        $this->data['semester'] = $semester;
+        $this->data['siswa_list'] = $siswaList;
+        $this->data['soal_pg'] = $this->soalModel->getSoalByTipe($pengaturan['id'], 'pg');
+        $this->data['soal_essay'] = $this->soalModel->getSoalByTipe($pengaturan['id'], 'essay');
+        $this->data['soal_isian'] = $this->soalModel->getSoalByTipe($pengaturan['id'], 'isian');
+
+        $this->view('admin/soal_sts/preview_cetak', $this->data);
     }
 
     /**

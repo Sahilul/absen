@@ -1158,6 +1158,186 @@ function deleteRaporImage($folder, $fileName)
         }
     }
 
+    // ================================================================
+    // v1.32.0 - PENGATURAN LEMBAGA
+    // Data lembaga (kop, nama, kepala, ttd) disimpan sekali per lembaga
+    // (MTs / MA) dan dipakai ulang oleh rapor & soal STS.
+    // ================================================================
+    function pengaturanLembaga()
+    {
+        $this->data['judul'] = 'Pengaturan Lembaga';
+        $this->data['lembaga_list'] = $this->model('Lembaga_model')->getAll();
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/pengaturan_lembaga', $this->data);
+        $this->view('templates/footer');
+    }
+
+    function simpanPengaturanLembaga()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            Flasher::setFlash('Method tidak diizinkan', 'danger');
+            header('Location: ' . BASEURL . '/admin/pengaturanLembaga');
+            exit;
+        }
+
+        $id_lembaga = $_POST['id_lembaga'] ?? null;
+        $lembagaModel = $this->model('Lembaga_model');
+
+        $lama = $id_lembaga ? $lembagaModel->getById($id_lembaga) : null;
+
+        $kopFileName = $lama['kop_rapor'] ?? '';
+        $logoFileName = $lama['logo'] ?? '';
+        $ttdFileName = $lama['ttd_kepala'] ?? '';
+
+        // Upload Kop
+        if (isset($_FILES['kop_rapor']) && $_FILES['kop_rapor']['error'] === UPLOAD_ERR_OK) {
+            $new = $this->handleLembagaImageUpload($_FILES['kop_rapor'], 'kop', 2097152);
+            if ($new === false) {
+                Flasher::setFlash('Gagal upload gambar kop (JPG/PNG, max 2MB)', 'danger');
+                header('Location: ' . BASEURL . '/admin/pengaturanLembaga');
+                exit;
+            }
+            if (!empty($kopFileName)) {
+                $this->deleteLembagaImage($kopFileName);
+            }
+            $kopFileName = $new;
+        }
+
+        // Upload Logo
+        if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
+            $new = $this->handleLembagaImageUpload($_FILES['logo'], 'logo', 1048576);
+            if ($new === false) {
+                Flasher::setFlash('Gagal upload logo (JPG/PNG, max 1MB)', 'danger');
+                header('Location: ' . BASEURL . '/admin/pengaturanLembaga');
+                exit;
+            }
+            if (!empty($logoFileName)) {
+                $this->deleteLembagaImage($logoFileName);
+            }
+            $logoFileName = $new;
+        }
+
+        // Upload TTD Kepala
+        if (isset($_FILES['ttd_kepala']) && $_FILES['ttd_kepala']['error'] === UPLOAD_ERR_OK) {
+            $new = $this->handleLembagaImageUpload($_FILES['ttd_kepala'], 'ttd', 1048576);
+            if ($new === false) {
+                Flasher::setFlash('Gagal upload tanda tangan kepala (JPG/PNG, max 1MB)', 'danger');
+                header('Location: ' . BASEURL . '/admin/pengaturanLembaga');
+                exit;
+            }
+            if (!empty($ttdFileName)) {
+                $this->deleteLembagaImage($ttdFileName);
+            }
+            $ttdFileName = $new;
+        }
+
+        // Jenjang: checkbox array -> csv
+        $jenjangArr = $_POST['jenjang'] ?? [];
+        if (is_string($jenjangArr)) {
+            $jenjangArr = array_filter(array_map('trim', explode(',', $jenjangArr)));
+        }
+        $jenjangCsv = implode(',', array_filter(array_map('trim', (array) $jenjangArr)));
+
+        $data = [
+            'id_lembaga' => $id_lembaga,
+            'kode' => strtoupper(trim($_POST['kode'] ?? '')),
+            'nama_lembaga' => trim($_POST['nama_lembaga'] ?? ''),
+            'jenjang' => $jenjangCsv,
+            'nama_kepala' => trim($_POST['nama_kepala'] ?? ''),
+            'nip_kepala' => trim($_POST['nip_kepala'] ?? ''),
+            'alamat' => trim($_POST['alamat'] ?? ''),
+            'telp' => trim($_POST['telp'] ?? ''),
+            'email' => trim($_POST['email'] ?? ''),
+            'website' => trim($_POST['website'] ?? ''),
+            'kota' => trim($_POST['kota'] ?? ''),
+            'kop_rapor' => $kopFileName,
+            'logo' => $logoFileName,
+            'ttd_kepala' => $ttdFileName,
+            'aktif' => isset($_POST['aktif']) ? 1 : 0,
+        ];
+
+        if ($data['kode'] === '' || $data['nama_lembaga'] === '') {
+            Flasher::setFlash('Kode dan nama lembaga wajib diisi', 'danger');
+            header('Location: ' . BASEURL . '/admin/pengaturanLembaga');
+            exit;
+        }
+
+        if ($lembagaModel->save($data)) {
+            Flasher::setFlash('Pengaturan lembaga berhasil disimpan', 'success');
+        } else {
+            Flasher::setFlash('Gagal menyimpan pengaturan lembaga', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pengaturanLembaga');
+        exit;
+    }
+
+    function hapusLembaga($id = null)
+    {
+        if (!$id) {
+            Flasher::setFlash('Data lembaga tidak ditemukan', 'danger');
+            header('Location: ' . BASEURL . '/admin/pengaturanLembaga');
+            exit;
+        }
+
+        $lembagaModel = $this->model('Lembaga_model');
+        $lembaga = $lembagaModel->getById($id);
+
+        if ($lembaga) {
+            foreach (['kop_rapor', 'logo', 'ttd_kepala'] as $field) {
+                if (!empty($lembaga[$field])) {
+                    $this->deleteLembagaImage($lembaga[$field]);
+                }
+            }
+            $lembagaModel->delete($id);
+            Flasher::setFlash('Lembaga berhasil dihapus', 'success');
+        } else {
+            Flasher::setFlash('Data lembaga tidak ditemukan', 'danger');
+        }
+
+        header('Location: ' . BASEURL . '/admin/pengaturanLembaga');
+        exit;
+    }
+
+    function handleLembagaImageUpload($file, $prefix, $maxSize)
+    {
+        $uploadDir = 'public/img/lembaga/';
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+        if (!in_array($fileExtension, $allowedExtensions)) {
+            return false;
+        }
+
+        if ($file['size'] > $maxSize) {
+            return false;
+        }
+
+        $fileName = $prefix . '_' . time() . '_' . mt_rand(1000, 9999) . '.' . $fileExtension;
+        $uploadPath = $uploadDir . $fileName;
+
+        if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
+            return false;
+        }
+
+        return $fileName;
+    }
+
+    function deleteLembagaImage($fileName)
+    {
+        $filePath = 'public/img/lembaga/' . $fileName;
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+    }
+
 function pengaturanAplikasi()
     {
         $this->data['judul'] = 'Pengaturan Aplikasi';
@@ -2245,6 +2425,119 @@ function hapusGrupWaKelas($id)
         } else {
             echo json_encode(['success' => false, 'message' => 'Gagal: ' . ($result['error'] ?? 'Unknown')]);
         }
+        exit;
+    }
+
+    // =========================================
+    // AI CHAT "PAK ADMIN"
+    // =========================================
+
+    function pengaturanAiChat()
+    {
+        $this->data['judul'] = 'Pengaturan AI Chat';
+
+        $keys = [
+            'ai_chat_enabled', 'ai_chat_name', 'ai_chat_button_label',
+            'ai_chat_base_url', 'ai_chat_api_key', 'ai_chat_model',
+            'ai_chat_max_history', 'ai_chat_daily_limit',
+            'ai_chat_max_context_chars', 'ai_chat_temperature', 'ai_chat_system_prompt',
+            'ai_chat_file_upload_enabled', 'ai_chat_max_file_size',
+            'ai_chat_price_input_per_1k', 'ai_chat_price_output_per_1k',
+        ];
+
+        foreach ($keys as $key) {
+            $this->data[$key] = getSystemSetting($key, '');
+        }
+
+        // Defaults
+        if (empty($this->data['ai_chat_name'])) $this->data['ai_chat_name'] = 'Pak Admin';
+        if (empty($this->data['ai_chat_button_label'])) $this->data['ai_chat_button_label'] = 'Tanya Pak Admin';
+        if (empty($this->data['ai_chat_base_url'])) $this->data['ai_chat_base_url'] = 'https://api.openai.com/v1';
+        if (empty($this->data['ai_chat_model'])) $this->data['ai_chat_model'] = 'gpt-4o-mini';
+        if (empty($this->data['ai_chat_max_history'])) $this->data['ai_chat_max_history'] = '100';
+        if (empty($this->data['ai_chat_daily_limit'])) $this->data['ai_chat_daily_limit'] = '50';
+        if (empty($this->data['ai_chat_max_context_chars'])) $this->data['ai_chat_max_context_chars'] = '500000';
+        if (empty($this->data['ai_chat_temperature'])) $this->data['ai_chat_temperature'] = '0.7';
+        if (empty($this->data['ai_chat_file_upload_enabled'])) $this->data['ai_chat_file_upload_enabled'] = '1';
+        if (empty($this->data['ai_chat_max_file_size'])) $this->data['ai_chat_max_file_size'] = '10485760';
+        if (!isset($this->data['ai_chat_price_input_per_1k'])) $this->data['ai_chat_price_input_per_1k'] = '0';
+        if (!isset($this->data['ai_chat_price_output_per_1k'])) $this->data['ai_chat_price_output_per_1k'] = '0';
+        if (empty($this->data['ai_chat_system_prompt'])) {
+            $this->data['ai_chat_system_prompt'] = 'Kamu adalah "Pak Admin", asisten AI untuk guru dan staf Madrasah Sabilillah. Bantu menjawab pertanyaan seputar pekerjaan, administrasi, dan tugas mengajar dengan ramah dan profesional. Panggil pengguna dengan nama dan sesuaikan jawaban dengan peran/jabatannya.';
+        }
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/pengaturan_ai_chat', $this->data);
+        $this->view('templates/footer');
+    }
+
+    function simpanPengaturanAiChat()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/admin/pengaturanAiChat');
+            exit;
+        }
+
+        $db = new Database();
+
+        $fields = [
+            'ai_chat_name', 'ai_chat_button_label',
+            'ai_chat_base_url', 'ai_chat_api_key', 'ai_chat_model',
+            'ai_chat_max_history', 'ai_chat_daily_limit',
+            'ai_chat_max_context_chars', 'ai_chat_temperature', 'ai_chat_system_prompt',
+            'ai_chat_price_input_per_1k', 'ai_chat_price_output_per_1k',
+        ];
+
+        // Handle checkboxes
+        $checkboxes = [
+            'ai_chat_enabled' => isset($_POST['ai_chat_enabled']) ? '1' : '0',
+            'ai_chat_file_upload_enabled' => isset($_POST['ai_chat_file_upload_enabled']) ? '1' : '0',
+        ];
+        foreach ($checkboxes as $key => $value) {
+            $db->query("INSERT INTO pengaturan_sistem (key_name, value) VALUES (:key_name, :value) ON DUPLICATE KEY UPDATE value = :value2");
+            $db->bind('key_name', $key);
+            $db->bind('value', $value);
+            $db->bind('value2', $value);
+            $db->execute();
+        }
+
+        // Handle file size (convert MB to bytes)
+        $maxFileSizeMb = max(1, min(20, (int) ($_POST['ai_chat_max_file_size_mb'] ?? 10)));
+        $db->query("INSERT INTO pengaturan_sistem (key_name, value) VALUES (:key_name, :value) ON DUPLICATE KEY UPDATE value = :value2");
+        $db->bind('key_name', 'ai_chat_max_file_size');
+        $db->bind('value', (string) ($maxFileSizeMb * 1048576));
+        $db->bind('value2', (string) ($maxFileSizeMb * 1048576));
+        $db->execute();
+
+        foreach ($fields as $key) {
+            $value = trim($_POST[$key] ?? '');
+            $db->query("UPDATE pengaturan_sistem SET value = :value WHERE key_name = :key_name");
+            $db->bind('value', $value);
+            $db->bind('key_name', $key);
+            $db->execute();
+        }
+
+        // Clear settings cache
+        $this->model('PengaturanSistem_model')::clearCache();
+
+        Flasher::setFlash('Pengaturan AI Chat berhasil disimpan', 'success');
+        header('Location: ' . BASEURL . '/admin/pengaturanAiChat');
+        exit;
+    }
+
+    function testAiConnection()
+    {
+        header('Content-Type: application/json');
+
+        require_once APPROOT . '/app/core/AiProvider.php';
+        $ai = new AiProvider();
+        $result = $ai->testConnection();
+
+        echo json_encode([
+            'success' => $result['status'],
+            'message' => $result['message'],
+        ]);
         exit;
     }
 }

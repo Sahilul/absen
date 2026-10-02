@@ -4935,22 +4935,29 @@ class WaliKelasController extends Controller
     {
         $this->data['judul'] = 'Lapor Kasus BK';
         $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+        $id_semester = $_SESSION['id_semester_aktif'] ?? 0;
         $id_guru = $_SESSION['id_ref'] ?? 0;
 
-        $kelasModel = $this->model('Kelas_model');
-        $waliKelasModel = $this->model('WaliKelas_model');
-        $waliKelasData = $waliKelasModel->getWaliKelasByGuru($id_guru, $id_tp);
+        $bkModel = $this->model('BK_model');
 
-        $this->data['kelas_list'] = [];
+        // Data riwayat laporan
+        $filters = [];
+        if (!empty($_GET['status'])) $filters['status'] = $_GET['status'];
+        $this->data['laporan_list'] = $bkModel->getKasusByPelapor($id_guru, $id_tp, $filters);
+        $this->data['stats'] = $bkModel->countKasusByPelapor($id_guru, $id_tp);
+        $this->data['filters'] = $filters;
+        $this->data['show_form'] = isset($_GET['tambah']);
+
+        // Data form tambah — ambil SEMUA kelas yang diajar (sama seperti guru)
+        $this->data['kelas_list'] = $bkModel->getKelasByGuru($id_guru, $id_semester);
         $this->data['siswa_list'] = [];
         $this->data['selected_kelas'] = '';
 
-        if ($waliKelasData) {
-            $id_kelas = $waliKelasData['id_kelas'];
-            $this->data['kelas_list'] = [['id_kelas' => $id_kelas, 'nama_kelas' => $waliKelasData['nama_kelas'] ?? 'Kelas']];
-            $this->data['selected_kelas'] = $id_kelas;
-            $bkModel = $this->model('BK_model');
+        $id_kelas = (int) ($_GET['kelas'] ?? 0);
+        if ($id_kelas) {
             $this->data['siswa_list'] = $bkModel->getSiswaByKelas($id_kelas, $id_tp);
+            $this->data['selected_kelas'] = $id_kelas;
+            $this->data['show_form'] = true;
         }
 
         $this->view('templates/header', $this->data);
@@ -4998,7 +5005,7 @@ class WaliKelasController extends Controller
             Flasher::setFlash('Gagal', 'Gagal melaporkan kasus.', 'danger');
         }
 
-        header('Location: ' . BASEURL . '/waliKelas/dashboard');
+        header('Location: ' . BASEURL . '/waliKelas/laporKasusBK');
         exit;
     }
 }

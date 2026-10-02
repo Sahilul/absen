@@ -169,6 +169,11 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js" defer></script>
 
+    <!-- AI Chat Widget CSS (conditional) -->
+    <?php if (getSystemSetting('ai_chat_enabled', '0') === '1' && isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') !== 'siswa'): ?>
+    <link rel="stylesheet" href="<?= BASEURL ?>/css/ai-chat.css">
+    <?php endif; ?>
+
     <script>
         tailwind.config = {
             theme: {

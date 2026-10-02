@@ -170,6 +170,8 @@
     $soalEssay = $data['soal_essay'];
     $soalIsian = $data['soal_isian'];
     $isKunci = isset($data['mode']) && $data['mode'] === 'kunci';
+    $siswaList = $data['siswa_list'] ?? [];
+    $isCetakNama = !empty($siswaList);
     ?>
 
     <!-- Action Buttons (no-print) -->
@@ -178,16 +180,31 @@
         <a class="btn-pdf" href="<?= BASEURL; ?>/soalSts/cetakPDF/<?= $kelas['id_kelas']; ?>/<?= $p['id_mapel']; ?>">📄 PDF</a>
         <?php if (!$isKunci): ?>
             <a class="btn-kunci" href="<?= BASEURL; ?>/soalSts/cetakKunci/<?= $kelas['id_kelas']; ?>/<?= $p['id_mapel']; ?>">🔑 Kunci</a>
+            <?php if (!$isCetakNama): ?>
+                <a style="background:#7c3aed;color:#fff;" href="<?= BASEURL; ?>/soalSts/previewCetakNama/<?= $kelas['id_kelas']; ?>/<?= $p['id_mapel']; ?>">👤 + Nama</a>
+            <?php else: ?>
+                <a style="background:#6b7280;color:#fff;" href="<?= BASEURL; ?>/soalSts/previewCetak/<?= $kelas['id_kelas']; ?>/<?= $p['id_mapel']; ?>">📋 Tanpa Nama</a>
+            <?php endif; ?>
         <?php endif; ?>
         <a class="btn-back" href="<?= BASEURL; ?>/soalSts/daftarSoal/<?= $kelas['id_kelas']; ?>/<?= $p['id_mapel']; ?>">← Kembali</a>
     </div>
 
+    <?php
+    // === MODE CETAK DENGAN NAMA: loop per siswa ===
+    $cetakSiswaList = $isCetakNama ? $siswaList : [null];
+    foreach ($cetakSiswaList as $siswaIdx => $siswaData):
+        if ($siswaIdx > 0): ?>
+            <div style="page-break-before: always;"></div>
+        <?php endif; ?>
+
     <!-- Kop Rapor -->
-    <?php if ($kop && !empty($kop['kop_rapor'])): ?>
+    <?php if ($kop && !empty($kop['kop_rapor'])):
+        // v1.32.0: Jika kop dari lembaga, path di public/img/lembaga/, jika dari pengaturan rapor lama di public/img/kop/
+        $kopFolder = !empty($kop['lembaga_id']) ? 'lembaga' : 'kop';
+        $kopPath = APPROOT . '/public/img/' . $kopFolder . '/' . $kop['kop_rapor'];
+    ?>
         <div class="kop-container">
-            <?php
-            $kopPath = APPROOT . '/public/img/kop/' . $kop['kop_rapor'];
-            if (file_exists($kopPath)):
+            <?php if (file_exists($kopPath)):
                 $imageData = base64_encode(file_get_contents($kopPath));
                 $mimeType = safeImageMime($kopPath);
             ?>
@@ -195,6 +212,12 @@
             <?php endif; ?>
         </div>
         <div class="kop-line"></div>
+    <?php elseif ($kop && !empty($kop['nama_madrasah'])): ?>
+        <div class="kop-container">
+            <h1 style="font-size: 16pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin: 0;">
+                <?= htmlspecialchars($kop['nama_madrasah']); ?>
+            </h1>
+        </div>
     <?php endif; ?>
 
     <!-- Header Soal -->
@@ -203,22 +226,34 @@
             <h2>KUNCI JAWABAN</h2>
         <?php endif; ?>
         <h2>SOAL SUMATIF TENGAH SEMESTER (STS)</h2>
-        <p>Tahun Pelajaran <?= htmlspecialchars($semester['nama_semester'] ?? ''); ?></p>
+        <?php
+        // v1.32.0: Tahun pelajaran dari data semester (nama_tp + semester)
+        $tpLabel = '';
+        if (!empty($semester['nama_tp'])) {
+            $tpLabel = $semester['nama_tp'];
+            if (!empty($semester['semester'])) {
+                $tpLabel .= ' - ' . $semester['semester'];
+            }
+        } elseif (!empty($_SESSION['nama_semester_aktif'])) {
+            $tpLabel = $_SESSION['nama_semester_aktif'];
+        }
+        ?>
+        <p>Tahun Pelajaran <?= htmlspecialchars($tpLabel); ?></p>
     </div>
 
     <div class="exam-info">
-        <table>
+        <table style="width: 100%;">
             <tr>
-                <td>Mata Pelajaran</td>
-                <td>: <?= htmlspecialchars($p['nama_mapel']); ?></td>
-                <td style="padding-left: 30px;">Kelas</td>
-                <td>: <?= htmlspecialchars($kelas['nama_kelas']); ?></td>
+                <td style="width: 120px; padding: 3px 0;">Nama</td>
+                <td style="padding: 3px 0;">: <?= $siswaData ? htmlspecialchars($siswaData['nama_siswa']) : '.............................................'; ?></td>
+                <td style="width: 120px; padding: 3px 0; padding-left: 20px;">Mata Pelajaran</td>
+                <td style="padding: 3px 0;">: <?= htmlspecialchars($p['nama_mapel']); ?></td>
             </tr>
             <tr>
-                <td>Waktu</td>
-                <td>: <?= $p['waktu_pengerjaan']; ?> Menit</td>
-                <td style="padding-left: 30px;">Hari/Tanggal</td>
-                <td>: ................................</td>
+                <td style="padding: 3px 0;">Kelas</td>
+                <td style="padding: 3px 0;">: <?= htmlspecialchars($kelas['nama_kelas']); ?></td>
+                <td style="padding: 3px 0; padding-left: 20px;">Waktu</td>
+                <td style="padding: 3px 0;">: <?= $p['waktu_pengerjaan']; ?> Menit</td>
             </tr>
         </table>
     </div>
@@ -333,5 +368,6 @@
             <?php endforeach; ?>
         <?php endif; ?>
     <?php endif; ?>
+    <?php endforeach; // end loop siswa ?>
 </body>
 </html>

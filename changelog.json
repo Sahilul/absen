@@ -1,6 +1,130 @@
 {
     "versions": [
         {
+            "version": "1.35.2",
+            "date": "2026-10-02",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Tambah tombol \"Hapus Gambar\" pada form input soal STS (PG, isian, essay). Gambar soal yang sudah diunggah kini bisa dihapus langsung dari form; file gambar lama di Cloudflare R2 ikut dihapus saat soal disimpan."
+                }
+            ]
+        },
+        {
+            "version": "1.35.1",
+            "date": "2026-10-02",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan error \"Data too long for column 'kunci_jawaban'\" saat menyimpan soal STS essay/isian. Kolom kunci_jawaban diubah dari VARCHAR(10) menjadi TEXT sehingga bisa menampung pedoman penilaian yang panjang."
+                }
+            ]
+        },
+        {
+            "version": "1.35.0",
+            "date": "2026-10-02",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Monitoring Penggunaan AI: dashboard admin baru untuk memantau pemakaian asisten AI \"Pak Admin\". Menampilkan total request, token (input/output), user aktif, rata-rata latency, error rate, dan estimasi biaya."
+                },
+                {
+                    "type": "feature",
+                    "description": "Grafik interaktif: tren harian (request/token/user), distribusi model, aktivitas per jam, dan distribusi latency. Dilengkapi filter periode (7/30/90 hari atau rentang kustom)."
+                },
+                {
+                    "type": "feature",
+                    "description": "Analisis topik: daftar topik/percakapan yang paling sering dibahas, tabel penggunaan per user (request, token, percakapan, latency), daftar percakapan terbaru dengan modal detail isi chat, dan log error terbaru."
+                },
+                {
+                    "type": "feature",
+                    "description": "Pencatatan otomatis penggunaan AI: setiap request ke provider AI (chat & generate judul) dicatat token, latency, model, dan status ke tabel ai_chat_usage."
+                },
+                {
+                    "type": "feature",
+                    "description": "Pengaturan harga token (input/output per 1K) di halaman Pengaturan AI Chat untuk menghitung estimasi biaya pemakaian AI."
+                }
+            ]
+        },
+        {
+            "version": "1.34.2",
+            "date": "2026-10-02",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan penomoran daftar di balon chat AI: daftar bernomor (1. 2. 3.) kini dikelompokkan menjadi satu ordered list sehingga nomor tampil berurutan (1, 2, 3, ...), bukan selalu mulai dari 1. Baris lanjutan seperti kunci jawaban tetap masuk ke dalam item. Bullet list juga tampil dengan tanda bullet (sebelumnya hilang karena dirender sebagai <ul> tanpa list-style)."
+                }
+            ]
+        },
+        {
+            "version": "1.34.1",
+            "date": "2026-10-02",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "fix",
+                    "description": "Perbaikan gambar soal STS tidak tampil di sebagian jaringan/HP: gambar R2 (r2.dev) kini disajikan lewat proxy lokal /foto/soal/ sehingga tidak lagi diblokir ISP. Berlaku di halaman input soal, daftar soal, preview cetak, dan PDF."
+                }
+            ]
+        },
+        {
+            "version": "1.34.0",
+            "date": "2026-10-02",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "AI Chat File Upload: kirim gambar, PDF, Word, Excel, CSV, TXT ke Pak Admin. AI bisa membaca dan menganalisis isi file. Gambar dan PDF dikirim langsung ke Gemini (vision/multimodal), Word dan Excel diekstrak teksnya otomatis."
+                },
+                {
+                    "type": "feature",
+                    "description": "AI Document Generation: minta Pak Admin buatkan dokumen PDF atau Excel. AI generate file yang bisa langsung didownload dari chat. PDF menggunakan Dompdf, Excel menggunakan native XLSX generator."
+                },
+                {
+                    "type": "feature",
+                    "description": "Pengaturan Upload File: toggle aktif/nonaktif upload file dan atur batas ukuran file (1-20 MB) dari halaman Pengaturan AI Chat."
+                },
+                {
+                    "type": "improvement",
+                    "description": "Kolom content di ai_chat_messages diubah ke MEDIUMTEXT untuk mendukung respons AI yang lebih panjang."
+                }
+            ]
+        },
+        {
+            "version": "1.33.0",
+            "date": "2026-10-01",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "AI Chat Assistant \"Pak Admin\": floating chat widget di semua halaman untuk guru dan staf (admin, guru, wali kelas, kepala madrasah). Mendukung endpoint OpenAI-compatible (OpenAI, OpenRouter, Groq, Ollama, dll). Fitur: sesi percakapan terpisah, riwayat chat, identitas user otomatis, rate limiting harian, markdown rendering aman."
+                },
+                {
+                    "type": "feature",
+                    "description": "Menu Pengaturan AI Chat: konfigurasi enable/disable, nama AI, base URL, API key, model, temperature, system prompt, max history, dan batas harian. Termasuk tombol Test Koneksi."
+                }
+            ]
+        },
+        {
+            "version": "1.32.0",
+            "date": "2026-10-01",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Menu baru Pengaturan Lembaga: kelola data lembaga (kop, nama lembaga, nama kepala, NIP, alamat, telp, email, website, kota, logo, ttd) sekali per lembaga (MTs/MA) dengan pemetaan jenjang (VII-IX untuk MTs, X-XII untuk MA)"
+                },
+                {
+                    "type": "improvement",
+                    "description": "Data lembaga (kop, nama madrasah, nama kepala, ttd) kini otomatis dipakai saat mencetak rapor & soal STS berdasarkan jenjang kelas, sehingga tidak lagi terduplikasi per wali kelas"
+                }
+            ]
+        },
+        {
             "version": "1.31.3",
             "date": "2026-10-01",
             "type": "patch",

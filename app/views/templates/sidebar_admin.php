@@ -397,7 +397,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: PENGATURAN -->
             <!-- ============================================== -->
-            <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru', 'Antrian Pesan WhatsApp', 'Riwayat Login', 'Pengaturan WA Gateway', 'Pengaturan Notifikasi Absensi', 'Pengaturan Storage']); ?>
+            <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru', 'Antrian Pesan WhatsApp', 'Riwayat Login', 'Pengaturan WA Gateway', 'Pengaturan Notifikasi Absensi', 'Pengaturan Storage', 'Pengaturan Lembaga', 'Pengaturan AI Chat', 'Monitoring AI']); ?>
             <li class="pt-2" x-data="{ open: <?= $pengaturanActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $pengaturanActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -411,6 +411,13 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                         :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <ul x-show="open" x-collapse class="mt-1 ml-4 space-y-1 border-l-2 border-slate-200 pl-3">
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/pengaturanLembaga"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan Lembaga') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-sky-50 hover:text-sky-700' ?>">
+                            <i data-lucide="building-2" class="w-4 h-4 mr-2"></i>
+                            Pengaturan Lembaga
+                        </a>
+                    </li>
                     <li>
                         <a href="<?= BASEURL; ?>/admin/waGateway"
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan WA Gateway') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-green-50 hover:text-green-700' ?>">
@@ -472,6 +479,20 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan Storage') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-emerald-50 hover:text-emerald-700' ?>">
                             <i data-lucide="hard-drive" class="w-4 h-4 mr-2"></i>
                             Pengaturan Storage
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/pengaturanAiChat"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan AI Chat') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-violet-50 hover:text-violet-700' ?>">
+                            <i data-lucide="bot" class="w-4 h-4 mr-2"></i>
+                            Pengaturan AI Chat
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/aiMonitoring"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Monitoring AI') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-fuchsia-50 hover:text-fuchsia-700' ?>">
+                            <i data-lucide="activity" class="w-4 h-4 mr-2"></i>
+                            Monitoring AI
                         </a>
                     </li>
                     <li>

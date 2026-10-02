@@ -464,3 +464,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }, { passive: true });
 });
 </script>
+
+<?php
+$aiChatEnabled = getSystemSetting('ai_chat_enabled', '0') === '1';
+$aiChatRoleOk  = isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') !== 'siswa';
+if ($aiChatEnabled && $aiChatRoleOk):
+?>
+<!-- AI Chat Widget "Pak Admin" -->
+<div id="ai-chat-root"></div>
+<script>
+window.AI_CHAT_CONFIG = {
+  baseurl: <?= json_encode(BASEURL) ?>,
+  aiName: <?= json_encode(getSystemSetting('ai_chat_name', 'Pak Admin')) ?>,
+  buttonLabel: <?= json_encode(getSystemSetting('ai_chat_button_label', 'Tanya Pak Admin')) ?>,
+  userName: <?= json_encode($_SESSION['nama_lengkap'] ?? 'Pengguna') ?>,
+  csrfToken: <?= json_encode(Csrf::token()) ?>
+};
+</script>
+<script src="<?= BASEURL ?>/js/ai-chat.js" defer></script>
+<?php endif; ?>
