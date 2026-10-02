@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.35.3",
+            "date": "2026-10-02",
+            "type": "patch",
+            "changes": [
+                {
+                    "type": "change",
+                    "description": "Menu \"Monitoring AI\" dipindahkan dari grup Pengaturan ke dropdown \"Aplikasi Lain\" pada sidebar admin."
+                }
+            ]
+        },
+        {
             "version": "1.35.2",
             "date": "2026-10-02",
             "type": "patch",

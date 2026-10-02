@@ -124,7 +124,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: APLIKASI LAIN -->
             <!-- ============================================== -->
-            <?php $aplikasiLainActive = isGroupActive($judul, ['Buku Tamu', 'PSB', 'Persuratan', 'Surat Tugas', 'Surat Penerimaan', 'Website']); ?>
+            <?php $aplikasiLainActive = isGroupActive($judul, ['Buku Tamu', 'PSB', 'Persuratan', 'Surat Tugas', 'Surat Penerimaan', 'Website', 'Monitoring AI']); ?>
             <li class="pt-4" x-data="{ open: <?= $aplikasiLainActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $aplikasiLainActive ? 'bg-purple-50 text-purple-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -164,6 +164,13 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             class="group flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-secondary-600 hover:bg-purple-50 hover:text-purple-700">
                             <i data-lucide="globe" class="w-4 h-4 mr-2 text-purple-600"></i>
                             Website Sekolah
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/admin/aiMonitoring"
+                            class="group flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Monitoring AI') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-fuchsia-50 hover:text-fuchsia-700' ?>">
+                            <i data-lucide="activity" class="w-4 h-4 mr-2 text-fuchsia-600"></i>
+                            Monitoring AI
                         </a>
                     </li>
                 </ul>
@@ -397,7 +404,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: PENGATURAN -->
             <!-- ============================================== -->
-            <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru', 'Antrian Pesan WhatsApp', 'Riwayat Login', 'Pengaturan WA Gateway', 'Pengaturan Notifikasi Absensi', 'Pengaturan Storage', 'Pengaturan Lembaga', 'Pengaturan AI Chat', 'Monitoring AI']); ?>
+            <?php $pengaturanActive = isGroupActive($judul, ['Konfigurasi QR', 'Pengaturan Aplikasi', 'Pengaturan Menu', 'Pengaturan Fungsi Guru', 'Antrian Pesan WhatsApp', 'Riwayat Login', 'Pengaturan WA Gateway', 'Pengaturan Notifikasi Absensi', 'Pengaturan Storage', 'Pengaturan Lembaga', 'Pengaturan AI Chat']); ?>
             <li class="pt-2" x-data="{ open: <?= $pengaturanActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $pengaturanActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -486,13 +493,6 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Pengaturan AI Chat') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-violet-50 hover:text-violet-700' ?>">
                             <i data-lucide="bot" class="w-4 h-4 mr-2"></i>
                             Pengaturan AI Chat
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?= BASEURL; ?>/admin/aiMonitoring"
-                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Monitoring AI') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-fuchsia-50 hover:text-fuchsia-700' ?>">
-                            <i data-lucide="activity" class="w-4 h-4 mr-2"></i>
-                            Monitoring AI
                         </a>
                     </li>
                     <li>
