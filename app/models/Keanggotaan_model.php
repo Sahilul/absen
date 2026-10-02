@@ -122,9 +122,10 @@ class Keanggotaan_model {
      * Get keanggotaan siswa untuk tahun pelajaran tertentu
      */
     public function getKeanggotaanSiswa($id_siswa, $id_tp) {
-        $this->db->query('SELECT kk.*, k.nama_kelas, k.jenjang 
+        $this->db->query('SELECT kk.*, k.nama_kelas, k.jenjang, tp.nama_tp 
                          FROM keanggotaan_kelas kk
                          JOIN kelas k ON kk.id_kelas = k.id_kelas
+                         LEFT JOIN tp ON kk.id_tp = tp.id_tp
                          WHERE kk.id_siswa = :id_siswa AND kk.id_tp = :id_tp');
         $this->db->bind('id_siswa', $id_siswa);
         $this->db->bind('id_tp', $id_tp);
