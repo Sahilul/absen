@@ -82,6 +82,17 @@ class SoalStsController extends Controller
     }
 
     /**
+     * Helper: Tandai pengaturan soal sebagai sudah dicetak
+     */
+    private function markDicetak($id_pengaturan)
+    {
+        if (empty($id_pengaturan)) {
+            return;
+        }
+        $this->soalModel->tandaiDicetak($id_pengaturan, $_SESSION['user_id'] ?? null);
+    }
+
+    /**
      * Dashboard — Grid kelas aktif dengan status soal
      */
     public function index()
@@ -582,6 +593,9 @@ class SoalStsController extends Controller
         $this->data['soal_essay'] = $this->soalModel->getSoalByTipe($pengaturan['id'], 'essay');
         $this->data['soal_isian'] = $this->soalModel->getSoalByTipe($pengaturan['id'], 'isian');
 
+        // Tandai sudah dicetak
+        $this->markDicetak($pengaturan['id']);
+
         $this->view('admin/soal_sts/preview_cetak', $this->data);
     }
 
@@ -622,6 +636,9 @@ class SoalStsController extends Controller
         $this->data['soal_essay'] = $this->soalModel->getSoalByTipe($pengaturan['id'], 'essay');
         $this->data['soal_isian'] = $this->soalModel->getSoalByTipe($pengaturan['id'], 'isian');
 
+        // Tandai sudah dicetak
+        $this->markDicetak($pengaturan['id']);
+
         $this->view('admin/soal_sts/preview_cetak', $this->data);
     }
 
@@ -653,6 +670,9 @@ class SoalStsController extends Controller
         $soal_pg = $this->soalModel->getSoalByTipe($pengaturan['id'], 'pg');
         $soal_essay = $this->soalModel->getSoalByTipe($pengaturan['id'], 'essay');
         $soal_isian = $this->soalModel->getSoalByTipe($pengaturan['id'], 'isian');
+
+        // Tandai sudah dicetak
+        $this->markDicetak($pengaturan['id']);
 
         // Load Dompdf
         require_once APPROOT . '/app/core/dompdf/autoload.inc.php';
@@ -707,8 +727,46 @@ class SoalStsController extends Controller
         $this->data['semester'] = $semester;
         $this->data['soal_pg'] = $this->soalModel->getSoalByTipe($pengaturan['id'], 'pg');
 
+        // Tandai sudah dicetak
+        $this->markDicetak($pengaturan['id']);
+
         // Render as print-friendly page
         $this->view('admin/soal_sts/preview_cetak', array_merge($this->data, ['mode' => 'kunci']));
+    }
+
+    /**
+     * Toggle penanda "sudah dicetak" secara manual
+     */
+    public function toggleDicetak($id_kelas, $id_mapel)
+    {
+        $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? 0;
+
+        if (!$this->cekAksesMapelKelas($id_mapel, $id_kelas)) {
+            $this->guruAccessDenied();
+        }
+
+        $pengaturan = $this->soalModel->getPengaturanByMapelKelas($id_mapel, $id_kelas, $id_semester_aktif);
+        if (!$pengaturan) {
+            Flasher::setFlash('Data tidak ditemukan!', 'danger');
+            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            exit;
+        }
+
+        if (!empty($pengaturan['dicetak_at'])) {
+            $this->soalModel->resetDicetak($pengaturan['id']);
+            Flasher::setFlash('Penanda cetak dihapus.', 'success');
+        } else {
+            $this->soalModel->tandaiDicetak($pengaturan['id'], $_SESSION['user_id'] ?? null);
+            Flasher::setFlash('Soal ditandai sudah dicetak.', 'success');
+        }
+
+        $redirect = $_POST['redirect'] ?? '';
+        if ($redirect === 'daftar') {
+            header('Location: ' . BASEURL . '/soalSts/daftarSoal/' . $id_kelas . '/' . $id_mapel);
+        } else {
+            header('Location: ' . BASEURL . '/soalSts/pengaturan/' . $id_kelas);
+        }
+        exit;
     }
 
     /**

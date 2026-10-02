@@ -27,6 +27,17 @@
             </nav>
             <h2 class="text-2xl font-bold text-gray-800">Daftar Soal — <?= htmlspecialchars($p['nama_mapel']); ?></h2>
             <p class="text-gray-600 mt-1">Kelas <?= htmlspecialchars($kelas['nama_kelas']); ?></p>
+            <?php if (!empty($p['dicetak_at'])): ?>
+                <span class="inline-flex items-center mt-2 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                    <i data-lucide="printer-check" class="w-3.5 h-3.5 mr-1"></i>
+                    Sudah dicetak: <?= date('d/m/Y H:i', strtotime($p['dicetak_at'])); ?>
+                </span>
+            <?php else: ?>
+                <span class="inline-flex items-center mt-2 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                    <i data-lucide="printer" class="w-3.5 h-3.5 mr-1"></i>
+                    Belum dicetak
+                </span>
+            <?php endif; ?>
         </div>
         <div class="flex gap-2">
             <a href="<?= BASEURL; ?>/soalSts/inputSoal/<?= $p['id']; ?>"
@@ -39,6 +50,20 @@
                 <i data-lucide="printer" class="w-4 h-4 mr-2"></i>
                 Cetak
             </a>
+            <form action="<?= BASEURL; ?>/soalSts/toggleDicetak/<?= $kelas['id_kelas']; ?>/<?= $p['id_mapel']; ?>" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
+                <input type="hidden" name="redirect" value="daftar">
+                <button type="submit"
+                        class="<?= !empty($p['dicetak_at']) ? 'bg-amber-100 hover:bg-amber-200 text-amber-700' : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'; ?> font-medium py-2 px-4 rounded-lg flex items-center transition-colors duration-200">
+                    <?php if (!empty($p['dicetak_at'])): ?>
+                        <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2"></i>
+                        Tandai Belum Dicetak
+                    <?php else: ?>
+                        <i data-lucide="check" class="w-4 h-4 mr-2"></i>
+                        Tandai Sudah Dicetak
+                    <?php endif; ?>
+                </button>
+            </form>
             <a href="<?= $backUrl; ?>"
                class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center transition-colors duration-200">
                 <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>

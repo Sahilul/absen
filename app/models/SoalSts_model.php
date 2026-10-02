@@ -388,6 +388,8 @@ class SoalSts_model
                 sp.jumlah_pilihan_ganda,
                 sp.jumlah_essay,
                 sp.jumlah_isian_singkat,
+                sp.dicetak_at,
+                sp.dicetak_by,
                 (sp.jumlah_pilihan_ganda + sp.jumlah_essay + sp.jumlah_isian_singkat) as total_target,
                 COALESCE(sc.total_soal, 0) as total_soal,
                 COALESCE(sc.total_pg, 0) as total_pg,
@@ -438,5 +440,37 @@ class SoalSts_model
         } else {
             return $this->simpanSoal($data);
         }
+    }
+
+    /**
+     * Tandai pengaturan soal sebagai sudah dicetak
+     * @param int $id_pengaturan
+     * @param int|null $id_user
+     * @return int jumlah baris terpengaruh
+     */
+    public function tandaiDicetak($id_pengaturan, $id_user = null)
+    {
+        $this->db->query("UPDATE soal_sts_pengaturan
+            SET dicetak_at = NOW(), dicetak_by = :id_user
+            WHERE id = :id");
+        $this->db->bind('id_user', $id_user);
+        $this->db->bind('id', $id_pengaturan);
+        $this->db->execute();
+        return $this->db->rowCount();
+    }
+
+    /**
+     * Hapus penanda sudah dicetak (reset)
+     * @param int $id_pengaturan
+     * @return int jumlah baris terpengaruh
+     */
+    public function resetDicetak($id_pengaturan)
+    {
+        $this->db->query("UPDATE soal_sts_pengaturan
+            SET dicetak_at = NULL, dicetak_by = NULL
+            WHERE id = :id");
+        $this->db->bind('id', $id_pengaturan);
+        $this->db->execute();
+        return $this->db->rowCount();
     }
 }

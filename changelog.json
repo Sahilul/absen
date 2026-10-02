@@ -1,6 +1,25 @@
 {
     "versions": [
         {
+            "version": "1.35.4",
+            "date": "2026-10-02",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Penanda \"Sudah Dicetak\" pada Soal STS: admin kini bisa melihat mana soal yang sudah/belum dicetak. Badge status tampil di halaman Pengaturan dan Daftar Soal."
+                },
+                {
+                    "type": "feature",
+                    "description": "Penanda otomatis: saat membuka Preview Cetak, Cetak PDF, Cetak Kunci, atau Cetak dengan Nama, soal otomatis ditandai sudah dicetak beserta waktu dan user yang mencetak."
+                },
+                {
+                    "type": "feature",
+                    "description": "Tombol manual \"Tandai Sudah/Belum Dicetak\" untuk mengubah status cetak secara manual."
+                }
+            ]
+        },
+        {
             "version": "1.35.3",
             "date": "2026-10-02",
             "type": "patch",
