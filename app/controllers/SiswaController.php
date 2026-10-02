@@ -681,16 +681,17 @@ class SiswaController extends Controller
                     tp.id_tp,
                     tp.nama_tp
                 FROM siswa s
-                LEFT JOIN keanggotaan_kelas kk ON s.id_siswa = kk.id_siswa
+                LEFT JOIN keanggotaan_kelas kk ON s.id_siswa = kk.id_siswa AND kk.id_tp = :id_tp
                 LEFT JOIN kelas k ON kk.id_kelas = k.id_kelas
                 LEFT JOIN semester s2 ON s2.id_semester = :id_semester
-                LEFT JOIN tp ON tp.id_tp = :id_tp
+                LEFT JOIN tp ON tp.id_tp = :id_tp2
                 WHERE s.id_siswa = :id_siswa
                 LIMIT 1
             ");
             $db->bind('id_siswa', $id_siswa);
             $db->bind('id_semester', $id_semester);
             $db->bind('id_tp', $_SESSION['id_tp_aktif'] ?? 0);
+            $db->bind('id_tp2', $_SESSION['id_tp_aktif'] ?? 0);
             $siswa_info = $db->single();
 
             if (empty($siswa_info)) {
@@ -872,16 +873,17 @@ class SiswaController extends Controller
                     tp.id_tp,
                     tp.nama_tp
                 FROM siswa s
-                LEFT JOIN keanggotaan_kelas kk ON s.id_siswa = kk.id_siswa
+                LEFT JOIN keanggotaan_kelas kk ON s.id_siswa = kk.id_siswa AND kk.id_tp = :id_tp
                 LEFT JOIN kelas k ON kk.id_kelas = k.id_kelas
                 LEFT JOIN semester s2 ON s2.id_semester = :id_semester
-                LEFT JOIN tp ON tp.id_tp = :id_tp
+                LEFT JOIN tp ON tp.id_tp = :id_tp2
                 WHERE s.id_siswa = :id_siswa
                 LIMIT 1
             ");
             $db->bind('id_siswa', $id_siswa);
             $db->bind('id_semester', $id_semester);
             $db->bind('id_tp', $_SESSION['id_tp_aktif'] ?? 0);
+            $db->bind('id_tp2', $_SESSION['id_tp_aktif'] ?? 0);
             $siswa_info = $db->single();
 
             if (empty($siswa_info)) {
@@ -1036,8 +1038,9 @@ class SiswaController extends Controller
         $db = new Database();
 
         // Ambil data siswa lengkap
-        $db->query("SELECT s.nama_siswa, s.nisn, k.nama_kelas, k.id_kelas FROM siswa s LEFT JOIN keanggotaan_kelas kk ON s.id_siswa = kk.id_siswa LEFT JOIN kelas k ON kk.id_kelas = k.id_kelas WHERE s.id_siswa = :id_siswa LIMIT 1");
+        $db->query("SELECT s.nama_siswa, s.nisn, k.nama_kelas, k.id_kelas FROM siswa s LEFT JOIN keanggotaan_kelas kk ON s.id_siswa = kk.id_siswa AND kk.id_tp = :id_tp LEFT JOIN kelas k ON kk.id_kelas = k.id_kelas WHERE s.id_siswa = :id_siswa LIMIT 1");
         $db->bind('id_siswa', $id_siswa);
+        $db->bind('id_tp', $_SESSION['id_tp_aktif'] ?? 0);
         $siswa = $db->single();
 
         // Ambil semester aktif

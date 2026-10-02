@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.35.8",
+            "date": "2026-10-02",
+            "type": "bugfix",
+            "changes": [
+                {
+                    "type": "bugfix",
+                    "description": "Fix kelas siswa salah (menampilkan kelas tahun sebelumnya) pada PDF Absensi Harian, PDF Absensi Mapel, dan PDF Pembayaran. Query keanggotaan_kelas sekarang difilter berdasarkan tahun pelajaran aktif."
+                }
+            ]
+        },
+        {
             "version": "1.35.7",
             "date": "2026-10-02",
             "type": "minor",
