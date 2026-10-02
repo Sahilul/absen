@@ -170,6 +170,7 @@
                         $progressMapel = $totalTarget > 0 ? round(($totalSoal / $totalTarget) * 100) : 0;
                         $isComplete = $totalSoal >= $totalTarget && $totalTarget > 0;
                         $sudahDicetak = !empty($p['dicetak_at']);
+                        $sudahSiapCetak = !empty($p['siap_cetak_at']);
                         ?>
                         <div class="bg-white rounded-xl shadow-sm border <?= $isComplete ? 'border-green-200' : 'border-gray-200'; ?> p-4">
                             <div class="flex items-center justify-between mb-2">
@@ -183,6 +184,12 @@
                                     <?php else: ?>
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500">
                                             <i data-lucide="printer" class="w-3 h-3 mr-1"></i> Belum Dicetak
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if ($sudahSiapCetak): ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700"
+                                              title="Ditandai siap cetak: <?= date('d/m/Y H:i', strtotime($p['siap_cetak_at'])); ?>">
+                                            <i data-lucide="lock" class="w-3 h-3 mr-1"></i> Siap Cetak
                                         </span>
                                     <?php endif; ?>
                                     <?php if ($isComplete): ?>
@@ -241,6 +248,15 @@
                                     <?php endif; ?>
                                 </button>
                             </form>
+                            <?php if ($sudahSiapCetak): ?>
+                            <form action="<?= BASEURL; ?>/soalSts/batalSiapCetak/<?= $id_pengaturan; ?>" method="POST" class="mt-1">
+                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
+                                <button type="submit" onclick="return confirm('Batalkan penanda Siap Cetak untuk <?= htmlspecialchars($mapel['nama_mapel']); ?>?')"
+                                        class="w-full text-center bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium py-2 px-2 rounded-lg transition-colors">
+                                    <i data-lucide="lock-open" class="w-3 h-3 inline mr-1"></i> Batalkan Siap Cetak
+                                </button>
+                            </form>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>

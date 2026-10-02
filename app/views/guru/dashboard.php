@@ -247,6 +247,7 @@
                 // Query soal_sts_pengaturan
                 foreach ($mapelKelasKeys as $mk => $pair) {
                     $sqlSoal = "SELECT sp.id, sp.jumlah_pilihan_ganda, sp.jumlah_essay, sp.jumlah_isian_singkat,
+                                       sp.siap_cetak_at,
                                        (SELECT COUNT(*) FROM soal_sts WHERE id_pengaturan = sp.id) AS total_soal
                                 FROM soal_sts_pengaturan sp
                                 WHERE sp.id_mapel = :id_mapel AND sp.id_kelas = :id_kelas AND sp.id_semester = :id_semester
@@ -624,6 +625,9 @@
                                         <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-700 rounded-full"><?= $totalSoalSts; ?>/<?= $totalTarget; ?></span>
                                     <?php else: ?>
                                         <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-500 rounded-full">Belum diisi</span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($soalStsData['siap_cetak_at'])): ?>
+                                        <span class="ml-1 px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">🔒 Siap Cetak</span>
                                     <?php endif; ?>
                                 </div>
                                 <!-- Desktop: Single Button -->

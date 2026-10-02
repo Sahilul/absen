@@ -13,6 +13,8 @@
     $opsiLabels = ['A', 'B', 'C', 'D', 'E'];
     $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
     $backUrl = $isAdmin ? BASEURL . '/soalSts/pengaturan/' . $p['id_kelas'] : BASEURL . '/guru';
+    $isLocked = $data['is_locked'] ?? false;
+    $isComplete = $data['is_complete'] ?? false;
     ?>
 
     <!-- Page Header -->
@@ -84,10 +86,37 @@
         <?php endif; ?>
     </div>
 
+    <?php if ($isLocked): ?>
+    <!-- Lock Banner -->
+    <div class="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-6 flex items-start gap-3">
+        <i data-lucide="lock" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"></i>
+        <div class="flex-1">
+            <p class="font-semibold text-amber-800">Soal Terkunci — Siap Cetak</p>
+            <p class="text-sm text-amber-700 mt-1">Soal ini sudah ditandai "Siap Cetak" dan tidak bisa diedit. <?php if (!$isAdmin): ?>Hubungi admin untuk membatalkan.<?php endif; ?></p>
+            <?php if (!empty($p['siap_cetak_at'])): ?>
+                <p class="text-xs text-amber-600 mt-1">Ditandai pada: <?= date('d/m/Y H:i', strtotime($p['siap_cetak_at'])); ?></p>
+            <?php endif; ?>
+        </div>
+        <?php if ($isAdmin): ?>
+        <form action="<?= BASEURL; ?>/soalSts/batalSiapCetak/<?= $p['id']; ?>" method="POST" class="flex-shrink-0">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
+            <input type="hidden" name="redirect" value="input">
+            <button type="submit" onclick="return confirm('Batalkan penanda Siap Cetak? Soal akan bisa diedit kembali.')"
+                    class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium py-1.5 px-3 rounded-lg flex items-center transition-colors">
+                <i data-lucide="lock-open" class="w-4 h-4 mr-1"></i>
+                Batalkan Kunci
+            </button>
+        </form>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
     <!-- Form Soal -->
     <form action="<?= BASEURL; ?>/soalSts/simpanSemuaSoal" method="POST" enctype="multipart/form-data" id="formSoal">
         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
         <input type="hidden" name="id_pengaturan" value="<?= $p['id']; ?>">
+
+    <?php if ($isLocked): ?><fieldset disabled><?php endif; ?>
 
         <!-- Tab Navigation -->
         <?php
@@ -360,17 +389,98 @@
             <?php endif; ?>
         </div>
 
-        <!-- Submit Button (sticky bottom) -->
-        <div class="sticky bottom-0 bg-white border-t shadow-lg p-4 -mx-6 -mb-6 flex justify-between items-center">
-            <p class="text-sm text-gray-500">
-                <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
-                Soal yang sudah diisi akan otomatis tersimpan. Soal kosong akan dilewati.
-            </p>
-            <button type="submit"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center transition-colors duration-200 shadow-sm">
-                <i data-lucide="save" class="w-4 h-4 mr-2"></i>
-                Simpan Semua Soal
-            </button>
+        <!-- Submit / Action Bar (sticky bottom) -->
+        <?php if ($isLocked): ?></fieldset><?php endif; ?>
+
+        <div class="sticky bottom-0 bg-white border-t shadow-lg p-4 -mx-6 -mb-6 flex justify-between items-center flex-wrap gap-3">
+            <?php if ($isLocked): ?>
+                <!-- Locked: show print buttons -->
+                <p class="text-sm text-amber-600 flex items-center">
+                    <i data-lucide="lock" class="w-4 h-4 inline mr-1"></i>
+                    Soal terkunci — siap cetak
+                </p>
+                <div class="flex gap-2 flex-wrap">
+                    <a href="<?= BASEURL; ?>/soalSts/previewCetak/<?= $p['id_kelas']; ?>/<?= $p['id_mapel']; ?>"
+                       target="_blank"
+                       class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center transition-colors text-sm">
+                        <i data-lucide="eye" class="w-4 h-4 mr-1.5"></i>
+                        Preview Cetak
+                    </a>
+                    <a href="<?= BASEURL; ?>/soalSts/previewCetakNama/<?= $p['id_kelas']; ?>/<?= $p['id_mapel']; ?>"
+                       target="_blank"
+                       class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg flex items-center transition-colors text-sm">
+                        <i data-lucide="printer" class="w-4 h-4 mr-1.5"></i>
+                        Cetak + Nama
+                    </a>
+                    <a href="<?= BASEURL; ?>/soalSts/cetakKunci/<?= $p['id_kelas']; ?>/<?= $p['id_mapel']; ?>"
+                       target="_blank"
+                       class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg flex items-center transition-colors text-sm">
+                        <i data-lucide="key" class="w-4 h-4 mr-1.5"></i>
+                        Kunci Jawaban
+                    </a>
+                </div>
+            <?php else: ?>
+                <!-- Unlocked: show save + siap cetak -->
+                <div class="flex items-center gap-3">
+                    <p class="text-sm text-gray-500">
+                        <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
+                        Soal yang sudah diisi akan otomatis tersimpan. Soal kosong akan dilewati.
+                    </p>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center transition-colors duration-200 shadow-sm">
+                        <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+                        Simpan Semua Soal
+                    </button>
+                </div>
+            <?php endif; ?>
         </div>
     </form>
+
+    <?php if (!$isLocked && $isComplete): ?>
+    <!-- Siap Cetak Button (outside form, only when complete & unlocked) -->
+    <div class="mt-4 mb-2">
+        <form action="<?= BASEURL; ?>/soalSts/siapCetak/<?= $p['id']; ?>" method="POST">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
+            <button type="submit" onclick="return confirm('Tandai soal sebagai Siap Cetak? Soal akan terkunci dari perubahan.')"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-lg flex items-center justify-center transition-colors duration-200 shadow-sm">
+                <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+                Tandai Siap Cetak
+            </button>
+        </form>
+    </div>
+    <?php elseif (!$isLocked && !$isComplete): ?>
+    <div class="mt-4 mb-2">
+        <div class="w-full bg-gray-100 text-gray-400 font-medium py-3 px-6 rounded-lg flex items-center justify-center cursor-not-allowed"
+             title="Lengkapi semua soal terlebih dahulu">
+            <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+            Tandai Siap Cetak (Soal Belum Lengkap)
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($isAdmin && !$isLocked): ?>
+    <!-- Admin: Print buttons always visible -->
+    <div class="mt-2 mb-2 flex gap-2 flex-wrap">
+        <a href="<?= BASEURL; ?>/soalSts/previewCetak/<?= $p['id_kelas']; ?>/<?= $p['id_mapel']; ?>"
+           target="_blank"
+           class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors text-sm border border-blue-200">
+            <i data-lucide="eye" class="w-4 h-4 mr-1.5"></i>
+            Preview Cetak
+        </a>
+        <a href="<?= BASEURL; ?>/soalSts/previewCetakNama/<?= $p['id_kelas']; ?>/<?= $p['id_mapel']; ?>"
+           target="_blank"
+           class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors text-sm border border-green-200">
+            <i data-lucide="printer" class="w-4 h-4 mr-1.5"></i>
+            Cetak + Nama
+        </a>
+        <a href="<?= BASEURL; ?>/soalSts/cetakKunci/<?= $p['id_kelas']; ?>/<?= $p['id_mapel']; ?>"
+           target="_blank"
+           class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors text-sm border border-purple-200">
+            <i data-lucide="key" class="w-4 h-4 mr-1.5"></i>
+            Kunci Jawaban
+        </a>
+    </div>
+    <?php endif; ?>
 </main>

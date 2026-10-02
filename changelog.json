@@ -1,6 +1,29 @@
 {
     "versions": [
         {
+            "version": "1.35.5",
+            "date": "2026-10-02",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Fitur \"Siap Cetak\" pada Soal STS: guru/admin dapat menandai soal sebagai siap cetak setelah semua soal lengkap. Soal yang sudah ditandai akan terkunci dari edit, hapus, dan upload gambar."
+                },
+                {
+                    "type": "feature",
+                    "description": "Tombol cetak (Preview, Cetak+Nama, Kunci Jawaban) hanya muncul untuk guru setelah soal ditandai Siap Cetak. Admin tetap bisa mencetak kapan saja."
+                },
+                {
+                    "type": "feature",
+                    "description": "Admin dapat membatalkan penanda Siap Cetak untuk membuka kunci soal agar bisa diedit kembali."
+                },
+                {
+                    "type": "feature",
+                    "description": "Badge status \"Siap Cetak\" tampil di halaman Pengaturan, Daftar Soal, Input Soal, dan Dashboard Guru."
+                }
+            ]
+        },
+        {
             "version": "1.35.4",
             "date": "2026-10-02",
             "type": "minor",

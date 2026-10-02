@@ -93,6 +93,39 @@ class SoalStsController extends Controller
     }
 
     /**
+     * Helper: Cek apakah soal terkunci (siap cetak)
+     */
+    private function isSoalLocked($pengaturan)
+    {
+        return !empty($pengaturan['siap_cetak_at']);
+    }
+
+    /**
+     * Helper: Guard — tolak edit jika soal terkunci
+     */
+    private function guardLocked($pengaturan, $redirectUrl = null)
+    {
+        if ($this->isSoalLocked($pengaturan)) {
+            Flasher::setFlash('Soal sudah ditandai "Siap Cetak" dan tidak bisa diedit. Hubungi admin untuk membatalkan.', 'warning');
+            $url = $redirectUrl ?? (BASEURL . '/soalSts/inputSoal/' . $pengaturan['id']);
+            header('Location: ' . $url);
+            exit;
+        }
+    }
+
+    /**
+     * Helper: Guard — guru harus siap cetak untuk mencetak
+     */
+    private function guardGuruCetak($pengaturan)
+    {
+        if (!$this->isAdmin() && empty($pengaturan['siap_cetak_at'])) {
+            Flasher::setFlash('Soal belum ditandai "Siap Cetak". Tandai terlebih dahulu sebelum mencetak.', 'warning');
+            header('Location: ' . BASEURL . '/soalSts/inputSoal/' . $pengaturan['id']);
+            exit;
+        }
+    }
+
+    /**
      * Dashboard — Grid kelas aktif dengan status soal
      */
     public function index()
@@ -368,6 +401,12 @@ class SoalStsController extends Controller
         $this->data['total_essay'] = $this->soalModel->hitungSoalByPengaturan($id_pengaturan, 'essay');
         $this->data['total_isian'] = $this->soalModel->hitungSoalByPengaturan($id_pengaturan, 'isian');
 
+        // Status kunci & kelengkapan
+        $totalTarget = ($pengaturan['jumlah_pilihan_ganda'] ?? 0) + ($pengaturan['jumlah_essay'] ?? 0) + ($pengaturan['jumlah_isian_singkat'] ?? 0);
+        $totalSoal = $this->data['total_pg'] + $this->data['total_essay'] + $this->data['total_isian'];
+        $this->data['is_locked'] = $this->isSoalLocked($pengaturan);
+        $this->data['is_complete'] = $totalTarget > 0 && $totalSoal >= $totalTarget;
+
         $this->view('templates/header', $this->data);
         $this->loadSidebar();
         $this->view('admin/soal_sts/input_soal', $this->data);
@@ -396,6 +435,9 @@ class SoalStsController extends Controller
         if (!$this->cekAksesMapelKelas($pengaturan['id_mapel'], $pengaturan['id_kelas'])) {
             $this->guruAccessDenied();
         }
+
+        // Cek kunci siap cetak
+        $this->guardLocked($pengaturan);
 
         $soalData = $_POST['soal'] ?? [];
         $uploadDir = APPROOT . '/public/uploads/soal_sts/';
@@ -515,6 +557,15 @@ class SoalStsController extends Controller
             $this->guruAccessDenied();
         }
 
+        // Cek kunci siap cetak
+        $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? 0;
+        $pengaturanSoal = $this->soalModel->getPengaturanByMapelKelas($soal['id_mapel'], $soal['id_kelas'], $id_semester_aktif);
+        if ($pengaturanSoal && $this->isSoalLocked($pengaturanSoal)) {
+            Flasher::setFlash('Soal sudah ditandai "Siap Cetak" dan tidak bisa dihapus.', 'warning');
+            header('Location: ' . BASEURL . '/soalSts/daftarSoal/' . $soal['id_kelas'] . '/' . $soal['id_mapel']);
+            exit;
+        }
+
         $this->soalModel->hapusSoal($id_soal);
         Flasher::setFlash('Soal berhasil dihapus!', 'success');
 
@@ -580,6 +631,9 @@ class SoalStsController extends Controller
             exit;
         }
 
+        // Guru harus siap cetak dulu
+        $this->guardGuruCetak($pengaturan);
+
         $kopRapor = $this->model('PengaturanRapor_model')->getPengaturanByKelas($id_kelas, $id_tp_aktif);
         $semester = $this->model('TahunPelajaran_model')->getSemesterById($id_semester_aktif);
         $siswaList = $this->model('Siswa_model')->getSiswaByKelas($id_kelas, $id_tp_aktif);
@@ -622,6 +676,9 @@ class SoalStsController extends Controller
             exit;
         }
 
+        // Guru harus siap cetak dulu
+        $this->guardGuruCetak($pengaturan);
+
         // Ambil kop dari pengaturan rapor
         $kopRapor = $this->model('PengaturanRapor_model')->getPengaturanByKelas($id_kelas, $id_tp_aktif);
 
@@ -663,6 +720,9 @@ class SoalStsController extends Controller
             header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
             exit;
         }
+
+        // Guru harus siap cetak dulu
+        $this->guardGuruCetak($pengaturan);
 
         $kopRapor = $this->model('PengaturanRapor_model')->getPengaturanByKelas($id_kelas, $id_tp_aktif);
         $semester = $this->model('TahunPelajaran_model')->getSemesterById($id_semester_aktif);
@@ -718,6 +778,9 @@ class SoalStsController extends Controller
             exit;
         }
 
+        // Guru harus siap cetak dulu
+        $this->guardGuruCetak($pengaturan);
+
         $kopRapor = $this->model('PengaturanRapor_model')->getPengaturanByKelas($id_kelas, $id_tp_aktif);
         $semester = $this->model('TahunPelajaran_model')->getSemesterById($id_semester_aktif);
 
@@ -732,6 +795,79 @@ class SoalStsController extends Controller
 
         // Render as print-friendly page
         $this->view('admin/soal_sts/preview_cetak', array_merge($this->data, ['mode' => 'kunci']));
+    }
+
+    /**
+     * Tandai soal sebagai "Siap Cetak" — mengunci soal dari edit
+     */
+    public function siapCetak($id_pengaturan)
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            exit;
+        }
+
+        $pengaturan = $this->soalModel->getPengaturanById($id_pengaturan);
+        if (!$pengaturan) {
+            Flasher::setFlash('Data tidak ditemukan!', 'danger');
+            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            exit;
+        }
+
+        if (!$this->cekAksesMapelKelas($pengaturan['id_mapel'], $pengaturan['id_kelas'])) {
+            $this->guruAccessDenied();
+        }
+
+        // Cek kelengkapan soal
+        $totalTarget = ($pengaturan['jumlah_pilihan_ganda'] ?? 0) + ($pengaturan['jumlah_essay'] ?? 0) + ($pengaturan['jumlah_isian_singkat'] ?? 0);
+        $totalPg = $this->soalModel->hitungSoalByPengaturan($id_pengaturan, 'pg');
+        $totalEssay = $this->soalModel->hitungSoalByPengaturan($id_pengaturan, 'essay');
+        $totalIsian = $this->soalModel->hitungSoalByPengaturan($id_pengaturan, 'isian');
+        $totalSoal = $totalPg + $totalEssay + $totalIsian;
+
+        if ($totalTarget <= 0 || $totalSoal < $totalTarget) {
+            Flasher::setFlash('Soal belum lengkap! Lengkapi semua soal sebelum menandai siap cetak.', 'warning');
+            header('Location: ' . BASEURL . '/soalSts/inputSoal/' . $id_pengaturan);
+            exit;
+        }
+
+        $this->soalModel->tandaiSiapCetak($id_pengaturan, $_SESSION['user_id'] ?? null);
+        Flasher::setFlash('Soal berhasil ditandai "Siap Cetak". Soal sekarang terkunci dari perubahan.', 'success');
+        header('Location: ' . BASEURL . '/soalSts/inputSoal/' . $id_pengaturan);
+        exit;
+    }
+
+    /**
+     * Batalkan penanda "Siap Cetak" — ADMIN ONLY
+     */
+    public function batalSiapCetak($id_pengaturan)
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASEURL . '/soalSts');
+            exit;
+        }
+
+        $this->adminOnlyGuard();
+
+        $pengaturan = $this->soalModel->getPengaturanById($id_pengaturan);
+        if (!$pengaturan) {
+            Flasher::setFlash('Data tidak ditemukan!', 'danger');
+            header('Location: ' . BASEURL . '/soalSts');
+            exit;
+        }
+
+        $this->soalModel->batalSiapCetak($id_pengaturan);
+        Flasher::setFlash('Penanda "Siap Cetak" dibatalkan. Soal bisa diedit kembali.', 'success');
+
+        $redirect = $_POST['redirect'] ?? '';
+        if ($redirect === 'input') {
+            header('Location: ' . BASEURL . '/soalSts/inputSoal/' . $id_pengaturan);
+        } elseif ($redirect === 'daftar') {
+            header('Location: ' . BASEURL . '/soalSts/daftarSoal/' . $pengaturan['id_kelas'] . '/' . $pengaturan['id_mapel']);
+        } else {
+            header('Location: ' . BASEURL . '/soalSts/pengaturan/' . $pengaturan['id_kelas']);
+        }
+        exit;
     }
 
     /**
@@ -779,6 +915,16 @@ class SoalStsController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Method not allowed']);
             exit;
+        }
+
+        // Cek kunci siap cetak
+        $id_pengaturan = $_POST['id_pengaturan'] ?? 0;
+        if ($id_pengaturan) {
+            $pengaturan = $this->soalModel->getPengaturanById($id_pengaturan);
+            if ($pengaturan && $this->isSoalLocked($pengaturan)) {
+                echo json_encode(['success' => false, 'message' => 'Soal sudah ditandai "Siap Cetak" dan tidak bisa diubah.']);
+                exit;
+            }
         }
 
         if (!isset($_FILES['gambar']) || $_FILES['gambar']['error'] !== UPLOAD_ERR_OK) {
@@ -839,6 +985,16 @@ class SoalStsController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Method not allowed']);
             exit;
+        }
+
+        // Cek kunci siap cetak
+        $id_pengaturan = $_POST['id_pengaturan'] ?? 0;
+        if ($id_pengaturan) {
+            $pengaturan = $this->soalModel->getPengaturanById($id_pengaturan);
+            if ($pengaturan && $this->isSoalLocked($pengaturan)) {
+                echo json_encode(['success' => false, 'message' => 'Soal sudah ditandai "Siap Cetak" dan tidak bisa diubah.']);
+                exit;
+            }
         }
 
         $filename = $_POST['filename'] ?? '';

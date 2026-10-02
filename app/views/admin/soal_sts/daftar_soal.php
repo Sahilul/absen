@@ -9,6 +9,7 @@
     $soalList = $data['soal_list'];
     $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
     $backUrl = $isAdmin ? BASEURL . '/soalSts/pengaturan/' . $kelas['id_kelas'] : BASEURL . '/guru';
+    $isSiapCetak = !empty($p['siap_cetak_at']);
     ?>
 
     <!-- Page Header -->
@@ -38,18 +39,26 @@
                     Belum dicetak
                 </span>
             <?php endif; ?>
+            <?php if ($isSiapCetak): ?>
+                <span class="inline-flex items-center mt-2 ml-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                    <i data-lucide="lock" class="w-3.5 h-3.5 mr-1"></i>
+                    Siap Cetak
+                </span>
+            <?php endif; ?>
         </div>
         <div class="flex gap-2">
             <a href="<?= BASEURL; ?>/soalSts/inputSoal/<?= $p['id']; ?>"
                class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg flex items-center transition-colors duration-200 shadow-sm">
-                <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
-                Edit Soal
+                <i data-lucide="<?= $isSiapCetak ? 'eye' : 'edit'; ?>" class="w-4 h-4 mr-2"></i>
+                <?= $isSiapCetak ? 'Lihat Soal' : 'Edit Soal'; ?>
             </a>
+            <?php if ($isAdmin || $isSiapCetak): ?>
             <a href="<?= BASEURL; ?>/soalSts/previewCetak/<?= $kelas['id_kelas']; ?>/<?= $p['id_mapel']; ?>"
                class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg flex items-center transition-colors duration-200 shadow-sm">
                 <i data-lucide="printer" class="w-4 h-4 mr-2"></i>
                 Cetak
             </a>
+            <?php endif; ?>
             <form action="<?= BASEURL; ?>/soalSts/toggleDicetak/<?= $kelas['id_kelas']; ?>/<?= $p['id_mapel']; ?>" method="POST">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
                 <input type="hidden" name="redirect" value="daftar">
@@ -64,6 +73,17 @@
                     <?php endif; ?>
                 </button>
             </form>
+            <?php if ($isAdmin && $isSiapCetak): ?>
+            <form action="<?= BASEURL; ?>/soalSts/batalSiapCetak/<?= $p['id']; ?>" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
+                <input type="hidden" name="redirect" value="daftar">
+                <button type="submit" onclick="return confirm('Batalkan penanda Siap Cetak?')"
+                        class="bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded-lg flex items-center transition-colors duration-200">
+                    <i data-lucide="lock-open" class="w-4 h-4 mr-2"></i>
+                    Buka Kunci
+                </button>
+            </form>
+            <?php endif; ?>
             <a href="<?= $backUrl; ?>"
                class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center transition-colors duration-200">
                 <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
