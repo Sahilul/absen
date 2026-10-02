@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.35.7",
+            "date": "2026-10-02",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "improvement",
+                    "description": "Pisahkan halaman Pengaturan Soal dan Daftar Soal per Mapel menjadi dua halaman terpisah untuk navigasi yang lebih jelas."
+                }
+            ]
+        },
+        {
             "version": "1.35.6",
             "date": "2026-10-02",
             "type": "minor",

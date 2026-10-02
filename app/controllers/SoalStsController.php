@@ -228,6 +228,52 @@ class SoalStsController extends Controller
     }
 
     /**
+     * Daftar soal per mapel untuk kelas tertentu (halaman terpisah dari pengaturan)
+     */
+    public function daftarMapel($id_kelas)
+    {
+        $this->adminOnlyGuard();
+        $this->data['judul'] = 'Soal STS - Daftar Soal';
+        $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? 0;
+
+        // Info kelas
+        $kelas = $this->model('Kelas_model')->getKelasById($id_kelas);
+        if (!$kelas) {
+            Flasher::setFlash('Kelas tidak ditemukan!', 'danger');
+            header('Location: ' . BASEURL . '/soalSts');
+            exit;
+        }
+
+        // Ambil mapel yang ada penugasan di kelas ini
+        $mapelList = $this->model('Penugasan_model')->getMapelByKelas($id_kelas, $id_semester_aktif);
+
+        // Ambil pengaturan yang sudah ada
+        $pengaturanList = $this->soalModel->getPengaturanByKelas($id_kelas, $id_semester_aktif);
+        $pengaturanMap = [];
+        foreach ($pengaturanList as $p) {
+            $pengaturanMap[$p['id_mapel']] = $p;
+        }
+
+        // Gabungkan mapel dengan pengaturan
+        foreach ($mapelList as &$mapel) {
+            $mapel['pengaturan'] = $pengaturanMap[$mapel['id_mapel']] ?? null;
+        }
+        unset($mapel);
+
+        // Status kelengkapan soal per mapel
+        $kelas['status_soal'] = $this->soalModel->getStatusKelengkapan($id_kelas, $id_semester_aktif);
+
+        $this->data['kelas'] = $kelas;
+        $this->data['mapel_list'] = $mapelList;
+        $this->data['id_kelas'] = $id_kelas;
+
+        $this->view('templates/header', $this->data);
+        $this->view('templates/sidebar_admin', $this->data);
+        $this->view('admin/soal_sts/daftar_mapel', $this->data);
+        $this->view('templates/footer', $this->data);
+    }
+
+    /**
      * Simpan pengaturan model soal (batch)
      */
     public function simpanPengaturan()

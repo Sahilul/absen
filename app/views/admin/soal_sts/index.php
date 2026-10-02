@@ -197,7 +197,7 @@
                                 Pengaturan
                             </a>
                             <?php if ($totalPengaturan > 0): ?>
-                                <a href="<?= BASEURL; ?>/soalSts/pengaturan/<?= $kelas['id_kelas']; ?>#daftar"
+                                <a href="<?= BASEURL; ?>/soalSts/daftarMapel/<?= $kelas['id_kelas']; ?>"
                                    class="flex-1 text-center bg-violet-50 hover:bg-violet-100 text-violet-700 text-sm font-medium py-2 px-3 rounded-lg transition-colors duration-200">
                                     <i data-lucide="list" class="w-4 h-4 inline mr-1"></i>
                                     Lihat Soal
