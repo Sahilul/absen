@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.35.10",
+            "date": "2026-10-02",
+            "type": "bugfix",
+            "changes": [
+                {
+                    "type": "bugfix",
+                    "description": "Fix kop surat tidak muncul di PDF (SKSA, absensi, pembayaran, RPP, jurnal). Path gambar kop/ttd sekarang menggunakan APPROOT absolute path dan mendukung folder lembaga (v1.32.0)."
+                }
+            ]
+        },
+        {
             "version": "1.35.9",
             "date": "2026-10-02",
             "type": "bugfix",

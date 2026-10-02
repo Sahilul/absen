@@ -609,7 +609,8 @@ class RiwayatJurnalController extends Controller
         // Kop header
         $kopHTML = '';
         if (!empty($pengaturanRapor['kop_rapor'])) {
-            $kopPath = 'public/img/kop/' . $pengaturanRapor['kop_rapor'];
+            $kopFolder = !empty($pengaturanRapor['lembaga_id']) ? 'lembaga' : 'kop';
+            $kopPath = APPROOT . '/public/img/' . $kopFolder . '/' . $pengaturanRapor['kop_rapor'];
             if (file_exists($kopPath)) {
                 $imageData = base64_encode(file_get_contents($kopPath));
                 $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
@@ -815,7 +816,8 @@ class RiwayatJurnalController extends Controller
         // Kop header
         $kopHTML = '';
         if (!empty($pengaturanRapor['kop_rapor'])) {
-            $kopPath = 'public/img/kop/' . $pengaturanRapor['kop_rapor'];
+            $kopFolder = !empty($pengaturanRapor['lembaga_id']) ? 'lembaga' : 'kop';
+            $kopPath = APPROOT . '/public/img/' . $kopFolder . '/' . $pengaturanRapor['kop_rapor'];
             if (file_exists($kopPath)) {
                 $imageData = base64_encode(file_get_contents($kopPath));
                 $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);

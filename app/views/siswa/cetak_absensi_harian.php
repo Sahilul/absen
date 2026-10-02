@@ -1,8 +1,9 @@
 <?php
-// Generate kop HTML from uploaded image
+// Generate kop HTML from uploaded image - support lembaga (v1.32.0)
 $kopHTML = '';
 if (!empty($data['pengaturan']['kop_rapor'])) {
-    $kopPath = 'public/img/kop/' . $data['pengaturan']['kop_rapor'];
+    $kopFolder = !empty($data['pengaturan']['lembaga_id']) ? 'lembaga' : 'kop';
+    $kopPath = APPROOT . '/public/img/' . $kopFolder . '/' . $data['pengaturan']['kop_rapor'];
     if (file_exists($kopPath)) {
         $imageData = base64_encode(file_get_contents($kopPath));
         $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);

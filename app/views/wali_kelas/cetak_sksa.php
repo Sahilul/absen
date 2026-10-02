@@ -1,8 +1,9 @@
 <?php
-// Header dengan gambar kop - SAMA PERSIS DENGAN RAPOR
+// Header dengan gambar kop - support lembaga (v1.32.0) dan pengaturan rapor lama
 $kopHTML = '';
 if (!empty($pengaturan['kop_rapor'])) {
-    $kopPath = 'public/img/kop/' . $pengaturan['kop_rapor'];
+    $kopFolder = !empty($pengaturan['lembaga_id']) ? 'lembaga' : 'kop';
+    $kopPath = APPROOT . '/public/img/' . $kopFolder . '/' . $pengaturan['kop_rapor'];
     if (file_exists($kopPath)) {
         $imageData = base64_encode(file_get_contents($kopPath));
         $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
@@ -11,10 +12,12 @@ if (!empty($pengaturan['kop_rapor'])) {
     }
 }
 
-// TTD Kepala Madrasah - SAMA PERSIS DENGAN RAPOR
+// TTD Kepala Madrasah - support lembaga (v1.32.0) dan pengaturan rapor lama
 $ttdKepalaHTML = '';
-if (!empty($pengaturan['ttd_kepala_madrasah'])) {
-    $ttdPath = 'public/img/ttd/' . $pengaturan['ttd_kepala_madrasah'];
+$ttdField = $pengaturan['ttd_kepala_madrasah'] ?? '';
+if (!empty($ttdField)) {
+    $ttdFolder = !empty($pengaturan['lembaga_id']) ? 'lembaga' : 'ttd';
+    $ttdPath = APPROOT . '/public/img/' . $ttdFolder . '/' . $ttdField;
     if (file_exists($ttdPath)) {
         $imageData = base64_encode(file_get_contents($ttdPath));
         $imageType = pathinfo($ttdPath, PATHINFO_EXTENSION);

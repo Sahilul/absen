@@ -28,7 +28,8 @@
     // Generate kop HTML from uploaded image (follow patterns from siswa/wali_kelas views)
     $kopHTML = '';
     if (!empty($pengaturan['kop_rapor'])) {
-        $kopPath = 'public/img/kop/' . $pengaturan['kop_rapor'];
+        $kopFolder = !empty($pengaturan['lembaga_id']) ? 'lembaga' : 'kop';
+        $kopPath = APPROOT . '/public/img/' . $kopFolder . '/' . $pengaturan['kop_rapor'];
         if (file_exists($kopPath)) {
             $imageData = base64_encode(file_get_contents($kopPath));
             $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
