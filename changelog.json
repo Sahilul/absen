@@ -1,6 +1,21 @@
 {
     "versions": [
         {
+            "version": "1.35.6",
+            "date": "2026-10-02",
+            "type": "minor",
+            "changes": [
+                {
+                    "type": "feature",
+                    "description": "Statistik per kelas di halaman admin Soal STS: menampilkan jumlah mapel yang Siap Cetak dan Sudah Dicetak di setiap kartu kelas."
+                },
+                {
+                    "type": "feature",
+                    "description": "Stats card global baru di dashboard Soal STS: total Siap Cetak dan Sudah Dicetak dari seluruh kelas."
+                }
+            ]
+        },
+        {
             "version": "1.35.5",
             "date": "2026-10-02",
             "type": "minor",

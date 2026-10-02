@@ -22,6 +22,9 @@
     $totalLengkap = 0;
     $totalSebagian = 0;
     $totalBelum = 0;
+    $globalSiapCetak = 0;
+    $globalSudahDicetak = 0;
+    $globalTotalMapelSoal = 0;
     foreach ($data['kelas_list'] as $k) {
         if ($k['total_mapel_soal'] > 0 && $k['mapel_lengkap'] == $k['total_mapel_soal']) {
             $totalLengkap++;
@@ -30,9 +33,12 @@
         } else {
             $totalBelum++;
         }
+        $globalSiapCetak += $k['mapel_siap_cetak'] ?? 0;
+        $globalSudahDicetak += $k['mapel_sudah_dicetak'] ?? 0;
+        $globalTotalMapelSoal += $k['total_mapel_soal'];
     }
     ?>
-    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
         <div class="bg-white p-4 rounded-lg shadow-sm border">
             <div class="flex items-center">
                 <div class="bg-blue-100 p-2 rounded-lg mr-3">
@@ -41,7 +47,6 @@
                 <div>
                     <p class="text-sm text-gray-600">Total Kelas</p>
                     <p class="text-xl font-semibold text-gray-900"><?= $totalKelas; ?></p>
-                    <p class="text-xs text-gray-500">Sesi aktif</p>
                 </div>
             </div>
         </div>
@@ -51,9 +56,8 @@
                     <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-600">Soal Lengkap</p>
+                    <p class="text-sm text-gray-600">Kelas Lengkap</p>
                     <p class="text-xl font-semibold text-green-700"><?= $totalLengkap; ?></p>
-                    <p class="text-xs text-gray-500">Kelas</p>
                 </div>
             </div>
         </div>
@@ -65,7 +69,6 @@
                 <div>
                     <p class="text-sm text-gray-600">Sebagian</p>
                     <p class="text-xl font-semibold text-yellow-700"><?= $totalSebagian; ?></p>
-                    <p class="text-xs text-gray-500">Kelas</p>
                 </div>
             </div>
         </div>
@@ -77,7 +80,28 @@
                 <div>
                     <p class="text-sm text-gray-600">Belum Ada</p>
                     <p class="text-xl font-semibold text-red-700"><?= $totalBelum; ?></p>
-                    <p class="text-xs text-gray-500">Kelas</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm border">
+            <div class="flex items-center">
+                <div class="bg-amber-100 p-2 rounded-lg mr-3">
+                    <i data-lucide="lock" class="w-5 h-5 text-amber-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Siap Cetak</p>
+                    <p class="text-xl font-semibold text-amber-700"><?= $globalSiapCetak; ?><span class="text-sm font-normal text-gray-400">/<?= $globalTotalMapelSoal; ?></span></p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm border">
+            <div class="flex items-center">
+                <div class="bg-emerald-100 p-2 rounded-lg mr-3">
+                    <i data-lucide="printer-check" class="w-5 h-5 text-emerald-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Sudah Dicetak</p>
+                    <p class="text-xl font-semibold text-emerald-700"><?= $globalSudahDicetak; ?><span class="text-sm font-normal text-gray-400">/<?= $globalTotalMapelSoal; ?></span></p>
                 </div>
             </div>
         </div>
@@ -97,6 +121,8 @@
                 $totalPengaturan = $kelas['total_mapel_soal'];
                 $mapelLengkap = $kelas['mapel_lengkap'];
                 $mapelSebagian = $kelas['mapel_sebagian'];
+                $mapelSiapCetak = $kelas['mapel_siap_cetak'] ?? 0;
+                $mapelSudahDicetak = $kelas['mapel_sudah_dicetak'] ?? 0;
 
                 // Status badge
                 if ($totalPengaturan > 0 && $mapelLengkap == $totalPengaturan) {
@@ -141,6 +167,14 @@
                             <div class="flex justify-between">
                                 <span>Soal Lengkap</span>
                                 <span class="font-medium text-green-600"><?= $mapelLengkap; ?> mapel</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Siap Cetak</span>
+                                <span class="font-medium <?= $mapelSiapCetak > 0 ? 'text-amber-600' : 'text-gray-400'; ?>"><?= $mapelSiapCetak; ?> mapel</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Sudah Dicetak</span>
+                                <span class="font-medium <?= $mapelSudahDicetak > 0 ? 'text-emerald-600' : 'text-gray-400'; ?>"><?= $mapelSudahDicetak; ?> mapel</span>
                             </div>
                         </div>
 

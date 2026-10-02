@@ -147,15 +147,25 @@ class SoalStsController extends Controller
             // Hitung mapel yang sudah lengkap
             $lengkap = 0;
             $sebagian = 0;
+            $siapCetak = 0;
+            $sudahDicetak = 0;
             foreach ($status as $s) {
                 if ($s['total_target'] > 0 && $s['total_soal'] >= $s['total_target']) {
                     $lengkap++;
                 } elseif ($s['total_soal'] > 0) {
                     $sebagian++;
                 }
+                if (!empty($s['siap_cetak_at'])) {
+                    $siapCetak++;
+                }
+                if (!empty($s['dicetak_at'])) {
+                    $sudahDicetak++;
+                }
             }
             $kelas['mapel_lengkap'] = $lengkap;
             $kelas['mapel_sebagian'] = $sebagian;
+            $kelas['mapel_siap_cetak'] = $siapCetak;
+            $kelas['mapel_sudah_dicetak'] = $sudahDicetak;
 
             // Hitung total mapel yang ada penugasan
             $mapelList = $this->model('Penugasan_model')->getMapelByKelas($kelas['id_kelas'], $id_semester_aktif);
