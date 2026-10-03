@@ -375,6 +375,70 @@ class BK_model
         return $this->db->rowCount();
     }
 
+    // ─── CETAK SURAT PANGGILAN ──────────────────────────────
+
+    /**
+     * v1.35.11 - Get panggilan data lengkap untuk cetak PDF surat pemanggilan
+     */
+    public function getPanggilanForCetak($id_panggilan)
+    {
+        $this->db->query("SELECT p.*,
+                            s.nama_siswa, s.nisn,
+                            s.ayah_kandung, s.ibu_kandung, s.wali_nama,
+                            s.alamat, s.rt, s.rw, s.desa, s.kecamatan, s.kabupaten, s.kota AS kota_siswa,
+                            bk.judul AS judul_kasus, bk.kategori, bk.deskripsi AS deskripsi_kasus,
+                            bk.tingkat, bk.id_kelas, bk.id_tp,
+                            k.nama_kelas, k.jenjang
+                          FROM bk_panggilan_ortu p
+                          JOIN siswa s ON s.id_siswa = p.id_siswa
+                          JOIN bk_kasus bk ON bk.id_kasus = p.id_kasus
+                          JOIN kelas k ON k.id_kelas = bk.id_kelas
+                          WHERE p.id_panggilan = :id_panggilan");
+        $this->db->bind('id_panggilan', $id_panggilan);
+        return $this->db->single();
+    }
+
+    /**
+     * v1.35.11 - Generate nomor surat panggilan orang tua
+     * Format: 001/BK.POT/X/2026
+     */
+    public function generateNomorSuratPanggilan($tanggal_surat = null)
+    {
+        $tanggal = $tanggal_surat ?: date('Y-m-d');
+        $tahun = date('Y', strtotime($tanggal));
+        $bulan = (int) date('m', strtotime($tanggal));
+
+        $bulanRomawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+
+        // Ambil nomor urut terakhir di tahun ini
+        $this->db->query("SELECT MAX(CAST(SUBSTRING_INDEX(nomor_surat, '/', 1) AS UNSIGNED)) AS max_nomor
+                          FROM bk_panggilan_ortu
+                          WHERE nomor_surat IS NOT NULL
+                            AND nomor_surat != ''
+                            AND YEAR(tanggal_surat) = :tahun");
+        $this->db->bind('tahun', $tahun);
+        $result = $this->db->single();
+
+        $nextNomor = ($result && $result['max_nomor']) ? (int) $result['max_nomor'] + 1 : 1;
+
+        return sprintf('%03d/BK.POT/%s/%s', $nextNomor, $bulanRomawi[$bulan], $tahun);
+    }
+
+    /**
+     * v1.35.11 - Update nomor surat pada panggilan
+     */
+    public function updateNomorSurat($id_panggilan, $nomor_surat, $tanggal_surat = null)
+    {
+        $this->db->query("UPDATE bk_panggilan_ortu
+                          SET nomor_surat = :nomor_surat, tanggal_surat = :tanggal_surat
+                          WHERE id_panggilan = :id_panggilan");
+        $this->db->bind('nomor_surat', $nomor_surat);
+        $this->db->bind('tanggal_surat', $tanggal_surat ?: date('Y-m-d'));
+        $this->db->bind('id_panggilan', $id_panggilan);
+        $this->db->execute();
+        return $this->db->rowCount();
+    }
+
     // ─── HELPERS ─────────────────────────────────────────────
 
     public function getGuruBKList($id_tp)

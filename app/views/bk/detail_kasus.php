@@ -180,6 +180,13 @@ $statusColor = $sc[$kasus['status']] ?? 'slate';
                     ?>
                     <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-<?= $pgColor ?>-100 text-<?= $pgColor ?>-700"><?= ucfirst(str_replace('_', ' ', $pg['status'])) ?></span>
                 </div>
+                <div class="flex items-center gap-2 mb-2">
+                    <a href="<?= BASEURL; ?>/bk/cetakPanggilan/<?= $pg['id_panggilan'] ?>" target="_blank"
+                       class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+                       title="Cetak Surat Pemanggilan">
+                        <i data-lucide="printer" class="w-3 h-3"></i> Cetak Surat
+                    </a>
+                </div>
                 <?php if (!empty($pg['catatan_hasil'])): ?>
                     <p class="text-sm text-secondary-700"><?= htmlspecialchars($pg['catatan_hasil']) ?></p>
                 <?php endif; ?>
