@@ -136,6 +136,8 @@ class AichatController extends Controller
      */
     public function send()
     {
+        // Naikkan time limit agar cURL ke AI API tidak terpotong
+        set_time_limit(360);
         header('Content-Type: application/json');
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

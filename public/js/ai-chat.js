@@ -67,8 +67,8 @@
         return handleResponse(res);
     }
 
-    async function apiPost(path, body) {
-        const res = await fetch(cfg.baseurl + path, {
+    async function apiPost(path, body, timeoutMs = 0) {
+        const opts = {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
@@ -76,21 +76,43 @@
                 'X-CSRF-Token': cfg.csrfToken,
             },
             body: JSON.stringify(body),
-        });
-        return handleResponse(res);
+        };
+        if (timeoutMs > 0) {
+            const ac = new AbortController();
+            opts.signal = ac.signal;
+            setTimeout(() => ac.abort(), timeoutMs);
+        }
+        try {
+            const res = await fetch(cfg.baseurl + path, opts);
+            return handleResponse(res);
+        } catch (e) {
+            if (e.name === 'AbortError') return { success: false, error: 'Request timeout — proses AI terlalu lama. Coba lagi dengan pesan yang lebih pendek.' };
+            throw e;
+        }
     }
 
-    async function apiPostFormData(path, formData) {
+    async function apiPostFormData(path, formData, timeoutMs = 0) {
         formData.append('csrf_token', cfg.csrfToken);
-        const res = await fetch(cfg.baseurl + path, {
+        const opts = {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
                 'X-CSRF-Token': cfg.csrfToken,
             },
             body: formData,
-        });
-        return handleResponse(res);
+        };
+        if (timeoutMs > 0) {
+            const ac = new AbortController();
+            opts.signal = ac.signal;
+            setTimeout(() => ac.abort(), timeoutMs);
+        }
+        try {
+            const res = await fetch(cfg.baseurl + path, opts);
+            return handleResponse(res);
+        } catch (e) {
+            if (e.name === 'AbortError') return { success: false, error: 'Request timeout — proses AI terlalu lama. Coba lagi dengan pesan yang lebih pendek.' };
+            throw e;
+        }
     }
 
     async function handleResponse(res) {
@@ -658,13 +680,13 @@
             formData.append('conversation_id', state.activeConversationId);
             formData.append('message', message);
             formData.append('attachment', pendingFile);
-            res = await apiPostFormData('/aichat/send', formData);
+            res = await apiPostFormData('/aichat/send', formData, 330000);
         } else {
-            // Kirim JSON biasa
+            // Kirim JSON biasa (timeout 330 detik)
             res = await apiPost('/aichat/send', {
                 conversation_id: state.activeConversationId,
                 message: message,
-            });
+            }, 330000);
         }
 
         // Hapus typing indicator
