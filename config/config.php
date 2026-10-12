@@ -64,6 +64,31 @@ define('R2_BUCKET', getSystemSetting('r2_bucket', 'sabilillah'));
 define('R2_PUBLIC_URL', getSystemSetting('r2_public_url', ''));
 
 /**
+ * Baca nilai sederhana dari file .env (KEY=VALUE per baris).
+ */
+function loadEnvValue($file, $key, $default = '')
+{
+    if (!is_readable($file)) {
+        return $default;
+    }
+    foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $line = trim($line);
+        if ($line === '' || $line[0] === '#') {
+            continue;
+        }
+        $parts = explode('=', $line, 2);
+        if (count($parts) === 2 && trim($parts[0]) === $key) {
+            return trim($parts[1]);
+        }
+    }
+    return $default;
+}
+
+// HMAC secret untuk auth bridge ke backend Go (AI streaming / student module).
+// Disimpan di config/ai-bridge.env (tidak di-commit) agar tidak bocor ke repo.
+define('AI_BRIDGE_HMAC_SECRET', loadEnvValue(__DIR__ . '/ai-bridge.env', 'AI_BRIDGE_HMAC_SECRET', ''));
+
+/**
  * Deteksi MIME type gambar dengan aman (tanpa bergantung pada ekstensi fileinfo).
  * Fallback ke ekstensi nama file jika getimagesize tidak tersedia.
  */

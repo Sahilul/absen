@@ -1,6 +1,17 @@
 {
     "versions": [
         {
+            "version": "1.36.1",
+            "date": "2026-10-12",
+            "type": "security",
+            "changes": [
+                {
+                    "type": "security",
+                    "description": "Hapus HMAC bridge secret yang ter-hardcode di source code (SoalStsController, AichatController). Secret kini dibaca dari config/ai-bridge.env (tidak di-commit) via konstanta AI_BRIDGE_HMAC_SECRET. Menutup temuan GitGuardian."
+                }
+            ]
+        },
+        {
             "version": "1.36.0",
             "date": "2026-10-12",
             "type": "feature",

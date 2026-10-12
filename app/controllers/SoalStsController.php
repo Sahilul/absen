@@ -616,7 +616,7 @@ class SoalStsController extends Controller
         $userMsg .= "\nTotal: {$totalGenerate} soal. Jawab HANYA JSON.";
 
         // Generate HMAC token
-        $hmacSecret = 'sabilillah-hmac-bridge-2026';
+        $hmacSecret = defined('AI_BRIDGE_HMAC_SECRET') ? AI_BRIDGE_HMAC_SECRET : '';
         $userId = $_SESSION['user_id'] ?? 0;
         $role = $_SESSION['role'] ?? '';
         $nama = $_SESSION['nama_lengkap'] ?? '';

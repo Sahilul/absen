@@ -95,3 +95,14 @@ shell-found.txt
 
 # Google site verification (opsional)
 google*.html
+
+# Student Go/Vue module
+config/student-bridge.env
+config/ai-bridge.env
+backend/config.yaml
+backend/sabilillah-api
+backend/sabilillah-api.next
+backend/student-module
+frontend/test-results/
+frontend/playwright-report/
+!frontend/package-lock.json

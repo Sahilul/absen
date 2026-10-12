@@ -136,8 +136,8 @@ class AichatController extends Controller
      */
     public function send()
     {
-        // Naikkan time limit agar cURL ke AI API tidak terpotong
-        set_time_limit(360);
+        // Naikkan time limit agar cURL ke AI API tidak terpotong (respons panjang)
+        set_time_limit(600);
         header('Content-Type: application/json');
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -161,10 +161,15 @@ class AichatController extends Controller
             $message        = trim($input['message'] ?? '');
         }
 
-        if (!$conversationId || empty($message)) {
+        $hasFilesFallback = $isMultipart && !empty($_FILES['attachments']['name'][0]);
+        if (!$conversationId || (empty($message) && !$hasFilesFallback)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'conversation_id dan message diperlukan']);
+            echo json_encode(['success' => false, 'error' => 'conversation_id dan message/attachment diperlukan']);
             exit;
+        }
+
+        if (empty($message) && $hasFilesFallback) {
+            $message = 'Lihat gambar ini';
         }
 
         // Cek kepemilikan conversation
@@ -189,18 +194,38 @@ class AichatController extends Controller
             }
         }
 
-        // Handle file attachment
-        $attachmentMeta = null;
+        // Handle file attachment(s) — supports multiple files via attachments[]
+        $attachmentMetas = [];
         $attachmentJson = null;
-        if ($isMultipart && !empty($_FILES['attachment']['name']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
-            $uploadResult = $this->handleFileUpload($_FILES['attachment'], $conversationId);
-            if ($uploadResult['error']) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => $uploadResult['error']]);
-                exit;
+        if ($isMultipart && !empty($_FILES['attachments']['name'][0])) {
+            $fileCount = count($_FILES['attachments']['name']);
+            $maxFiles = 5;
+            for ($i = 0; $i < min($fileCount, $maxFiles); $i++) {
+                if ($_FILES['attachments']['error'][$i] !== UPLOAD_ERR_OK) continue;
+                $singleFile = [
+                    'name'     => $_FILES['attachments']['name'][$i],
+                    'type'     => $_FILES['attachments']['type'][$i],
+                    'tmp_name' => $_FILES['attachments']['tmp_name'][$i],
+                    'error'    => $_FILES['attachments']['error'][$i],
+                    'size'     => $_FILES['attachments']['size'][$i],
+                ];
+                $uploadResult = $this->handleFileUpload($singleFile, $conversationId);
+                if ($uploadResult['error']) continue;
+                $attachmentMetas[] = $uploadResult['meta'];
             }
-            $attachmentMeta = $uploadResult['meta'];
-            $attachmentJson = json_encode($attachmentMeta, JSON_UNESCAPED_UNICODE);
+            if (!empty($attachmentMetas)) {
+                $attachmentJson = count($attachmentMetas) === 1
+                    ? json_encode($attachmentMetas[0], JSON_UNESCAPED_UNICODE)
+                    : json_encode($attachmentMetas, JSON_UNESCAPED_UNICODE);
+            }
+        }
+        // Legacy: support single 'attachment' key
+        elseif ($isMultipart && !empty($_FILES['attachment']['name']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = $this->handleFileUpload($_FILES['attachment'], $conversationId);
+            if (!$uploadResult['error']) {
+                $attachmentMetas[] = $uploadResult['meta'];
+                $attachmentJson = json_encode($uploadResult['meta'], JSON_UNESCAPED_UNICODE);
+            }
         }
 
         // Simpan pesan user (dengan attachment jika ada)
@@ -258,23 +283,15 @@ class AichatController extends Controller
         }
 
         // Simpan respons AI (dengan generated files jika ada)
-        $generatedFiles = [];
-        $replyToSave = $result['reply'];
-
-        // Cek apakah AI response mengandung marker generate dokumen
-        if (preg_match('/:::generate-(pdf|excel)\n([\s\S]*?)\n:::/m', $result['reply'], $genMatch)) {
-            $genResult = $this->handleDocumentGeneration($genMatch[1], $genMatch[2], $conversationId);
-            if ($genResult) {
-                $generatedFiles[] = $genResult;
-                // Hapus marker dari reply, ganti dengan info download
-                $downloadInfo = "📄 **Dokumen berhasil dibuat:** {$genResult['original_name']}";
-                $replyToSave = preg_replace('/:::generate-(pdf|excel)\n[\s\S]*?\n:::/m', $downloadInfo, $replyToSave);
-            }
-        }
+        // Proses marker dokumen: generate file / bersihkan marker (termasuk yang terpotong)
+        $docProcessed   = $this->processDocumentMarkers((string) $result['reply'], (int) $conversationId);
+        $replyToSave    = $docProcessed['reply'];
+        $generatedFiles = $docProcessed['files'];
 
         $assistantAttachment = null;
         if (!empty($generatedFiles)) {
-            $assistantAttachment = json_encode($generatedFiles[0], JSON_UNESCAPED_UNICODE);
+            // Simpan SEMUA file (array) — satu respons bisa menghasilkan beberapa dokumen
+            $assistantAttachment = json_encode($generatedFiles, JSON_UNESCAPED_UNICODE);
         }
 
         $assistantMsgId = $this->chatModel->addMessage($conversationId, 'assistant', $replyToSave, $assistantAttachment);
@@ -291,8 +308,8 @@ class AichatController extends Controller
         ];
 
         // Sertakan info attachment user (untuk render di frontend)
-        if ($attachmentMeta) {
-            $response['attachment'] = $attachmentMeta;
+        if (!empty($attachmentMetas)) {
+            $response['attachment'] = count($attachmentMetas) === 1 ? $attachmentMetas[0] : $attachmentMetas;
         }
 
         // Sertakan generated files
@@ -344,6 +361,275 @@ class AichatController extends Controller
 
         echo json_encode(['success' => (bool) $deleted]);
         exit;
+    }
+
+    // =========================================
+    // GO STREAMING BRIDGE
+    // =========================================
+
+    /**
+     * POST /aichat/sendPrepare
+     * Step 1 of streaming flow: validate, save user message, build context.
+     * Returns context + HMAC token for Go streaming endpoint.
+     * Does NOT call AI — that's Go's job now.
+     */
+    public function sendPrepare()
+    {
+        set_time_limit(30);
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+            exit;
+        }
+
+        $userId = $_SESSION['user_id'];
+
+        // Detect content type: JSON atau multipart
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        $isMultipart = stripos($contentType, 'multipart/form-data') !== false;
+
+        if ($isMultipart) {
+            $conversationId = $_POST['conversation_id'] ?? null;
+            $message        = trim($_POST['message'] ?? '');
+        } else {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $conversationId = $input['conversation_id'] ?? null;
+            $message        = trim($input['message'] ?? '');
+        }
+
+        $hasFiles = $isMultipart && !empty($_FILES['attachments']['name'][0]);
+        if (!$conversationId || (empty($message) && !$hasFiles)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'conversation_id dan message/attachment diperlukan']);
+            exit;
+        }
+
+        // Default message jika hanya kirim gambar tanpa teks
+        if (empty($message) && $hasFiles) {
+            $message = 'Lihat gambar ini';
+        }
+
+        // Cek kepemilikan conversation
+        $conversation = $this->chatModel->getConversation($conversationId, $userId);
+        if (!$conversation) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Percakapan tidak ditemukan']);
+            exit;
+        }
+
+        // Rate limiting
+        $dailyLimit = (int) getSystemSetting('ai_chat_daily_limit', '50');
+        if ($dailyLimit > 0) {
+            $todayCount = $this->chatModel->countTodayMessages($userId);
+            if ($todayCount >= $dailyLimit) {
+                http_response_code(429);
+                echo json_encode([
+                    'success' => false,
+                    'error'   => "Batas harian tercapai ({$dailyLimit} pesan/hari). Coba lagi besok.",
+                ]);
+                exit;
+            }
+        }
+
+        // Handle file attachment(s) — supports multiple files via attachments[]
+        $attachmentMetas = [];
+        $attachmentJson = null;
+        if ($isMultipart && !empty($_FILES['attachments']['name'][0])) {
+            $fileCount = count($_FILES['attachments']['name']);
+            $maxFiles = 5;
+            for ($i = 0; $i < min($fileCount, $maxFiles); $i++) {
+                if ($_FILES['attachments']['error'][$i] !== UPLOAD_ERR_OK) continue;
+                $singleFile = [
+                    'name'     => $_FILES['attachments']['name'][$i],
+                    'type'     => $_FILES['attachments']['type'][$i],
+                    'tmp_name' => $_FILES['attachments']['tmp_name'][$i],
+                    'error'    => $_FILES['attachments']['error'][$i],
+                    'size'     => $_FILES['attachments']['size'][$i],
+                ];
+                $uploadResult = $this->handleFileUpload($singleFile, $conversationId);
+                if ($uploadResult['error']) continue;
+                $attachmentMetas[] = $uploadResult['meta'];
+            }
+            if (!empty($attachmentMetas)) {
+                $attachmentJson = count($attachmentMetas) === 1
+                    ? json_encode($attachmentMetas[0], JSON_UNESCAPED_UNICODE)
+                    : json_encode($attachmentMetas, JSON_UNESCAPED_UNICODE);
+            }
+        }
+        // Legacy: support single 'attachment' key for backward compatibility
+        elseif ($isMultipart && !empty($_FILES['attachment']['name']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = $this->handleFileUpload($_FILES['attachment'], $conversationId);
+            if (!$uploadResult['error']) {
+                $attachmentMetas[] = $uploadResult['meta'];
+                $attachmentJson = json_encode($uploadResult['meta'], JSON_UNESCAPED_UNICODE);
+            }
+        }
+
+        // Simpan pesan user
+        $this->chatModel->addMessage($conversationId, 'user', $message, $attachmentJson);
+
+        // Cek apakah ini pesan pertama
+        $isFirstMessage = $this->chatModel->countMessages($conversationId) === 1;
+
+        // Ambil context
+        $maxHistory = (int) getSystemSetting('ai_chat_max_history', '100');
+        $recentMessages = $this->chatModel->getRecentMessages($conversationId, $maxHistory);
+
+        // Truncate context
+        $contextMessages = [];
+        $totalLen = 0;
+        $maxContextLen = (int) getSystemSetting('ai_chat_max_context_chars', '500000');
+        $reversed = array_reverse($recentMessages);
+        foreach ($reversed as $msg) {
+            $len = mb_strlen($msg['content']);
+            if ($totalLen + $len > $maxContextLen && !empty($contextMessages)) {
+                break;
+            }
+            $entry = [
+                'role'    => $msg['role'],
+                'content' => $msg['content'],
+            ];
+            if (!empty($msg['attachment'])) {
+                $entry['attachment'] = $msg['attachment'];
+            }
+            array_unshift($contextMessages, $entry);
+            $totalLen += $len;
+        }
+
+        // Build system prompt
+        $systemPrompt = $this->buildSystemPrompt();
+
+        // Generate HMAC token for Go auth
+        $hmacToken = $this->generateHmacToken($userId);
+
+        $response = [
+            'success'        => true,
+            'hmac_token'     => $hmacToken,
+            'system_prompt'  => $systemPrompt,
+            'messages'       => $contextMessages,
+            'is_first'       => $isFirstMessage,
+            'conversation_id' => (int) $conversationId,
+        ];
+
+        if (!empty($attachmentMetas)) {
+            // Return array if multi, single object if one (backward compatible for rendering)
+            $response['attachment'] = count($attachmentMetas) === 1 ? $attachmentMetas[0] : $attachmentMetas;
+        }
+
+        echo json_encode($response);
+        exit;
+    }
+
+    /**
+     * POST /aichat/saveAssistant
+     * Step 3 of streaming flow: save AI reply after streaming completes.
+     */
+    public function saveAssistant()
+    {
+        // Respons bisa sangat panjang (64K token) + generate PDF bisa lama
+        set_time_limit(600);
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+            exit;
+        }
+
+        $userId = $_SESSION['user_id'];
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $conversationId = $input['conversation_id'] ?? null;
+        $content        = $input['content'] ?? '';
+        $userMessage    = $input['user_message'] ?? '';
+        $isFirst        = $input['is_first'] ?? false;
+        $usage          = $input['usage'] ?? [];
+
+        if (!$conversationId || empty($content)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'conversation_id dan content diperlukan']);
+            exit;
+        }
+
+        // Cek kepemilikan
+        $conversation = $this->chatModel->getConversation($conversationId, $userId);
+        if (!$conversation) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Percakapan tidak ditemukan']);
+            exit;
+        }
+
+        // Handle document generation markers
+        // Proses marker dokumen: generate file / bersihkan marker (termasuk yang terpotong)
+        $docProcessed   = $this->processDocumentMarkers($content, (int) $conversationId);
+        $replyToSave    = $docProcessed['reply'];
+        $generatedFiles = $docProcessed['files'];
+
+        $assistantAttachment = null;
+        if (!empty($generatedFiles)) {
+            // Simpan SEMUA file (array) — satu respons bisa menghasilkan beberapa dokumen
+            $assistantAttachment = json_encode($generatedFiles, JSON_UNESCAPED_UNICODE);
+        }
+
+        // Save assistant message
+        $assistantMsgId = $this->chatModel->addMessage($conversationId, 'assistant', $replyToSave, $assistantAttachment);
+
+        // Log usage
+        $this->logAiUsage($conversationId, $userId, $assistantMsgId, 'chat', [
+            'status' => true,
+            'usage'  => $usage,
+            'error'  => null,
+        ]);
+
+        // Touch conversation
+        $this->chatModel->touchConversation($conversationId);
+
+        $response = [
+            'success' => true,
+            'reply'   => $replyToSave,
+        ];
+
+        if (!empty($generatedFiles)) {
+            $response['generated_files'] = $generatedFiles;
+        }
+
+        // Generate title if first message
+        if ($isFirst && !empty($userMessage)) {
+            require_once APPROOT . '/app/core/AiProvider.php';
+            $ai = new AiProvider();
+            $titleResult = $ai->generateTitleWithUsage($userMessage, $replyToSave);
+            $title = $titleResult['title'];
+            $this->chatModel->updateJudul($conversationId, $title);
+            $response['title'] = $title;
+
+            $this->logAiUsage($conversationId, $userId, null, 'title', [
+                'status' => $titleResult['status'],
+                'usage'  => $titleResult['usage'],
+                'error'  => $titleResult['error'],
+            ]);
+        }
+
+        echo json_encode($response);
+        exit;
+    }
+
+    /**
+     * Generate HMAC token for Go backend auth bridge.
+     * Format: userId:role:namaLengkap:timestamp:signature
+     */
+    private function generateHmacToken(int $userId): string
+    {
+        $hmacSecret = defined('AI_BRIDGE_HMAC_SECRET') ? AI_BRIDGE_HMAC_SECRET : ''; // Must match Go config.yaml auth.hmac_secret
+        $role = $_SESSION['role'] ?? '';
+        $nama = $_SESSION['nama_lengkap'] ?? '';
+        $ts = time();
+
+        $payload = "{$userId}:{$role}:{$nama}:{$ts}";
+        $signature = hash_hmac('sha256', $payload, $hmacSecret);
+
+        return "{$userId}:{$role}:{$nama}:{$ts}:{$signature}";
     }
 
     // =========================================
@@ -467,6 +753,13 @@ class AichatController extends Controller
         // Determine actual MIME for storage
         $storedMime = is_array($expectedMime) ? $expectedMime[0] : ($expectedMime ?: $this->detectMime($targetPath));
 
+        // Resize large images to reduce base64 payload for AI vision API
+        if (str_starts_with($storedMime, 'image/') && filesize($targetPath) > 1048576) {
+            $this->resizeImageForVision($targetPath, $storedMime, 1280);
+            // Update stored mime — resized images are saved as JPEG
+            $storedMime = 'image/jpeg';
+        }
+
         $meta = [
             'filename'      => $filename,
             'original_name' => $file['name'],
@@ -488,6 +781,54 @@ class AichatController extends Controller
      * @param int    $conversationId
      * @return array|null File metadata atau null jika gagal
      */
+    /**
+     * Proses marker dokumen :::generate-xxx pada respons AI.
+     * Mengembalikan reply yang sudah dibersihkan + daftar file yang dihasilkan.
+     *
+     * - Marker lengkap (dengan penutup :::) → generate file (atau pesan gagal yang ramah).
+     * - Marker tanpa penutup (respons AI terpotong) → dibersihkan + pesan peringatan,
+     *   agar HTML mentah TIDAK pernah tampil di chat.
+     */
+    private function processDocumentMarkers(string $content, int $conversationId): array
+    {
+        $generatedFiles = [];
+        $reply = $content;
+
+        // Cari SEMUA marker lengkap: :::generate-pdf ... :::
+        // Satu respons bisa berisi BEBERAPA dokumen sekaligus.
+        $pattern = '/:::generate-(pdf|excel)[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*:::/';
+        if (preg_match_all($pattern, $content, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE)) {
+            // Proses dari belakang agar offset byte tetap valid saat teks diganti
+            for ($i = count($matches) - 1; $i >= 0; $i--) {
+                $block  = $matches[$i][0][0];
+                $offset = $matches[$i][0][1];
+                $type   = $matches[$i][1][0];
+                $doc    = trim($matches[$i][2][0]);
+
+                $genResult = $this->handleDocumentGeneration($type, $doc, $conversationId);
+                if ($genResult) {
+                    array_unshift($generatedFiles, $genResult); // jaga urutan asli
+                    $info = "📄 **Dokumen berhasil dibuat:** {$genResult['original_name']}";
+                } else {
+                    $info = "⚠️ _(Dokumen gagal dibuat. Silakan coba lagi.)_";
+                }
+
+                $reply = substr($reply, 0, $offset) . $info . substr($reply, $offset + strlen($block));
+            }
+        }
+
+        // Sisa marker tanpa penutup (respons AI terpotong) — bersihkan agar konten mentah tidak tampil
+        if (preg_match('/:::generate-(pdf|excel)/', $reply)) {
+            $reply = preg_replace(
+                '/\n*:::generate-(pdf|excel)[\s\S]*$/',
+                "\n\n⚠️ _(Pembuatan dokumen tidak selesai karena respons AI terpotong di tengah jalan. Coba minta lagi dengan isi lebih ringkas, atau bagi menjadi beberapa dokumen — misalnya 20 soal per dokumen.)_",
+                $reply
+            );
+        }
+
+        return ['reply' => trim($reply), 'files' => $generatedFiles];
+    }
+
     private function handleDocumentGeneration(string $type, string $content, int $conversationId): ?array
     {
         try {
@@ -500,13 +841,14 @@ class AichatController extends Controller
             }
 
             $timestamp = date('Ymd_His');
+            $suffix = bin2hex(random_bytes(2)); // hindari nama file bentrok saat banyak dokumen sekaligus
 
             if ($type === 'pdf') {
-                $filename = "dokumen_{$timestamp}.pdf";
+                $filename = "dokumen_{$timestamp}_{$suffix}.pdf";
                 $filePath = $generator->generatePdf($content, $generatedDir . $filename);
                 $mime = 'application/pdf';
             } elseif ($type === 'excel') {
-                $filename = "data_{$timestamp}.xlsx";
+                $filename = "data_{$timestamp}_{$suffix}.xlsx";
                 $data = json_decode($content, true);
                 if (!$data) {
                     // Jika bukan JSON, coba parse sebagai TSV/CSV
@@ -627,6 +969,66 @@ class AichatController extends Controller
     }
 
     /**
+     * Resize gambar besar agar payload base64 ke AI API tidak terlalu besar.
+     * Gambar di-resize agar sisi terpanjang max $maxDim px, lalu disimpan sebagai JPEG quality 80.
+     *
+     * @param string $filePath Path file gambar (akan di-overwrite)
+     * @param string $mime     MIME type asli
+     * @param int    $maxDim   Dimensi maksimal sisi terpanjang
+     */
+    private function resizeImageForVision(string $filePath, string $mime, int $maxDim = 1280): void
+    {
+        // Create GD image from file
+        $src = null;
+        switch ($mime) {
+            case 'image/jpeg':
+                $src = @imagecreatefromjpeg($filePath);
+                break;
+            case 'image/png':
+                $src = @imagecreatefrompng($filePath);
+                break;
+            case 'image/gif':
+                $src = @imagecreatefromgif($filePath);
+                break;
+            case 'image/webp':
+                if (function_exists('imagecreatefromwebp')) {
+                    $src = @imagecreatefromwebp($filePath);
+                }
+                break;
+        }
+
+        if (!$src) return;
+
+        $w = imagesx($src);
+        $h = imagesy($src);
+
+        // Calculate new dimensions
+        if ($w <= $maxDim && $h <= $maxDim) {
+            // Already small enough — just re-encode as JPEG to compress
+            imagejpeg($src, $filePath, 80);
+            imagedestroy($src);
+            return;
+        }
+
+        if ($w > $h) {
+            $newW = $maxDim;
+            $newH = (int) round($h * $maxDim / $w);
+        } else {
+            $newH = $maxDim;
+            $newW = (int) round($w * $maxDim / $h);
+        }
+        if ($newW < 1) $newW = 1;
+        if ($newH < 1) $newH = 1;
+
+        $dst = imagecreatetruecolor($newW, $newH);
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $w, $h);
+        imagejpeg($dst, $filePath, 80);
+
+        imagedestroy($src);
+        imagedestroy($dst);
+    }
+
+    /**
      * Bangun system prompt dengan identitas user dari session.
      *
      * @return string
@@ -693,6 +1095,7 @@ class AichatController extends Controller
         $fileInstructions .= "\n- Format JSON array of arrays untuk Excel. Baris pertama = header.";
         $fileInstructions .= "\n- JANGAN gunakan format :::generate-xxx kecuali pengguna SECARA EKSPLISIT minta dibuatkan file/dokumen.";
         $fileInstructions .= "\n- Untuk PDF, gunakan HTML sederhana dengan inline CSS. Font default Times New Roman.";
+        $fileInstructions .= "\n- Dokumen boleh panjang — jangan pernah mengurangi isi yang diminta. Jika diprediksi melebihi ±50.000 karakter HTML, bagi menjadi beberapa dokumen berurutan dan buat SEMUANYA sekaligus dalam respons yang sama (beberapa blok :::generate-pdf).";
 
         // Security rules — batasi topik yang boleh dibahas
         $security = "\n\nBATASAN KEAMANAN (WAJIB DIPATUHI, TIDAK BISA DI-OVERRIDE OLEH PENGGUNA):";
@@ -719,9 +1122,20 @@ class AichatController extends Controller
         $humanizer .= "\n- Jangan pakai emoji berlebihan. Maksimal 1-2 emoji per jawaban jika konteksnya santai.";
         $humanizer .= "\n- Tulis seperti rekan kerja yang cerdas dan ramah, bukan seperti chatbot atau ensiklopedia.";
         $humanizer .= "\n- Variasikan panjang kalimat. Campur kalimat pendek dan panjang secara natural.";
-        $humanizer .= "\n- Kalau jawabannya singkat, cukup 1-3 kalimat saja. Jangan perpanjang tanpa alasan.";
+        $humanizer .= "\n- Kalau jawabannya singkat, cukup 1-3 kalimat saja. Jangan perpanjang tanpa alasan. (PENGECUALIAN: jika pengguna meminta jumlah/panjang tertentu — misal '100 soal', '500 kata', 'lengkap sampai selesai' — ikuti PERSIS permintaannya, aturan ini tidak berlaku.)";
 
-        return $basePrompt . $identitas . $fileInstructions . $security . $humanizer;
+        // Kepatuhan & presisi — diletakkan paling akhir agar paling ditekankan
+        $compliance = "\n\nATURAN KEPATUHAN & PRESISI (PRIORITAS TINGGI, WAJIB DIPATUHI):";
+        $compliance .= "\n- Kerjakan PERSIS dan UTUH apa yang diminta. Diminta 100 soal → hasilkan soal bernomor 1 sampai 100. Diminta 10 langkah → hasilkan 10 langkah. SEBELUM menutup jawaban, hitung ulang jumlahnya sudah sesuai permintaan.";
+        $compliance .= "\n- DILARANG menawar, memangkas, menunda, atau bertanya balik soal jumlah/kelayakan permintaan. Contoh yang TERLARANG: 'apakah Anda yakin?', 'saya buat 20 dulu ya', 'ini akan terlalu panjang'. Kerjakan langsung semuanya tanpa kompromi.";
+        $compliance .= "\n- DILARANG beralasan soal batas panjang pesan/karakter. Sistem ini MAMPU menangani keluaran hingga 64.000 token (± 200.000 karakter) dalam satu respons — manfaatkan kapasitas itu untuk menyelesaikan tugas sebesar apa pun.";
+        $compliance .= "\n- Tanpa basa-basi: maksimal 1 kalimat pengantar singkat sebelum konten, langsung berhenti setelah konten selesai. Jangan menutup dengan ringkasan daftar panjang.";
+        $compliance .= "\n- Untuk dokumen (PDF/Excel): seluruh isi yang diminta HARUS ada di dalam dokumen — 100 soal berarti dokumen berisi 100 soal lengkap. Tulis HTML secara efisien (CSS minimal, tanpa komentar HTML) agar hemat ruang.";
+        $compliance .= "\n- Jika total konten dokumen diprediksi melebihi ±50.000 karakter, bagi menjadi beberapa dokumen berurutan (Paket 1, Paket 2, dst.) dan BUAT SEMUANYA SEKALIGUS dalam satu respons ini memakai beberapa blok :::generate-pdf. Selesaikan sampai paket terakhir — JANGAN berhenti di paket pertama untuk menunggu perintah 'lanjut'.";
+        $compliance .= "\n- Jangan mengubah spesifikasi yang diminta (jumlah, format, struktur) kecuali pengguna secara eksplisit mengizinkan.";
+        $compliance .= "\n- Jika pengguna meminta mengulang/membuat ulang pekerjaan ('buat ulang', 'ulangi', 'ganti dari awal'), hasilkan versi LENGKAP dengan cakupan SAMA PERSIS seperti permintaan awalnya — jangan mengurangi jumlah atau bagiannya.";
+
+        return $basePrompt . $identitas . $fileInstructions . $security . $humanizer . $compliance;
     }
 
     /**
