@@ -36,6 +36,7 @@ $namaTp = $data['nama_tp'] ?? '';
                     <li><strong>Bendahara</strong> - Dapat menginput pembayaran untuk SEMUA kelas</li>
                     <li><strong>Petugas PSB</strong> - Dapat mengelola data PSB</li>
                     <li><strong>Petugas Buku Tamu</strong> - Dapat mengelola buku tamu digital</li>
+                    <li><strong>Pengelola Soal STS</strong> - Dapat mengelola modul Soal STS untuk SEMUA kelas (seperti admin), termasuk pengaturan, input soal, dan berita acara</li>
                     <li>Satu guru bisa memiliki beberapa fungsi sekaligus</li>
                     <li>Wali kelas juga bisa merangkap sebagai bendahara</li>
                 </ul>

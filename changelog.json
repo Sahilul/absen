@@ -1,6 +1,25 @@
 {
   "versions": [
     {
+      "version": "1.36.5",
+      "date": "2026-10-12",
+      "type": "feature",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Guru dapat ditugaskan sebagai \"Pengelola Soal STS\" melalui /admin/pengaturanRole. Guru yang ditugaskan mendapat akses mengelola seluruh modul Soal STS untuk SEMUA kelas layaknya admin (pengaturan, input soal, bulk pengaturan, berita acara), namun tetap memakai sidebar guru."
+        },
+        {
+          "type": "improvement",
+          "description": "Sidebar guru & wali kelas menampilkan menu \"Soal STS\" (badge Extra) otomatis bagi guru yang ditugaskan sebagai Pengelola Soal STS."
+        },
+        {
+          "type": "fix",
+          "description": "Perbaiki sidebar pada halaman modul Soal STS: halaman index, pengaturan, daftar mapel, dan bulk pengaturan kini memakai sidebar sesuai role, sehingga guru pengelola tidak lagi melihat sidebar \"Admin Panel\"."
+        }
+      ]
+    },
+    {
       "version": "1.36.4",
       "date": "2026-10-12",
       "type": "fix",

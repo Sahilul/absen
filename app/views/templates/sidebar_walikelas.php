@@ -39,7 +39,7 @@ function isMenuActive($judul, $keyword)
       <?php endif; ?>
       <div class="ml-3 min-w-0">
         <h1 class="text-lg font-bold text-secondary-800 leading-tight break-words"><?= $namaAplikasi; ?></h1>
-        <p class="text-xs text-secondary-500 font-medium mt-0.5">Wali Kelas</p>
+        <p class="text-xs text-secondary-500 font-medium mt-0.5">Guru & Wali Kelas</p>
       </div>
     </div>
     <button id="sidebar-toggle-btn"
@@ -74,6 +74,17 @@ function isMenuActive($judul, $keyword)
               class="w-4 h-4 <?= ($judul == 'Dashboard Guru') ? 'text-white' : 'text-secondary-500 group-hover:text-primary-600'; ?>"></i>
           </div>
           <span class="ml-3 whitespace-nowrap">Dashboard</span>
+        </a>
+      </li>
+
+      <!-- Menu Guru: Laporan BK -->
+      <li>
+        <a href="<?= BASEURL; ?>/guru/laporSiswa"
+          class="group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= ($judul == 'Laporan BK') ? 'gradient-primary text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
+          <div class="<?= ($judul == 'Laporan BK') ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-amber-100'; ?> p-2 rounded-lg transition-colors duration-200">
+            <i data-lucide="alert-triangle" class="w-4 h-4 <?= ($judul == 'Laporan BK') ? 'text-white' : 'text-secondary-500 group-hover:text-amber-600'; ?>"></i>
+          </div>
+          <span class="ml-3 whitespace-nowrap">Laporan BK</span>
         </a>
       </li>
 
@@ -186,6 +197,7 @@ function isMenuActive($judul, $keyword)
       $isAdminCms = false;
       $isPetugasBukuTamu = false;
       $isGuruBK = false;
+      $isPengelolaSts = false;
       if (isset($_SESSION['id_ref']) && isset($_SESSION['id_tp_aktif'])) {
         require_once APPROOT . '/app/models/GuruFungsi_model.php';
         $guruFungsiModel = new GuruFungsi_model();
@@ -194,13 +206,14 @@ function isMenuActive($judul, $keyword)
         $isAdminCms = $guruFungsiModel->isAdminCMS($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
         $isPetugasBukuTamu = $guruFungsiModel->isPetugasBukuTamu($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
         $isGuruBK = $guruFungsiModel->isGuruBK($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
+        $isPengelolaSts = $guruFungsiModel->isPengelolaSoalSts($_SESSION['id_ref'], $_SESSION['id_tp_aktif']);
       }
       ?>
 
-      <?php if ($isBendahara || $isPetugasPSB || $isAdminCms || $isPetugasBukuTamu || $isGuruBK): ?>
+      <?php if ($isBendahara || $isPetugasPSB || $isAdminCms || $isPetugasBukuTamu || $isGuruBK || $isPengelolaSts): ?>
         <!-- DROPDOWN: Tugas Tambahan -->
         <?php
-        $tugasTambahanActive = strpos($judul, 'Bendahara') !== false || strpos($judul, 'PSB') !== false || strpos($judul, 'Penerimaan') !== false || strpos($judul, 'CMS') !== false || strpos($judul, 'Berita') !== false || strpos($judul, 'Post') !== false || strpos($judul, 'Buku Tamu') !== false || strpos($judul, 'BK') !== false || strpos($judul, 'Bimbingan') !== false || strpos($judul, 'Konseling') !== false;
+        $tugasTambahanActive = strpos($judul, 'Bendahara') !== false || strpos($judul, 'PSB') !== false || strpos($judul, 'Penerimaan') !== false || strpos($judul, 'CMS') !== false || strpos($judul, 'Berita') !== false || strpos($judul, 'Post') !== false || strpos($judul, 'Buku Tamu') !== false || strpos($judul, 'BK') !== false || strpos($judul, 'Bimbingan') !== false || strpos($judul, 'Konseling') !== false || strpos($judul, 'Soal STS') !== false;
         ?>
         <li class="pt-2" x-data="{ open: <?= $tugasTambahanActive ? 'true' : 'false' ?> }">
           <button @click="open = !open"
@@ -261,6 +274,15 @@ function isMenuActive($judul, $keyword)
                 </a>
               </li>
             <?php endif; ?>
+            <?php if ($isPengelolaSts): ?>
+              <li>
+                <a href="<?= BASEURL; ?>/soalSts"
+                  class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= strpos($judul, 'Soal STS') !== false ? 'bg-emerald-100 text-emerald-700' : 'text-secondary-600 hover:bg-emerald-50 hover:text-emerald-700' ?>">
+                  <i data-lucide="file-question" class="w-4 h-4 mr-2"></i>
+                  Soal STS
+                </a>
+              </li>
+            <?php endif; ?>
           </ul>
         </li>
       <?php endif; ?>
@@ -297,7 +319,7 @@ function isMenuActive($judul, $keyword)
       </div>
       <div class="flex-1 min-w-0">
         <p class="text-sm font-bold text-secondary-800 truncate"><?= $_SESSION['nama_lengkap'] ?? 'User'; ?></p>
-        <p class="text-xs text-secondary-500">Wali Kelas</p>
+        <p class="text-xs text-secondary-500">Guru & Wali Kelas</p>
       </div>
     </div>
   </div>

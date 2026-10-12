@@ -7,8 +7,9 @@
     $p = $data['pengaturan'];
     $kelas = $data['kelas'];
     $soalList = $data['soal_list'];
-    $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
-    $backUrl = $isAdmin ? BASEURL . '/soalSts/pengaturan/' . $kelas['id_kelas'] : BASEURL . '/guru';
+    // Admin ATAU guru pengelola Soal STS diperlakukan sama (full UI).
+    $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || !empty($data['is_pengelola_sts']);
+    $backUrl = ($data['is_pengelola_sts'] ?? false) ? BASEURL . '/soalSts/daftarMapel/' . $kelas['id_kelas'] : BASEURL . '/soalSts/inputSoal/' . $p['id'];
     $isSiapCetak = !empty($p['siap_cetak_at']);
     ?>
 
@@ -19,9 +20,11 @@
                 <?php if ($isAdmin): ?>
                     <a href="<?= BASEURL; ?>/soalSts" class="hover:text-indigo-600">Soal STS</a>
                     <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
-                    <a href="<?= BASEURL; ?>/soalSts/pengaturan/<?= $kelas['id_kelas']; ?>" class="hover:text-indigo-600">Pengaturan</a>
+                    <a href="<?= BASEURL; ?>/soalSts/daftarMapel/<?= $kelas['id_kelas']; ?>" class="hover:text-indigo-600">Daftar Mapel</a>
                 <?php else: ?>
                     <a href="<?= BASEURL; ?>/guru" class="hover:text-indigo-600">Dashboard</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
+                    <a href="<?= BASEURL; ?>/soalSts/inputSoal/<?= $p['id']; ?>" class="hover:text-indigo-600">Input Soal</a>
                 <?php endif; ?>
                 <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
                 <span class="text-gray-700 font-medium">Daftar Soal</span>

@@ -20,8 +20,9 @@
     $jumlahIsian = (int)$p['jumlah_isian_singkat'];
     $opsiPG = (int)$p['opsi_pg'];
     $opsiLabels = ['A', 'B', 'C', 'D', 'E'];
-    $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
-    $backUrl = $isAdmin ? BASEURL . '/soalSts/daftarMapel/' . $p['id_kelas'] : BASEURL . '/guru';
+    // Admin ATAU guru pengelola Soal STS diperlakukan sama (full UI).
+    $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || !empty($data['is_pengelola_sts']);
+    $backUrl = ($data['is_pengelola_sts'] ?? false) ? BASEURL . '/soalSts/daftarMapel/' . $p['id_kelas'] : BASEURL . '/guru';
     $isLocked = $data['is_locked'] ?? false;
     $isComplete = $data['is_complete'] ?? false;
     ?>

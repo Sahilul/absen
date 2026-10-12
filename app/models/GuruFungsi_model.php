@@ -79,6 +79,14 @@ class GuruFungsi_model
     }
 
     /**
+     * Check if guru is Pengelola Soal STS for given TP
+     */
+    public function isPengelolaSoalSts($id_guru, $id_tp)
+    {
+        return $this->hasFungsi($id_guru, 'pengelola_soal_sts', $id_tp);
+    }
+
+    /**
      * Check if guru has specific function
      */
     public function hasFungsi($id_guru, $fungsi, $id_tp)
@@ -192,7 +200,8 @@ class GuruFungsi_model
             'admin_cms' => 'Admin CMS',
             'kurikulum' => 'Kurikulum',
             'kesiswaan' => 'Kesiswaan',
-            'guru_bk' => 'Guru BK'
+            'guru_bk' => 'Guru BK',
+            'pengelola_soal_sts' => 'Pengelola Soal STS'
         ];
     }
 }

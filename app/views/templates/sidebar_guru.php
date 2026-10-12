@@ -17,6 +17,7 @@ $isPetugasPSB = false;
 $isAdminCms = false;
 $isPetugasBukuTamu = false;
 $isGuruBK = false;
+$isPengelolaSts = false;
 $id_guru = $_SESSION['id_ref'] ?? 0;
 $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
 
@@ -30,6 +31,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'guru') {
     $isAdminCms = $guruFungsiModel->isAdminCMS($id_guru, $id_tp_aktif);
     $isPetugasBukuTamu = $guruFungsiModel->isPetugasBukuTamu($id_guru, $id_tp_aktif);
     $isGuruBK = $guruFungsiModel->isGuruBK($id_guru, $id_tp_aktif);
+    $isPengelolaSts = $guruFungsiModel->isPengelolaSoalSts($id_guru, $id_tp_aktif);
   }
 }
 ?>
@@ -125,7 +127,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'guru') {
         </a>
       </li>
 
-      <?php if ($isBendahara || $isPetugasPSB || $isAdminCms || $isGuruBK): ?>
+      <?php if ($isBendahara || $isPetugasPSB || $isAdminCms || $isGuruBK || $isPengelolaSts): ?>
       <!-- Section: Tugas Tambahan -->
         <li class="pt-6 pb-2">
           <div class="flex items-center px-3">
@@ -210,6 +212,22 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'guru') {
               </div>
               <span class="ml-3 whitespace-nowrap">Bimbingan Konseling</span>
               <span class="ml-auto bg-rose-100 text-rose-700 py-0.5 px-2 rounded-full text-xs font-medium">Extra</span>
+            </a>
+          </li>
+        <?php endif; ?>
+
+        <?php if ($isPengelolaSts): ?>
+          <!-- Menu Pengelola Soal STS -->
+          <li>
+            <a href="<?= BASEURL; ?>/soalSts"
+              class="group flex items-center p-3 text-sm font-medium rounded-xl transition-all duration-200 <?= (strpos($judul, 'Soal STS') !== false || strpos($judul, 'STS') !== false) ? 'gradient-primary text-white shadow-lg' : 'text-secondary-600 hover:bg-white/60 hover:text-secondary-800'; ?>">
+              <div
+                class="<?= (strpos($judul, 'Soal STS') !== false || strpos($judul, 'STS') !== false) ? 'bg-white/20' : 'bg-secondary-100 group-hover:bg-emerald-100'; ?> p-2 rounded-lg transition-colors duration-200">
+                <i data-lucide="file-question"
+                  class="w-4 h-4 <?= (strpos($judul, 'Soal STS') !== false || strpos($judul, 'STS') !== false) ? 'text-white' : 'text-secondary-500 group-hover:text-emerald-600'; ?>"></i>
+              </div>
+              <span class="ml-3 whitespace-nowrap">Soal STS</span>
+              <span class="ml-auto bg-emerald-100 text-emerald-700 py-0.5 px-2 rounded-full text-xs font-medium">Extra</span>
             </a>
           </li>
         <?php endif; ?>

@@ -21,6 +21,10 @@ class SoalStsController extends Controller
 
         $this->data['daftar_semester'] = $this->model('TahunPelajaran_model')->getAllSemester();
         $this->soalModel = $this->model('SoalSts_model');
+
+        // Flag untuk view: pengelola Soal STS diperlakukan seperti admin (full UI),
+        // tetapi tetap memakai sidebar guru.
+        $this->data['is_pengelola_sts'] = $this->canManageAll();
     }
 
     /**
@@ -32,11 +36,37 @@ class SoalStsController extends Controller
     }
 
     /**
-     * Helper: Guard admin-only — redirect guru/wali_kelas ke dashboard
+     * Helper: Cek apakah guru diberi fungsi "Pengelola Soal STS"
+     * (akses seperti admin, tetapi memakai sidebar guru)
+     */
+    private function isPengelolaSoalSts()
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+        $role = $_SESSION['role'] ?? '';
+        if (!in_array($role, ['guru', 'wali_kelas']) || empty($_SESSION['id_ref'])) {
+            return false;
+        }
+        $id_tp = $_SESSION['id_tp_aktif'] ?? 0;
+        return (bool)$this->model('GuruFungsi_model')->isPengelolaSoalSts($_SESSION['id_ref'], $id_tp);
+    }
+
+    /**
+     * Helper: Cek apakah user boleh mengelola seluruh modul Soal STS
+     * (admin ATAU guru dengan fungsi pengelola soal STS)
+     */
+    private function canManageAll()
+    {
+        return $this->isAdmin() || $this->isPengelolaSoalSts();
+    }
+
+    /**
+     * Helper: Guard — hanya admin ATAU pengelola Soal STS
      */
     private function adminOnlyGuard()
     {
-        if (!$this->isAdmin()) {
+        if (!$this->canManageAll()) {
             header('Location: ' . BASEURL . '/guru');
             exit;
         }
@@ -63,7 +93,7 @@ class SoalStsController extends Controller
      */
     private function cekAksesMapelKelas($id_mapel, $id_kelas)
     {
-        if ($this->isAdmin()) {
+        if ($this->canManageAll()) {
             return true;
         }
         $id_guru = $_SESSION['id_ref'] ?? 0;
@@ -89,9 +119,9 @@ class SoalStsController extends Controller
         if (empty($id_pengaturan)) {
             return;
         }
-        // Hanya tandai dicetak jika yang mencetak adalah admin
-        // Guru boleh cetak tapi tidak mengubah status penanda cetak di admin
-        if (!$this->isAdmin()) {
+        // Hanya tandai dicetak jika yang mencetak adalah admin / pengelola Soal STS
+        // Guru biasa boleh cetak tapi tidak mengubah status penanda cetak di admin
+        if (!$this->canManageAll()) {
             return;
         }
         $this->soalModel->tandaiDicetak($id_pengaturan, $_SESSION['user_id'] ?? null);
@@ -123,7 +153,7 @@ class SoalStsController extends Controller
      */
     private function guardGuruCetak($pengaturan)
     {
-        if (!$this->isAdmin() && empty($pengaturan['siap_cetak_at'])) {
+        if (!$this->canManageAll() && empty($pengaturan['siap_cetak_at'])) {
             Flasher::setFlash('Soal belum ditandai "Siap Cetak". Tandai terlebih dahulu sebelum mencetak.', 'warning');
             header('Location: ' . BASEURL . '/soalSts/inputSoal/' . $pengaturan['id']);
             exit;
@@ -181,7 +211,7 @@ class SoalStsController extends Controller
         $this->data['kelas_list'] = $kelasList;
 
         $this->view('templates/header', $this->data);
-        $this->view('templates/sidebar_admin', $this->data);
+        $this->loadSidebar();
         $this->view('admin/soal_sts/index', $this->data);
         $this->view('templates/footer', $this->data);
     }
@@ -227,7 +257,7 @@ class SoalStsController extends Controller
         $this->data['id_kelas'] = $id_kelas;
 
         $this->view('templates/header', $this->data);
-        $this->view('templates/sidebar_admin', $this->data);
+        $this->loadSidebar();
         $this->view('admin/soal_sts/pengaturan', $this->data);
         $this->view('templates/footer', $this->data);
     }
@@ -273,7 +303,7 @@ class SoalStsController extends Controller
         $this->data['id_kelas'] = $id_kelas;
 
         $this->view('templates/header', $this->data);
-        $this->view('templates/sidebar_admin', $this->data);
+        $this->loadSidebar();
         $this->view('admin/soal_sts/daftar_mapel', $this->data);
         $this->view('templates/footer', $this->data);
     }
@@ -351,7 +381,7 @@ class SoalStsController extends Controller
         $this->data['kelas_grouped'] = $kelasGrouped;
 
         $this->view('templates/header', $this->data);
-        $this->view('templates/sidebar_admin', $this->data);
+        $this->loadSidebar();
         $this->view('admin/soal_sts/bulk_pengaturan', $this->data);
         $this->view('templates/footer', $this->data);
     }
@@ -439,7 +469,7 @@ class SoalStsController extends Controller
         $pengaturan = $this->soalModel->getPengaturanById($id_pengaturan);
         if (!$pengaturan) {
             Flasher::setFlash('Pengaturan tidak ditemukan!', 'danger');
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
@@ -679,7 +709,7 @@ class SoalStsController extends Controller
     public function simpanSemuaSoal()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
@@ -687,7 +717,7 @@ class SoalStsController extends Controller
         $pengaturan = $this->soalModel->getPengaturanById($id_pengaturan);
         if (!$pengaturan) {
             Flasher::setFlash('Pengaturan tidak ditemukan!', 'danger');
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
@@ -808,7 +838,7 @@ class SoalStsController extends Controller
         $soal = $this->soalModel->getSoalById($id_soal);
         if (!$soal) {
             Flasher::setFlash('Soal tidak ditemukan!', 'danger');
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
@@ -852,7 +882,7 @@ class SoalStsController extends Controller
 
         if (!$kelas || !$pengaturan) {
             Flasher::setFlash('Data tidak ditemukan!', 'danger');
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
@@ -887,7 +917,7 @@ class SoalStsController extends Controller
 
         if (!$kelas || !$pengaturan) {
             Flasher::setFlash('Data tidak ditemukan!', 'danger');
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
@@ -932,7 +962,7 @@ class SoalStsController extends Controller
 
         if (!$kelas || !$pengaturan) {
             Flasher::setFlash('Data tidak ditemukan!', 'danger');
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
@@ -977,7 +1007,7 @@ class SoalStsController extends Controller
 
         if (!$kelas || !$pengaturan) {
             Flasher::setFlash('Data tidak ditemukan!', 'danger');
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
@@ -1034,7 +1064,7 @@ class SoalStsController extends Controller
 
         if (!$kelas || !$pengaturan) {
             Flasher::setFlash('Data tidak ditemukan!', 'danger');
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
@@ -1063,14 +1093,14 @@ class SoalStsController extends Controller
     public function siapCetak($id_pengaturan)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
         $pengaturan = $this->soalModel->getPengaturanById($id_pengaturan);
         if (!$pengaturan) {
             Flasher::setFlash('Data tidak ditemukan!', 'danger');
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
@@ -1147,7 +1177,7 @@ class SoalStsController extends Controller
         $pengaturan = $this->soalModel->getPengaturanByMapelKelas($id_mapel, $id_kelas, $id_semester_aktif);
         if (!$pengaturan) {
             Flasher::setFlash('Data tidak ditemukan!', 'danger');
-            header('Location: ' . BASEURL . ($this->isAdmin() ? '/soalSts' : '/guru'));
+            header('Location: ' . BASEURL . ($this->canManageAll() ? '/soalSts' : '/guru'));
             exit;
         }
 
