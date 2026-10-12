@@ -1,6 +1,21 @@
 {
   "versions": [
     {
+      "version": "1.36.3",
+      "date": "2026-10-12",
+      "type": "feature",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Generate Soal AI kini menampilkan PRATINJAU sebelum diterapkan ke form. Setiap soal bisa dicentang/dipilih (Pilih semua/Kosongkan), jadi guru bisa meninjau hasil sebelum masuk ke form & disimpan ke database."
+        },
+        {
+          "type": "feature",
+          "description": "Tambah pilihan Level Kognitif pada Generate Soal AI: LOTS (C1-C3), Campuran (LOTS+HOTS), atau HOTS (C4-C6, berbasis stimulus/analisis). Plus link penjelasan \"Apa itu HOTS?\"."
+        }
+      ]
+    },
+    {
       "version": "1.36.2",
       "date": "2026-10-12",
       "type": "security",

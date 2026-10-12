@@ -492,6 +492,10 @@ class SoalStsController extends Controller
         $materi = trim($_POST['materi'] ?? '');
         $tipeGenerate = $_POST['tipe_generate'] ?? 'all'; // all, pg, essay, isian
         $mode = $_POST['mode'] ?? 'empty'; // empty = isi kosong, overwrite = timpa semua
+        $levelKognitif = $_POST['level_kognitif'] ?? 'campuran'; // lots, hots, campuran
+        if (!in_array($levelKognitif, ['lots', 'hots', 'campuran'], true)) {
+            $levelKognitif = 'campuran';
+        }
 
         $pengaturan = $this->soalModel->getPengaturanById($id_pengaturan);
         if (!$pengaturan) {
@@ -578,10 +582,30 @@ class SoalStsController extends Controller
         $namaKelas = $pengaturan['nama_kelas'];
         $jenjang = $pengaturan['jenjang'] ?? 'SMP/MTs';
 
+        // Panduan level kognitif (Taksonomi Bloom revisi Anderson & Krathwohl 2001)
+        $levelGuide = '';
+        if ($levelKognitif === 'hots') {
+            $levelGuide = "LEVEL KOGNITIF: HOTS (Higher Order Thinking Skills) — level C4-C6 (Menganalisis, Mengevaluasi, Mencipta).\n"
+                . "- Soal HARUS menuntut berpikir tingkat tinggi, bukan sekadar mengingat/menghafal.\n"
+                . "- Sertakan stimulus (wacana, kasus, tabel, data, atau situasi nyata) pada sebagian besar soal.\n"
+                . "- Hindari soal yang jawabannya hanya definisi/rumus langsung.\n"
+                . "- Untuk PG: distractor harus mencerminkan miskonsepsi umum.\n"
+                . "- Untuk essay: tuntut analisis, evaluasi, atau perancangan solusi.\n";
+        } elseif ($levelKognitif === 'lots') {
+            $levelGuide = "LEVEL KOGNITIF: LOTS (Lower Order Thinking Skills) — level C1-C3 (Mengingat, Memahami, Mengaplikasikan).\n"
+                . "- Soal berfokus pada pemahaman konsep dasar, definisi, dan penerapan langsung.\n"
+                . "- Cocok untuk soal dasar/pemantapan materi.\n";
+        } else {
+            $levelGuide = "LEVEL KOGNITIF: CAMPURAN (LOTS + HOTS).\n"
+                . "- Sajikan variasi level kognitif: sebagian C1-C3 (LOTS) dan sebagian C4-C6 (HOTS).\n"
+                . "- Usahakan proporsi seimbang, soal HOTS diletakkan pada nomor akhir.\n";
+        }
+
         $systemPrompt = "Kamu adalah guru {$namaMapel} berpengalaman di Madrasah Tsanawiyah (MTs) Sabilillah. "
             . "Tugasmu membuat soal Sumatif Tengah Semester (STS) yang berkualitas untuk kelas {$namaKelas} ({$jenjang}), "
             . "semester {$semesterText}. "
             . "Soal harus sesuai Kurikulum Merdeka, bervariasi level kognitif (C1-C6), dan menggunakan bahasa Indonesia yang baik dan benar.\n\n"
+            . $levelGuide . "\n"
             . "ATURAN OUTPUT:\n"
             . "- Jawab HANYA dengan JSON valid, tanpa markdown, tanpa penjelasan, tanpa komentar.\n"
             . "- Format: {\"soal\": [...]}\n"
@@ -595,6 +619,9 @@ class SoalStsController extends Controller
 
         // Build user message
         $userMsg = "Buatkan soal STS {$namaMapel} untuk kelas {$namaKelas} semester {$semesterText}.\n\n";
+
+        $levelLabel = ['lots' => 'LOTS (C1-C3)', 'hots' => 'HOTS (C4-C6)', 'campuran' => 'campuran LOTS+HOTS'][$levelKognitif];
+        $userMsg .= "TARGET LEVEL KOGNITIF: {$levelLabel}.\n\n";
 
         if (!empty($materi)) {
             $userMsg .= "MATERI/TOPIK: {$materi}\n\n";
@@ -638,6 +665,7 @@ class SoalStsController extends Controller
                 'essay_slots' => $essaySlots,
                 'isian_slots' => $isianSlots,
                 'opsi_pg' => $opsiPG,
+                'level_kognitif' => $levelKognitif,
             ]
         ]);
         exit;

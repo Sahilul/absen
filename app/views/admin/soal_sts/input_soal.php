@@ -3,6 +3,15 @@
     <!-- Flash Message -->
     <?php Flasher::flash(); ?>
 
+    <!-- Inline notification (dipakai saat terapkan hasil AI, sebelum simpan) -->
+    <div id="inlineNotif" class="hidden bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-lg mb-4 flex items-start gap-3 animate-slide-up">
+        <i data-lucide="check-circle" class="w-5 h-5 mt-0.5 flex-shrink-0"></i>
+        <div class="flex-1 text-sm" id="inlineNotifMsg"></div>
+        <button type="button" onclick="document.getElementById('inlineNotif').classList.add('hidden')" class="text-emerald-500 hover:text-emerald-700">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    </div>
+
     <?php
     $p = $data['pengaturan'];
     $soalMap = $data['soal_map'];
@@ -582,6 +591,43 @@
                             </div>
                         </div>
 
+                        <!-- Level Kognitif (HOTS / LOTS) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Level Kognitif Soal
+                                <a href="https://www.ruangguru.com/blog/mengenal-tipe-soal-hots" target="_blank" rel="noopener"
+                                   class="ml-1 inline-flex items-center gap-0.5 text-xs font-normal text-violet-600 hover:text-violet-800 hover:underline">
+                                    <i data-lucide="help-circle" class="w-3 h-3"></i> Apa itu HOTS?
+                                </a>
+                            </label>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <label class="relative flex flex-col gap-1 border rounded-xl px-3 py-2.5 cursor-pointer transition-all has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50 border-gray-200 hover:border-gray-300">
+                                    <span class="flex items-center gap-2">
+                                        <input type="radio" name="aiLevel" value="lots" class="sr-only">
+                                        <i data-lucide="book-open" class="w-4 h-4 text-gray-500"></i>
+                                        <span class="text-sm font-medium text-gray-700">LOTS</span>
+                                    </span>
+                                    <span class="text-[11px] text-gray-500 leading-tight">C1-C3 · hafalan, pemahaman, penerapan dasar</span>
+                                </label>
+                                <label class="relative flex flex-col gap-1 border rounded-xl px-3 py-2.5 cursor-pointer transition-all has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50 border-gray-200 hover:border-gray-300">
+                                    <span class="flex items-center gap-2">
+                                        <input type="radio" name="aiLevel" value="campuran" class="sr-only" checked>
+                                        <i data-lucide="shuffle" class="w-4 h-4 text-violet-500"></i>
+                                        <span class="text-sm font-medium text-gray-700">Campuran</span>
+                                    </span>
+                                    <span class="text-[11px] text-gray-500 leading-tight">Kombinasi LOTS + HOTS (disarankan)</span>
+                                </label>
+                                <label class="relative flex flex-col gap-1 border rounded-xl px-3 py-2.5 cursor-pointer transition-all has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50 border-gray-200 hover:border-gray-300">
+                                    <span class="flex items-center gap-2">
+                                        <input type="radio" name="aiLevel" value="hots" class="sr-only">
+                                        <i data-lucide="brain" class="w-4 h-4 text-amber-500"></i>
+                                        <span class="text-sm font-medium text-gray-700">HOTS</span>
+                                    </span>
+                                    <span class="text-[11px] text-gray-500 leading-tight">C4-C6 · analisis, evaluasi, mencipta (berbasis stimulus)</span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- Mode -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Mode Pengisian</label>
@@ -624,14 +670,33 @@
                         <p class="text-xs text-gray-400 mt-2" id="aiCharCount">0 karakter diterima</p>
                     </div>
 
-                    <!-- Result view -->
-                    <div id="aiResultView" class="hidden text-center py-6">
-                        <div class="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                            <i data-lucide="check-circle" class="w-7 h-7 text-emerald-600"></i>
+                    <!-- Preview view (sebelum diterapkan ke form) -->
+                    <div id="aiPreviewView" class="hidden">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="eye" class="w-4.5 h-4.5 text-emerald-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-semibold text-gray-800 leading-tight">Pratinjau Hasil Generate</h4>
+                                    <p class="text-xs text-gray-500" id="aiPreviewSummary"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="aiToggleAll(true)"
+                                        class="text-xs font-medium text-violet-600 hover:text-violet-800 transition-colors">Pilih semua</button>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" onclick="aiToggleAll(false)"
+                                        class="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">Kosongkan</button>
+                            </div>
                         </div>
-                        <h4 class="text-lg font-semibold text-gray-800 mb-1">Soal berhasil dibuat!</h4>
-                        <p class="text-sm text-gray-500 mb-1" id="aiResultSummary"></p>
-                        <p class="text-xs text-gray-400">Soal sudah terisi di form. Klik "Selesai" lalu simpan untuk menyimpan.</p>
+
+                        <div id="aiPreviewList" class="space-y-2.5 max-h-[26rem] overflow-y-auto pr-1"></div>
+
+                        <p class="text-xs text-gray-400 mt-3 flex items-start gap-1.5">
+                            <i data-lucide="info" class="w-3.5 h-3.5 mt-0.5 flex-shrink-0"></i>
+                            Hanya soal yang dicentang yang akan dimasukkan ke form. Anda masih bisa mengedit sebelum menyimpan.
+                        </p>
                     </div>
                 </div>
 
@@ -646,10 +711,14 @@
                         <i data-lucide="sparkles" class="w-4 h-4 mr-2"></i>
                         Generate
                     </button>
-                    <button type="button" onclick="aiCloseModal()" id="aiDoneBtn"
-                            class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-5 rounded-lg flex items-center transition-colors shadow-sm">
+                    <button type="button" onclick="aiBackToConfig()" id="aiBackBtn"
+                            class="hidden bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition-colors">
+                        Kembali
+                    </button>
+                    <button type="button" onclick="aiApplyPreview()" id="aiApplyBtn"
+                            class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-5 rounded-lg flex items-center transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
                         <i data-lucide="check" class="w-4 h-4 mr-2"></i>
-                        Selesai
+                        Terapkan ke Form
                     </button>
                 </div>
             </div>
@@ -667,18 +736,38 @@
         const modal = document.getElementById('aiModal');
         const configView = document.getElementById('aiConfigView');
         const progressView = document.getElementById('aiProgressView');
-        const resultView = document.getElementById('aiResultView');
+        const previewView = document.getElementById('aiPreviewView');
+        const previewList = document.getElementById('aiPreviewList');
+        const previewSummary = document.getElementById('aiPreviewSummary');
         const streamText = document.getElementById('aiStreamText');
         const charCount = document.getElementById('aiCharCount');
         const errorBox = document.getElementById('aiConfigError');
         const generateBtn = document.getElementById('aiGenerateBtn');
         const cancelBtn = document.getElementById('aiCancelBtn');
-        const doneBtn = document.getElementById('aiDoneBtn');
+        const backBtn = document.getElementById('aiBackBtn');
+        const applyBtn = document.getElementById('aiApplyBtn');
         let isGenerating = false;
+        let generatedSoal = [];   // soal hasil generate, menunggu konfirmasi user
+        let selectedIndexes = []; // index soal yang dicentang di pratinjau
 
         function showError(msg) {
             errorBox.textContent = msg;
             errorBox.classList.remove('hidden');
+        }
+
+        // Escape HTML untuk mencegah XSS dari konten AI
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function tipeMeta(tipe) {
+            const t = (tipe || '').toLowerCase();
+            if (t === 'pg')    return { label: 'Pilihan Ganda', color: 'bg-blue-100 text-blue-700',   icon: 'list-checks' };
+            if (t === 'isian') return { label: 'Isian Singkat', color: 'bg-teal-100 text-teal-700',   icon: 'text-cursor-input' };
+            if (t === 'essay') return { label: 'Essay',         color: 'bg-purple-100 text-purple-700', icon: 'file-text' };
+            return { label: t || 'Soal', color: 'bg-gray-100 text-gray-700', icon: 'help-circle' };
         }
 
         window.aiCloseModal = function () {
@@ -690,13 +779,134 @@
             // reset UI state
             configView.classList.remove('hidden');
             progressView.classList.add('hidden');
-            resultView.classList.add('hidden');
+            previewView.classList.add('hidden');
             generateBtn.classList.remove('hidden');
             cancelBtn.classList.remove('hidden');
-            doneBtn.classList.add('hidden');
+            backBtn.classList.add('hidden');
+            applyBtn.classList.add('hidden');
             errorBox.classList.add('hidden');
             streamText.textContent = '';
             charCount.textContent = '0 karakter diterima';
+        };
+
+        // Kembali ke form konfigurasi (buang hasil generate)
+        window.aiBackToConfig = function () {
+            generatedSoal = [];
+            selectedIndexes = [];
+            previewList.innerHTML = '';
+            previewView.classList.add('hidden');
+            configView.classList.remove('hidden');
+            generateBtn.classList.remove('hidden');
+            backBtn.classList.add('hidden');
+            applyBtn.classList.add('hidden');
+            cancelBtn.classList.remove('hidden');
+            errorBox.classList.add('hidden');
+        };
+
+        // Centang / lepas centang semua soal di pratinjau
+        window.aiToggleAll = function (state) {
+            const boxes = previewList.querySelectorAll('input[type="checkbox"][data-idx]');
+            boxes.forEach(function (cb) { cb.checked = state; });
+            updateApplyButton();
+        };
+
+        function updateApplyButton() {
+            const boxes = previewList.querySelectorAll('input[type="checkbox"][data-idx]');
+            const count = Array.from(boxes).filter(function (cb) { return cb.checked; }).length;
+            applyBtn.disabled = count === 0;
+            applyBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4 mr-2"></i>Terapkan ke Form' +
+                (boxes.length ? ` (${count})` : '');
+            if (window.lucide) window.lucide.createIcons();
+        }
+        window.updateApplyButton = updateApplyButton;
+
+        // Bangun kartu pratinjau untuk tiap soal
+        function renderPreview(soalArray) {
+            previewList.innerHTML = '';
+            soalArray.forEach(function (s, idx) {
+                const tipe = (s.tipe || '').toLowerCase();
+                const meta = tipeMeta(tipe);
+                const nomor = s.nomor != null ? s.nomor : (idx + 1);
+                const key = `${tipe}_${nomor}`;
+                const checked = selectedIndexes.indexOf(idx) !== -1 ? 'checked' : '';
+
+                let body = '';
+                if (tipe === 'pg') {
+                    let opsiHtml = '<div class="mt-2 space-y-1">';
+                    OPSI_LABELS.forEach(function (label) {
+                        const val = s[`opsi_${label.toLowerCase()}`];
+                        if (val == null || val === '') return;
+                        const isKey = String(s.kunci_jawaban || '').toUpperCase() === label;
+                        opsiHtml += `<div class="flex items-start gap-2 text-sm ${isKey ? 'text-emerald-700 font-medium' : 'text-gray-600'}">
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs flex-shrink-0 ${isKey ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}">${label}</span>
+                            <span>${esc(val)}</span>
+                        </div>`;
+                    });
+                    opsiHtml += '</div>';
+                    body = opsiHtml;
+                } else {
+                    const kJawaban = s.kunci_jawaban != null && s.kunci_jawaban !== ''
+                        ? `<div class="mt-2 text-sm text-gray-600"><span class="font-medium text-gray-700">Kunci/Pedoman:</span> ${esc(s.kunci_jawaban)}</div>`
+                        : '';
+                    body = kJawaban;
+                }
+
+                const skor = s.skor != null ? s.skor : (tipe === 'essay' ? 10 : (tipe === 'isian' ? 2 : 1));
+
+                const card = document.createElement('label');
+                card.className = 'block border border-gray-200 rounded-xl p-3.5 hover:border-violet-300 transition-colors cursor-pointer bg-white has-[:checked]:border-violet-400 has-[:checked]:bg-violet-50/40';
+                card.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" data-idx="${idx}" ${checked}
+                               class="mt-1 w-4 h-4 accent-violet-600 flex-shrink-0"
+                               onchange="updateApplyButton()">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${meta.color}">
+                                    <i data-lucide="${meta.icon}" class="w-3 h-3"></i>${meta.label}
+                                </span>
+                                <span class="text-xs text-gray-400">No. ${nomor}</span>
+                                <span class="text-xs text-gray-400 ml-auto">Skor: ${skor}</span>
+                            </div>
+                            <p class="text-sm text-gray-800 leading-snug">${esc(s.pertanyaan)}</p>
+                            ${body}
+                        </div>
+                    </div>`;
+                previewList.appendChild(card);
+            });
+            if (window.lucide) window.lucide.createIcons();
+            updateApplyButton();
+        }
+
+        // Terapkan soal yang dipilih ke form
+        window.aiApplyPreview = function () {
+            const boxes = previewList.querySelectorAll('input[type="checkbox"][data-idx]');
+            const chosen = [];
+            boxes.forEach(function (cb) {
+                if (cb.checked) chosen.push(generatedSoal[parseInt(cb.dataset.idx, 10)]);
+            });
+            if (!chosen.length) return;
+            const filled = populateSoal(chosen);
+
+            modal.classList.add('hidden');
+            // reset modal state
+            configView.classList.remove('hidden');
+            progressView.classList.add('hidden');
+            previewView.classList.add('hidden');
+            generateBtn.classList.remove('hidden');
+            backBtn.classList.add('hidden');
+            applyBtn.classList.add('hidden');
+            cancelBtn.classList.remove('hidden');
+
+            // Beri notifikasi kecil ke user
+            const notif = document.getElementById('inlineNotif');
+            const notifMsg = document.getElementById('inlineNotifMsg');
+            if (notif && notifMsg) {
+                notifMsg.textContent = `${filled} soal dari AI diterapkan ke form. Periksa kembali lalu klik "Simpan" untuk menyimpan ke database.`;
+                notif.classList.remove('hidden');
+                if (window.lucide) window.lucide.createIcons();
+                notif.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         };
 
         function setValue(name, value) {
@@ -763,8 +973,10 @@
             const materi = document.getElementById('aiMateri').value.trim();
             const tipeRadio = document.querySelector('input[name="aiTipe"]:checked');
             const modeRadio = document.querySelector('input[name="aiMode"]:checked');
+            const levelRadio = document.querySelector('input[name="aiLevel"]:checked');
             const tipeGenerate = tipeRadio ? tipeRadio.value : 'all';
             const mode = modeRadio ? modeRadio.value : 'empty';
+            const levelKognitif = levelRadio ? levelRadio.value : 'campuran';
 
             isGenerating = true;
             configView.classList.add('hidden');
@@ -782,6 +994,7 @@
                 fd.append('materi', materi);
                 fd.append('tipe_generate', tipeGenerate);
                 fd.append('mode', mode);
+                fd.append('level_kognitif', levelKognitif);
 
                 const prepRes = await fetch(`${BASEURL}/soalSts/prepareGenerateAI`, {
                     method: 'POST',
@@ -869,16 +1082,31 @@
                 const soalArray = Array.isArray(parsed) ? parsed : (parsed.soal || []);
                 if (!soalArray.length) throw new Error('AI tidak menghasilkan soal. Coba lagi dengan materi lebih spesifik.');
 
-                const filled = populateSoal(soalArray);
+                // Simpan hasil & tampilkan PRATINJAU (belum masuk ke form)
+                generatedSoal = soalArray;
+                selectedIndexes = soalArray.map(function (_, i) { return i; }); // default semua terpilih
+                renderPreview(soalArray);
 
-                // Update progress ke result
+                const counts = soalArray.reduce(function (acc, s) {
+                    const t = (s.tipe || '').toLowerCase();
+                    acc[t] = (acc[t] || 0) + 1;
+                    return acc;
+                }, {});
+                const parts = [];
+                if (counts.pg)    parts.push(`${counts.pg} PG`);
+                if (counts.isian) parts.push(`${counts.isian} isian`);
+                if (counts.essay) parts.push(`${counts.essay} essay`);
+                previewSummary.textContent = `${soalArray.length} soal dibuat (${parts.join(', ')}). Periksa lalu terapkan.`;
+
+                // Update progress ke preview
                 progressView.classList.add('hidden');
-                resultView.classList.remove('hidden');
-                document.getElementById('aiResultSummary').textContent =
-                    `${filled} soal berhasil diisi ke form.`;
-                doneBtn.classList.remove('hidden');
+                previewView.classList.remove('hidden');
+                generateBtn.classList.add('hidden');
+                cancelBtn.classList.add('hidden');
+                backBtn.classList.remove('hidden');
+                applyBtn.classList.remove('hidden');
 
-                // Re-render ikon lucide baru (jika ada)
+                // Re-render ikon lucide baru
                 if (window.lucide) window.lucide.createIcons();
 
             } catch (e) {
