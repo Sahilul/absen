@@ -89,6 +89,11 @@ class SoalStsController extends Controller
         if (empty($id_pengaturan)) {
             return;
         }
+        // Hanya tandai dicetak jika yang mencetak adalah admin
+        // Guru boleh cetak tapi tidak mengubah status penanda cetak di admin
+        if (!$this->isAdmin()) {
+            return;
+        }
         $this->soalModel->tandaiDicetak($id_pengaturan, $_SESSION['user_id'] ?? null);
     }
 
@@ -467,6 +472,175 @@ class SoalStsController extends Controller
         $this->loadSidebar();
         $this->view('admin/soal_sts/input_soal', $this->data);
         $this->view('templates/footer', $this->data);
+    }
+
+    /**
+     * Prepare AI soal generation — returns HMAC token + prompt for Go streaming
+     * POST /soalSts/prepareGenerateAI
+     */
+    public function prepareGenerateAI()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+            exit;
+        }
+
+        header('Content-Type: application/json');
+
+        $id_pengaturan = $_POST['id_pengaturan'] ?? 0;
+        $materi = trim($_POST['materi'] ?? '');
+        $tipeGenerate = $_POST['tipe_generate'] ?? 'all'; // all, pg, essay, isian
+        $mode = $_POST['mode'] ?? 'empty'; // empty = isi kosong, overwrite = timpa semua
+
+        $pengaturan = $this->soalModel->getPengaturanById($id_pengaturan);
+        if (!$pengaturan) {
+            echo json_encode(['success' => false, 'error' => 'Pengaturan tidak ditemukan']);
+            exit;
+        }
+
+        // Cek akses
+        if (!$this->cekAksesMapelKelas($pengaturan['id_mapel'], $pengaturan['id_kelas'])) {
+            echo json_encode(['success' => false, 'error' => 'Akses ditolak']);
+            exit;
+        }
+
+        // Cek locked
+        if (!empty($pengaturan['siap_cetak_at'])) {
+            echo json_encode(['success' => false, 'error' => 'Soal sudah terkunci (Siap Cetak)']);
+            exit;
+        }
+
+        // Hitung jumlah soal yang perlu digenerate
+        $jumlahPG = (int)$pengaturan['jumlah_pilihan_ganda'];
+        $jumlahEssay = (int)$pengaturan['jumlah_essay'];
+        $jumlahIsian = (int)$pengaturan['jumlah_isian_singkat'];
+        $opsiPG = (int)$pengaturan['opsi_pg'];
+        $opsiLabels = array_slice(['A', 'B', 'C', 'D', 'E'], 0, $opsiPG);
+
+        // Jika mode "empty", cek soal yang sudah ada dan kurangi
+        $existingSoal = [];
+        if ($mode === 'empty') {
+            $soalList = $this->soalModel->getSoalByPengaturan($id_pengaturan);
+            foreach ($soalList as $s) {
+                if (!empty(trim($s['pertanyaan'] ?? ''))) {
+                    $existingSoal[$s['tipe_soal'] . '_' . $s['nomor_soal']] = true;
+                }
+            }
+        }
+
+        // Hitung berapa yang perlu digenerate per tipe
+        $generatePG = 0;
+        $generateEssay = 0;
+        $generateIsian = 0;
+        $pgSlots = [];
+        $essaySlots = [];
+        $isianSlots = [];
+
+        if ($tipeGenerate === 'all' || $tipeGenerate === 'pg') {
+            for ($i = 1; $i <= $jumlahPG; $i++) {
+                if ($mode === 'overwrite' || !isset($existingSoal["pg_{$i}"])) {
+                    $generatePG++;
+                    $pgSlots[] = $i;
+                }
+            }
+        }
+        if ($tipeGenerate === 'all' || $tipeGenerate === 'essay') {
+            for ($i = 1; $i <= $jumlahEssay; $i++) {
+                if ($mode === 'overwrite' || !isset($existingSoal["essay_{$i}"])) {
+                    $generateEssay++;
+                    $essaySlots[] = $i;
+                }
+            }
+        }
+        if ($tipeGenerate === 'all' || $tipeGenerate === 'isian') {
+            for ($i = 1; $i <= $jumlahIsian; $i++) {
+                if ($mode === 'overwrite' || !isset($existingSoal["isian_{$i}"])) {
+                    $generateIsian++;
+                    $isianSlots[] = $i;
+                }
+            }
+        }
+
+        $totalGenerate = $generatePG + $generateEssay + $generateIsian;
+        if ($totalGenerate === 0) {
+            echo json_encode(['success' => false, 'error' => 'Semua soal sudah terisi. Pilih mode "Timpa semua" untuk mengganti.']);
+            exit;
+        }
+
+        // Ambil info semester
+        $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? 0;
+        $semester = $this->model('TahunPelajaran_model')->getSemesterById($id_semester_aktif);
+        $semesterText = ($semester['semester'] ?? 'Ganjil') . ' ' . ($semester['nama_tp'] ?? '');
+
+        // Build system prompt
+        $namaMapel = $pengaturan['nama_mapel'];
+        $namaKelas = $pengaturan['nama_kelas'];
+        $jenjang = $pengaturan['jenjang'] ?? 'SMP/MTs';
+
+        $systemPrompt = "Kamu adalah guru {$namaMapel} berpengalaman di Madrasah Tsanawiyah (MTs) Sabilillah. "
+            . "Tugasmu membuat soal Sumatif Tengah Semester (STS) yang berkualitas untuk kelas {$namaKelas} ({$jenjang}), "
+            . "semester {$semesterText}. "
+            . "Soal harus sesuai Kurikulum Merdeka, bervariasi level kognitif (C1-C6), dan menggunakan bahasa Indonesia yang baik dan benar.\n\n"
+            . "ATURAN OUTPUT:\n"
+            . "- Jawab HANYA dengan JSON valid, tanpa markdown, tanpa penjelasan, tanpa komentar.\n"
+            . "- Format: {\"soal\": [...]}\n"
+            . "- Setiap item soal memiliki field: tipe, nomor, pertanyaan, skor\n"
+            . "- Untuk tipe \"pg\": tambah field opsi_a, opsi_b, opsi_c, opsi_d" . ($opsiPG >= 5 ? ", opsi_e" : "") . ", kunci_jawaban (huruf " . implode('/', $opsiLabels) . ")\n"
+            . "- Untuk tipe \"essay\": tambah field kunci_jawaban (berisi pedoman/rubrik penilaian singkat)\n"
+            . "- Untuk tipe \"isian\": tambah field kunci_jawaban (jawaban singkat yang benar)\n"
+            . "- Pertanyaan harus jelas, tidak ambigu, dan sesuai tingkat {$jenjang}\n"
+            . "- Opsi PG harus masuk akal (distractor yang baik), kunci jawaban harus benar\n"
+            . "- Skor default: PG=1, Isian=2, Essay=10\n";
+
+        // Build user message
+        $userMsg = "Buatkan soal STS {$namaMapel} untuk kelas {$namaKelas} semester {$semesterText}.\n\n";
+
+        if (!empty($materi)) {
+            $userMsg .= "MATERI/TOPIK: {$materi}\n\n";
+        } else {
+            $userMsg .= "Tentukan sendiri materi yang sesuai untuk STS {$namaMapel} kelas {$namaKelas} semester {$semesterText} berdasarkan Kurikulum Merdeka.\n\n";
+        }
+
+        $userMsg .= "YANG PERLU DIGENERATE:\n";
+        if ($generatePG > 0) {
+            $userMsg .= "- {$generatePG} soal Pilihan Ganda (tipe: \"pg\", nomor: " . implode(',', $pgSlots) . ", opsi: " . implode(',', $opsiLabels) . ", skor: 1)\n";
+        }
+        if ($generateIsian > 0) {
+            $userMsg .= "- {$generateIsian} soal Isian Singkat (tipe: \"isian\", nomor: " . implode(',', $isianSlots) . ", skor: 2)\n";
+        }
+        if ($generateEssay > 0) {
+            $userMsg .= "- {$generateEssay} soal Essay (tipe: \"essay\", nomor: " . implode(',', $essaySlots) . ", skor: 10)\n";
+        }
+
+        $userMsg .= "\nTotal: {$totalGenerate} soal. Jawab HANYA JSON.";
+
+        // Generate HMAC token
+        $hmacSecret = 'sabilillah-hmac-bridge-2026';
+        $userId = $_SESSION['user_id'] ?? 0;
+        $role = $_SESSION['role'] ?? '';
+        $nama = $_SESSION['nama_lengkap'] ?? '';
+        $ts = time();
+        $payload = "{$userId}:{$role}:{$nama}:{$ts}";
+        $signature = hash_hmac('sha256', $payload, $hmacSecret);
+        $hmacToken = "{$userId}:{$role}:{$nama}:{$ts}:{$signature}";
+
+        echo json_encode([
+            'success' => true,
+            'hmac_token' => $hmacToken,
+            'system_prompt' => $systemPrompt,
+            'messages' => [
+                ['role' => 'user', 'content' => $userMsg]
+            ],
+            'meta' => [
+                'total_generate' => $totalGenerate,
+                'pg_slots' => $pgSlots,
+                'essay_slots' => $essaySlots,
+                'isian_slots' => $isianSlots,
+                'opsi_pg' => $opsiPG,
+            ]
+        ]);
+        exit;
     }
 
     /**
@@ -931,6 +1105,9 @@ class SoalStsController extends Controller
      */
     public function toggleDicetak($id_kelas, $id_mapel)
     {
+        // Hanya admin yang boleh toggle penanda cetak
+        $this->adminOnlyGuard();
+
         $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? 0;
 
         if (!$this->cekAksesMapelKelas($id_mapel, $id_kelas)) {
@@ -955,6 +1132,8 @@ class SoalStsController extends Controller
         $redirect = $_POST['redirect'] ?? '';
         if ($redirect === 'daftar') {
             header('Location: ' . BASEURL . '/soalSts/daftarSoal/' . $id_kelas . '/' . $id_mapel);
+        } elseif ($redirect === 'mapel') {
+            header('Location: ' . BASEURL . '/soalSts/daftarMapel/' . $id_kelas);
         } else {
             header('Location: ' . BASEURL . '/soalSts/pengaturan/' . $id_kelas);
         }
@@ -1079,5 +1258,59 @@ class SoalStsController extends Controller
 
         echo json_encode(['success' => true]);
         exit;
+    }
+
+    /**
+     * Cetak Berita Acara & Daftar Hadir STS
+     * URL: /soalSts/cetakBeritaAcara/{id_kelas}
+     */
+    public function cetakBeritaAcara($id_kelas)
+    {
+        $this->adminOnlyGuard();
+        $this->data['judul'] = 'Berita Acara & Daftar Hadir STS';
+        $id_semester_aktif = $_SESSION['id_semester_aktif'] ?? 0;
+        $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
+
+        // Info kelas
+        $kelas = $this->model('Kelas_model')->getKelasById($id_kelas);
+        if (!$kelas) {
+            Flasher::setFlash('Kelas tidak ditemukan!', 'danger');
+            header('Location: ' . BASEURL . '/soalSts');
+            exit;
+        }
+
+        // Ambil info semester & tahun pelajaran
+        $semester = $this->model('TahunPelajaran_model')->getSemesterById($id_semester_aktif);
+
+        // Ambil info lembaga/sekolah dari pengaturan rapor
+        $kopRapor = $this->model('PengaturanRapor_model')->getPengaturanByKelas($id_kelas, $id_tp_aktif);
+
+        // Ambil daftar siswa
+        $siswaList = $this->model('Siswa_model')->getSiswaByKelas($id_kelas, $id_tp_aktif);
+
+        // Ambil daftar mapel yang punya pengaturan
+        $mapelList = $this->model('Penugasan_model')->getMapelByKelas($id_kelas, $id_semester_aktif);
+        $pengaturanList = $this->soalModel->getPengaturanByKelas($id_kelas, $id_semester_aktif);
+        $pengaturanMap = [];
+        foreach ($pengaturanList as $p) {
+            $pengaturanMap[$p['id_mapel']] = $p;
+        }
+        foreach ($mapelList as &$mapel) {
+            $mapel['pengaturan'] = $pengaturanMap[$mapel['id_mapel']] ?? null;
+        }
+        unset($mapel);
+        // Filter hanya yang punya pengaturan
+        $mapelList = array_filter($mapelList, function ($m) {
+            return !empty($m['pengaturan']);
+        });
+
+        $this->data['kelas'] = $kelas;
+        $this->data['semester'] = $semester;
+        $this->data['kop_rapor'] = $kopRapor;
+        $this->data['siswa_list'] = $siswaList;
+        $this->data['mapel_list'] = array_values($mapelList);
+        $this->data['id_kelas'] = $id_kelas;
+
+        $this->view('admin/soal_sts/berita_acara', $this->data);
     }
 }

@@ -15,6 +15,12 @@
             <p class="text-gray-600 mt-1">Kelola soal per mata pelajaran</p>
         </div>
         <div class="flex gap-2">
+            <a href="<?= BASEURL; ?>/soalSts/cetakBeritaAcara/<?= $data['id_kelas']; ?>"
+               target="_blank"
+               class="bg-teal-50 hover:bg-teal-100 text-teal-700 font-medium py-2 px-4 rounded-lg flex items-center transition-colors duration-200">
+                <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
+                Berita Acara & Daftar Hadir
+            </a>
             <a href="<?= BASEURL; ?>/soalSts/pengaturan/<?= $data['id_kelas']; ?>"
                class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium py-2 px-4 rounded-lg flex items-center transition-colors duration-200">
                 <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
@@ -52,6 +58,8 @@
         $countLengkap = 0;
         $countSiapCetak = 0;
         $countDicetak = 0;
+        $countBelumSelesai = 0;
+        $countBelumCetak = 0;
         foreach ($mapelDenganPengaturan as $m) {
             $p = $m['pengaturan'];
             $target = ($p['jumlah_pilihan_ganda'] ?? 0) + ($p['jumlah_essay'] ?? 0) + ($p['jumlah_isian_singkat'] ?? 0);
@@ -64,14 +72,20 @@
                 }
             }
             if ($target > 0 && $soal >= $target) $countLengkap++;
+            else $countBelumSelesai++;
             if (!empty($p['siap_cetak_at'])) $countSiapCetak++;
             if (!empty($p['dicetak_at'])) $countDicetak++;
+            if (!empty($p['siap_cetak_at']) && empty($p['dicetak_at'])) $countBelumCetak++;
         }
         ?>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">
             <div class="bg-white p-3 rounded-lg shadow-sm border text-center">
                 <p class="text-2xl font-bold text-gray-800"><?= $totalMapelSoal; ?></p>
                 <p class="text-xs text-gray-500">Total Mapel</p>
+            </div>
+            <div class="bg-white p-3 rounded-lg shadow-sm border text-center">
+                <p class="text-2xl font-bold text-red-500"><?= $countBelumSelesai; ?></p>
+                <p class="text-xs text-gray-500">Belum Selesai</p>
             </div>
             <div class="bg-white p-3 rounded-lg shadow-sm border text-center">
                 <p class="text-2xl font-bold text-green-600"><?= $countLengkap; ?></p>
@@ -85,7 +99,52 @@
                 <p class="text-2xl font-bold text-emerald-600"><?= $countDicetak; ?></p>
                 <p class="text-xs text-gray-500">Sudah Dicetak</p>
             </div>
+            <div class="bg-white p-3 rounded-lg shadow-sm border text-center">
+                <p class="text-2xl font-bold text-orange-500"><?= $countBelumCetak; ?></p>
+                <p class="text-xs text-gray-500">Belum Cetak</p>
+            </div>
         </div>
+
+        <!-- Filter Buttons -->
+        <div x-data="{ filter: 'semua' }" class="mb-6">
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button @click="filter = 'semua'"
+                        :class="filter === 'semua' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border'"
+                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5">
+                    <i data-lucide="list" class="w-4 h-4"></i>
+                    Semua <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px]" :class="filter === 'semua' ? 'bg-indigo-500' : 'bg-gray-100'"><?= $totalMapelSoal; ?></span>
+                </button>
+                <button @click="filter = 'belum_selesai'"
+                        :class="filter === 'belum_selesai' ? 'bg-red-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border'"
+                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5">
+                    <i data-lucide="clock" class="w-4 h-4"></i>
+                    Belum Selesai <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px]" :class="filter === 'belum_selesai' ? 'bg-red-500' : 'bg-gray-100'"><?= $countBelumSelesai; ?></span>
+                </button>
+                <button @click="filter = 'selesai'"
+                        :class="filter === 'selesai' ? 'bg-green-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border'"
+                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    Selesai <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px]" :class="filter === 'selesai' ? 'bg-green-500' : 'bg-gray-100'"><?= $countLengkap; ?></span>
+                </button>
+                <button @click="filter = 'siap_cetak'"
+                        :class="filter === 'siap_cetak' ? 'bg-amber-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border'"
+                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                    Siap Cetak <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px]" :class="filter === 'siap_cetak' ? 'bg-amber-500' : 'bg-gray-100'"><?= $countSiapCetak; ?></span>
+                </button>
+                <button @click="filter = 'sudah_cetak'"
+                        :class="filter === 'sudah_cetak' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border'"
+                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5">
+                    <i data-lucide="printer-check" class="w-4 h-4"></i>
+                    Sudah Dicetak <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px]" :class="filter === 'sudah_cetak' ? 'bg-emerald-500' : 'bg-gray-100'"><?= $countDicetak; ?></span>
+                </button>
+                <button @click="filter = 'belum_cetak'"
+                        :class="filter === 'belum_cetak' ? 'bg-orange-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border'"
+                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5">
+                    <i data-lucide="printer-x" class="w-4 h-4"></i>
+                    Belum Cetak <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px]" :class="filter === 'belum_cetak' ? 'bg-orange-500' : 'bg-gray-100'"><?= $countBelumCetak; ?></span>
+                </button>
+            </div>
 
         <!-- Mapel Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -109,9 +168,19 @@
                 $sudahDicetak = !empty($p['dicetak_at']);
                 $sudahSiapCetak = !empty($p['siap_cetak_at']);
                 ?>
-                <div class="bg-white rounded-xl shadow-sm border <?= $isComplete ? 'border-green-200' : 'border-gray-200'; ?> p-4">
+                <div x-show="filter === 'semua' || (filter === 'belum_selesai' && <?= !$isComplete ? 'true' : 'false'; ?>) || (filter === 'selesai' && <?= $isComplete ? 'true' : 'false'; ?>) || (filter === 'siap_cetak' && <?= $sudahSiapCetak ? 'true' : 'false'; ?>) || (filter === 'sudah_cetak' && <?= $sudahDicetak ? 'true' : 'false'; ?>) || (filter === 'belum_cetak' && <?= ($sudahSiapCetak && !$sudahDicetak) ? 'true' : 'false'; ?>)"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="bg-white rounded-xl shadow-sm border <?= $isComplete ? 'border-green-200' : 'border-gray-200'; ?> p-4">
                     <div class="flex items-center justify-between mb-2">
-                        <h4 class="font-semibold text-gray-800"><?= htmlspecialchars($mapel['nama_mapel']); ?></h4>
+                        <div>
+                            <h4 class="font-semibold text-gray-800"><?= htmlspecialchars($mapel['nama_mapel']); ?></h4>
+                            <p class="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
+                                <i data-lucide="user" class="w-3 h-3"></i>
+                                <?= htmlspecialchars($mapel['nama_guru'] ?? '-'); ?>
+                            </p>
+                        </div>
                         <div class="flex items-center gap-1">
                             <?php if ($sudahDicetak): ?>
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-700"
@@ -164,6 +233,7 @@
                            class="flex-1 text-center bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-medium py-2 px-2 rounded-lg transition-colors">
                             <i data-lucide="eye" class="w-3 h-3 inline mr-1"></i> Lihat
                         </a>
+                        <?php if ($sudahSiapCetak): ?>
                         <a href="<?= BASEURL; ?>/soalSts/previewCetak/<?= $data['id_kelas']; ?>/<?= $mapel['id_mapel']; ?>"
                            class="flex-1 text-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-medium py-2 px-2 rounded-lg transition-colors">
                             <i data-lucide="printer" class="w-3 h-3 inline mr-1"></i> Cetak
@@ -173,9 +243,18 @@
                            title="Cetak 1 lembar per siswa dengan nama otomatis">
                             <i data-lucide="users" class="w-3 h-3 inline mr-1"></i> + Nama
                         </a>
+                        <?php else: ?>
+                        <span class="flex-1 text-center bg-gray-100 text-gray-400 text-xs font-medium py-2 px-2 rounded-lg cursor-not-allowed" title="<?= !$isComplete ? 'Soal belum lengkap' : 'Belum ditandai Siap Cetak'; ?>">
+                            <i data-lucide="printer" class="w-3 h-3 inline mr-1"></i> Cetak
+                        </span>
+                        <span class="flex-1 text-center bg-gray-100 text-gray-400 text-xs font-medium py-2 px-2 rounded-lg cursor-not-allowed" title="<?= !$isComplete ? 'Soal belum lengkap' : 'Belum ditandai Siap Cetak'; ?>">
+                            <i data-lucide="users" class="w-3 h-3 inline mr-1"></i> + Nama
+                        </span>
+                        <?php endif; ?>
                     </div>
                     <form action="<?= BASEURL; ?>/soalSts/toggleDicetak/<?= $data['id_kelas']; ?>/<?= $mapel['id_mapel']; ?>" method="POST" class="mt-2">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
+                        <input type="hidden" name="redirect" value="mapel">
                         <button type="submit"
                                 class="w-full text-center <?= $sudahDicetak ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'; ?> text-xs font-medium py-2 px-2 rounded-lg transition-colors">
                             <?php if ($sudahDicetak): ?>
@@ -196,6 +275,15 @@
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
+        </div>
+
+        <!-- Empty state when filter has no results -->
+        <template x-if="filter !== 'semua'">
+            <div x-show="document.querySelectorAll('[x-show]:not([style*=\'display: none\'])').length <= 1"
+                 x-effect="$nextTick(() => { let visible = 0; document.querySelectorAll('.grid > [x-show]').forEach(el => { if (el.style.display !== 'none') visible++; }); $el._x_visible = visible; })"
+                 class="hidden">
+            </div>
+        </template>
         </div>
     <?php endif; ?>
 </main>
