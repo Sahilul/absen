@@ -1,6 +1,21 @@
 {
   "versions": [
     {
+      "version": "1.36.4",
+      "date": "2026-10-12",
+      "type": "fix",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Perbaiki parsing JSON hasil Generate Soal AI agar tidak lagi muncul error \"AI tidak mengembalikan JSON yang valid\". Parser kini memakai pemindaian kurung seimbang (balanced brace/bracket scan) yang tahan terhadap teks pembuka, markdown code fence, dan kurung di dalam string."
+        },
+        {
+          "type": "improvement",
+          "description": "Instruksi sistem diperketat agar AI hanya membalas satu objek JSON valid tanpa penjelasan/markdown, dan output mentah dicatat ke console saat gagal parse untuk mempermudah diagnosa."
+        }
+      ]
+    },
+    {
       "version": "1.36.3",
       "date": "2026-10-12",
       "type": "feature",

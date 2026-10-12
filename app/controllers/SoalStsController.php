@@ -606,16 +606,18 @@ class SoalStsController extends Controller
             . "semester {$semesterText}. "
             . "Soal harus sesuai Kurikulum Merdeka, bervariasi level kognitif (C1-C6), dan menggunakan bahasa Indonesia yang baik dan benar.\n\n"
             . $levelGuide . "\n"
-            . "ATURAN OUTPUT:\n"
-            . "- Jawab HANYA dengan JSON valid, tanpa markdown, tanpa penjelasan, tanpa komentar.\n"
-            . "- Format: {\"soal\": [...]}\n"
+            . "ATURAN OUTPUT (WAJIB DIPATUHI):\n"
+            . "- Jawab HANYA dengan SATU objek JSON valid. TANPA markdown, TANPA code fence, TANPA penjelasan, TANPA kalimat pembuka/penutup, TANPA komentar.\n"
+            . "- Jangan pernah menulis teks apapun sebelum karakter '{' pertama atau sesudah karakter '}' terakhir.\n"
+            . "- Format tepat: {\"soal\": [ ... ]}\n"
             . "- Setiap item soal memiliki field: tipe, nomor, pertanyaan, skor\n"
             . "- Untuk tipe \"pg\": tambah field opsi_a, opsi_b, opsi_c, opsi_d" . ($opsiPG >= 5 ? ", opsi_e" : "") . ", kunci_jawaban (huruf " . implode('/', $opsiLabels) . ")\n"
             . "- Untuk tipe \"essay\": tambah field kunci_jawaban (berisi pedoman/rubrik penilaian singkat)\n"
             . "- Untuk tipe \"isian\": tambah field kunci_jawaban (jawaban singkat yang benar)\n"
             . "- Pertanyaan harus jelas, tidak ambigu, dan sesuai tingkat {$jenjang}\n"
             . "- Opsi PG harus masuk akal (distractor yang baik), kunci jawaban harus benar\n"
-            . "- Skor default: PG=1, Isian=2, Essay=10\n";
+            . "- Skor default: PG=1, Isian=2, Essay=10\n"
+            . "- Pastikan seluruh JSON lengkap dan valid (kurung kurawal & tanda kutip berpasangan), jangan terpotong di tengah.\n";
 
         // Build user message
         $userMsg = "Buatkan soal STS {$namaMapel} untuk kelas {$namaKelas} semester {$semesterText}.\n\n";

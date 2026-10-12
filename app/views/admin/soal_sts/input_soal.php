@@ -955,16 +955,73 @@
         }
 
         function extractJson(text) {
-            // Bersihkan markdown code fences bila ada
-            let t = text.trim();
-            t = t.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
-            // Ambil dari '{' pertama sampai '}' terakhir
-            const first = t.indexOf('{');
-            const last = t.lastIndexOf('}');
-            if (first !== -1 && last !== -1 && last > first) {
-                t = t.slice(first, last + 1);
+            if (text == null) throw new Error('empty');
+            let t = String(text).trim();
+
+            // 1) Buang markdown code fence (```json ... ``` atau ``` ... ```)
+            t = t.replace(/```[a-zA-Z]*\s*/g, '').replace(/```/g, '').trim();
+
+            // 2) Buang BOM / karakter zero-width yang kadang disisipkan model
+            t = t.replace(/[\u200B-\u200D\uFEFF]/g, '');
+
+            // 3) Coba parse langsung dulu (paling umum)
+            try { return JSON.parse(t); } catch (e) { /* lanjut ke ekstraksi */ }
+
+            // 4) Ekstraksi dengan pemindaian seimbang (balanced scan) dari '{' atau '['
+            //    pertama, menghormati string & escape, agar kurung di dalam teks tidak salah potong.
+            function balancedSlice(str) {
+                const openIdx = str.search(/[{[]/);
+                if (openIdx === -1) return null;
+                const open = str[openIdx];
+                const close = open === '{' ? '}' : ']';
+                let depth = 0;
+                let inStr = false;
+                let esc = false;
+                for (let i = openIdx; i < str.length; i++) {
+                    const ch = str[i];
+                    if (inStr) {
+                        if (esc) { esc = false; }
+                        else if (ch === '\\') { esc = true; }
+                        else if (ch === '"') { inStr = false; }
+                        continue;
+                    }
+                    if (ch === '"') { inStr = true; continue; }
+                    if (ch === open) depth++;
+                    else if (ch === close) {
+                        depth--;
+                        if (depth === 0) return str.slice(openIdx, i + 1);
+                    }
+                }
+                return null; // tidak seimbang (kemungkinan terpotong)
             }
-            return JSON.parse(t);
+
+            // 5) Coba opsi ekstraksi berurutan:
+            //    a. dari '{' pertama (cocok untuk {"soal":[...]})
+            //    b. dari '[' pertama (coba kalau objek gagal, mis. model balas array langsung)
+            //    c. buang ekor setelah '}' atau ']' terakhir sebagai fallback terakhir
+            const candidates = [];
+            const objSlice = balancedSlice(t);
+            if (objSlice) candidates.push(objSlice);
+            if (t.trim().startsWith('[')) candidates.push(t);
+            const fbStart = t.search(/[{[]/);
+            const fbEnd = t.lastIndexOf('}');
+            const fbEndArr = t.lastIndexOf(']');
+            const fbEnd2 = Math.max(fbEnd, fbEndArr);
+            if (fbStart !== -1 && fbEnd2 > fbStart) candidates.push(t.slice(fbStart, fbEnd2 + 1));
+
+            for (const c of candidates) {
+                try { return JSON.parse(c); } catch (e) { /* coba kandidat berikutnya */ }
+            }
+
+            // 6) Fallback terakhir: perbaiki koma berlebih / JSON terpotong ringan
+            try {
+                const cleaned = objSlice
+                    ? objSlice.replace(/,\s*([}\]])/g, '$1')
+                    : null;
+                if (cleaned) return JSON.parse(cleaned);
+            } catch (e) { /* menyerah */ }
+
+            throw new Error('invalid-json');
         }
 
         window.aiStartGenerate = async function () {
@@ -1076,7 +1133,8 @@
                 try {
                     parsed = extractJson(fullContent);
                 } catch (e) {
-                    throw new Error('AI tidak mengembalikan JSON yang valid. Coba lagi.');
+                    console.error('[AI Generate] Gagal parse JSON. Raw output:', fullContent);
+                    throw new Error('AI tidak mengembalikan JSON yang valid. Coba lagi (atau klik Generate ulang).');
                 }
 
                 const soalArray = Array.isArray(parsed) ? parsed : (parsed.soal || []);
