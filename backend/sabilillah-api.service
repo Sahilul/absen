@@ -1,0 +1,34 @@
+[Unit]
+Description=Sabilillah Go API Backend
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+Type=simple
+User=www
+Group=www
+WorkingDirectory=/www/wwwroot/sabilillah.id/backend
+ExecStart=/www/wwwroot/sabilillah.id/backend/sabilillah-api
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sabilillah-api
+
+# Environment
+Environment=GIN_MODE=release
+EnvironmentFile=-/www/wwwroot/sabilillah.id/config/student-bridge.env
+EnvironmentFile=-/www/wwwroot/sabilillah.id/config/ai-bridge.env
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/www/wwwroot/sabilillah.id/backend
+PrivateTmp=true
+
+# Resource limits
+LimitNOFILE=65535
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

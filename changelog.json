@@ -1,608 +1,619 @@
 {
-    "versions": [
+  "versions": [
+    {
+      "version": "1.36.2",
+      "date": "2026-10-12",
+      "type": "security",
+      "changes": [
         {
-            "version": "1.36.1",
-            "date": "2026-10-12",
-            "type": "security",
-            "changes": [
-                {
-                    "type": "security",
-                    "description": "Hapus HMAC bridge secret yang ter-hardcode di source code (SoalStsController, AichatController). Secret kini dibaca dari config/ai-bridge.env (tidak di-commit) via konstanta AI_BRIDGE_HMAC_SECRET. Menutup temuan GitGuardian."
-                }
-            ]
-        },
-        {
-            "version": "1.36.0",
-            "date": "2026-10-12",
-            "type": "feature",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Tambah fitur Generate Soal dengan AI di halaman Input Soal STS. Guru bisa memasukkan materi/topik (opsional), memilih tipe soal (Semua/PG/Isian/Essay), dan mode pengisian (isi kosong saja / timpa semua). AI men-generate soal sesuai struktur, mapel, kelas, dan semester secara streaming via backend Go, lalu otomatis mengisi form soal."
-                }
-            ]
-        },
-        {
-            "version": "1.35.11",
-            "date": "2026-10-03",
-            "type": "feature",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Tambah fitur cetak Surat Pemanggilan Orang Tua di halaman BK. PDF dengan kop surat lembaga, data siswa & orang tua, auto-numbering nomor surat, dan QR code validasi."
-                }
-            ]
-        },
-        {
-            "version": "1.35.10",
-            "date": "2026-10-02",
-            "type": "bugfix",
-            "changes": [
-                {
-                    "type": "bugfix",
-                    "description": "Fix kop surat tidak muncul di PDF (SKSA, absensi, pembayaran, RPP, jurnal). Path gambar kop/ttd sekarang menggunakan APPROOT absolute path dan mendukung folder lembaga (v1.32.0)."
-                }
-            ]
-        },
-        {
-            "version": "1.35.9",
-            "date": "2026-10-02",
-            "type": "bugfix",
-            "changes": [
-                {
-                    "type": "bugfix",
-                    "description": "Fix Tahun Pelajaran kosong pada SKSA siswa. Query getKeanggotaanSiswa sekarang join tabel tp untuk mengambil nama_tp."
-                }
-            ]
-        },
-        {
-            "version": "1.35.8",
-            "date": "2026-10-02",
-            "type": "bugfix",
-            "changes": [
-                {
-                    "type": "bugfix",
-                    "description": "Fix kelas siswa salah (menampilkan kelas tahun sebelumnya) pada PDF Absensi Harian, PDF Absensi Mapel, dan PDF Pembayaran. Query keanggotaan_kelas sekarang difilter berdasarkan tahun pelajaran aktif."
-                }
-            ]
-        },
-        {
-            "version": "1.35.7",
-            "date": "2026-10-02",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "improvement",
-                    "description": "Pisahkan halaman Pengaturan Soal dan Daftar Soal per Mapel menjadi dua halaman terpisah untuk navigasi yang lebih jelas."
-                }
-            ]
-        },
-        {
-            "version": "1.35.6",
-            "date": "2026-10-02",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Statistik per kelas di halaman admin Soal STS: menampilkan jumlah mapel yang Siap Cetak dan Sudah Dicetak di setiap kartu kelas."
-                },
-                {
-                    "type": "feature",
-                    "description": "Stats card global baru di dashboard Soal STS: total Siap Cetak dan Sudah Dicetak dari seluruh kelas."
-                }
-            ]
-        },
-        {
-            "version": "1.35.5",
-            "date": "2026-10-02",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Fitur \"Siap Cetak\" pada Soal STS: guru/admin dapat menandai soal sebagai siap cetak setelah semua soal lengkap. Soal yang sudah ditandai akan terkunci dari edit, hapus, dan upload gambar."
-                },
-                {
-                    "type": "feature",
-                    "description": "Tombol cetak (Preview, Cetak+Nama, Kunci Jawaban) hanya muncul untuk guru setelah soal ditandai Siap Cetak. Admin tetap bisa mencetak kapan saja."
-                },
-                {
-                    "type": "feature",
-                    "description": "Admin dapat membatalkan penanda Siap Cetak untuk membuka kunci soal agar bisa diedit kembali."
-                },
-                {
-                    "type": "feature",
-                    "description": "Badge status \"Siap Cetak\" tampil di halaman Pengaturan, Daftar Soal, Input Soal, dan Dashboard Guru."
-                }
-            ]
-        },
-        {
-            "version": "1.35.4",
-            "date": "2026-10-02",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Penanda \"Sudah Dicetak\" pada Soal STS: admin kini bisa melihat mana soal yang sudah/belum dicetak. Badge status tampil di halaman Pengaturan dan Daftar Soal."
-                },
-                {
-                    "type": "feature",
-                    "description": "Penanda otomatis: saat membuka Preview Cetak, Cetak PDF, Cetak Kunci, atau Cetak dengan Nama, soal otomatis ditandai sudah dicetak beserta waktu dan user yang mencetak."
-                },
-                {
-                    "type": "feature",
-                    "description": "Tombol manual \"Tandai Sudah/Belum Dicetak\" untuk mengubah status cetak secara manual."
-                }
-            ]
-        },
-        {
-            "version": "1.35.3",
-            "date": "2026-10-02",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "change",
-                    "description": "Menu \"Monitoring AI\" dipindahkan dari grup Pengaturan ke dropdown \"Aplikasi Lain\" pada sidebar admin."
-                }
-            ]
-        },
-        {
-            "version": "1.35.2",
-            "date": "2026-10-02",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Tambah tombol \"Hapus Gambar\" pada form input soal STS (PG, isian, essay). Gambar soal yang sudah diunggah kini bisa dihapus langsung dari form; file gambar lama di Cloudflare R2 ikut dihapus saat soal disimpan."
-                }
-            ]
-        },
-        {
-            "version": "1.35.1",
-            "date": "2026-10-02",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "fix",
-                    "description": "Perbaikan error \"Data too long for column 'kunci_jawaban'\" saat menyimpan soal STS essay/isian. Kolom kunci_jawaban diubah dari VARCHAR(10) menjadi TEXT sehingga bisa menampung pedoman penilaian yang panjang."
-                }
-            ]
-        },
-        {
-            "version": "1.35.0",
-            "date": "2026-10-02",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Monitoring Penggunaan AI: dashboard admin baru untuk memantau pemakaian asisten AI \"Pak Admin\". Menampilkan total request, token (input/output), user aktif, rata-rata latency, error rate, dan estimasi biaya."
-                },
-                {
-                    "type": "feature",
-                    "description": "Grafik interaktif: tren harian (request/token/user), distribusi model, aktivitas per jam, dan distribusi latency. Dilengkapi filter periode (7/30/90 hari atau rentang kustom)."
-                },
-                {
-                    "type": "feature",
-                    "description": "Analisis topik: daftar topik/percakapan yang paling sering dibahas, tabel penggunaan per user (request, token, percakapan, latency), daftar percakapan terbaru dengan modal detail isi chat, dan log error terbaru."
-                },
-                {
-                    "type": "feature",
-                    "description": "Pencatatan otomatis penggunaan AI: setiap request ke provider AI (chat & generate judul) dicatat token, latency, model, dan status ke tabel ai_chat_usage."
-                },
-                {
-                    "type": "feature",
-                    "description": "Pengaturan harga token (input/output per 1K) di halaman Pengaturan AI Chat untuk menghitung estimasi biaya pemakaian AI."
-                }
-            ]
-        },
-        {
-            "version": "1.34.2",
-            "date": "2026-10-02",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "fix",
-                    "description": "Perbaikan penomoran daftar di balon chat AI: daftar bernomor (1. 2. 3.) kini dikelompokkan menjadi satu ordered list sehingga nomor tampil berurutan (1, 2, 3, ...), bukan selalu mulai dari 1. Baris lanjutan seperti kunci jawaban tetap masuk ke dalam item. Bullet list juga tampil dengan tanda bullet (sebelumnya hilang karena dirender sebagai <ul> tanpa list-style)."
-                }
-            ]
-        },
-        {
-            "version": "1.34.1",
-            "date": "2026-10-02",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "fix",
-                    "description": "Perbaikan gambar soal STS tidak tampil di sebagian jaringan/HP: gambar R2 (r2.dev) kini disajikan lewat proxy lokal /foto/soal/ sehingga tidak lagi diblokir ISP. Berlaku di halaman input soal, daftar soal, preview cetak, dan PDF."
-                }
-            ]
-        },
-        {
-            "version": "1.34.0",
-            "date": "2026-10-02",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "AI Chat File Upload: kirim gambar, PDF, Word, Excel, CSV, TXT ke Pak Admin. AI bisa membaca dan menganalisis isi file. Gambar dan PDF dikirim langsung ke Gemini (vision/multimodal), Word dan Excel diekstrak teksnya otomatis."
-                },
-                {
-                    "type": "feature",
-                    "description": "AI Document Generation: minta Pak Admin buatkan dokumen PDF atau Excel. AI generate file yang bisa langsung didownload dari chat. PDF menggunakan Dompdf, Excel menggunakan native XLSX generator."
-                },
-                {
-                    "type": "feature",
-                    "description": "Pengaturan Upload File: toggle aktif/nonaktif upload file dan atur batas ukuran file (1-20 MB) dari halaman Pengaturan AI Chat."
-                },
-                {
-                    "type": "improvement",
-                    "description": "Kolom content di ai_chat_messages diubah ke MEDIUMTEXT untuk mendukung respons AI yang lebih panjang."
-                }
-            ]
-        },
-        {
-            "version": "1.33.0",
-            "date": "2026-10-01",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "AI Chat Assistant \"Pak Admin\": floating chat widget di semua halaman untuk guru dan staf (admin, guru, wali kelas, kepala madrasah). Mendukung endpoint OpenAI-compatible (OpenAI, OpenRouter, Groq, Ollama, dll). Fitur: sesi percakapan terpisah, riwayat chat, identitas user otomatis, rate limiting harian, markdown rendering aman."
-                },
-                {
-                    "type": "feature",
-                    "description": "Menu Pengaturan AI Chat: konfigurasi enable/disable, nama AI, base URL, API key, model, temperature, system prompt, max history, dan batas harian. Termasuk tombol Test Koneksi."
-                }
-            ]
-        },
-        {
-            "version": "1.32.0",
-            "date": "2026-10-01",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Menu baru Pengaturan Lembaga: kelola data lembaga (kop, nama lembaga, nama kepala, NIP, alamat, telp, email, website, kota, logo, ttd) sekali per lembaga (MTs/MA) dengan pemetaan jenjang (VII-IX untuk MTs, X-XII untuk MA)"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Data lembaga (kop, nama madrasah, nama kepala, ttd) kini otomatis dipakai saat mencetak rapor & soal STS berdasarkan jenjang kelas, sehingga tidak lagi terduplikasi per wali kelas"
-                }
-            ]
-        },
-        {
-            "version": "1.31.3",
-            "date": "2026-10-01",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "security",
-                    "description": "Pulihkan index.php sebagai front controller (47 baris) yang sebelumnya tertimpa snapshot HTML homepage dari insiden keamanan 2026-09-18; menghapus CSRF token hardcoded yang terdeteksi GitGuardian"
-                },
-                {
-                    "type": "chore",
-                    "description": "Hentikan pelacakan folder backups/ dan artefak keamanan (shell-found.txt, file verifikasi Google) dari git; perbarui .gitignore"
-                }
-            ]
-        },
-        {
-            "version": "1.31.2",
-            "date": "2026-10-01",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "improvement",
-                    "description": "Soal Essay pada cetak Soal STS tidak lagi menyediakan garis jawaban di bawah soal — hanya menampilkan soal saja, sehingga siswa menjawab di lembar terpisah"
-                }
-            ]
-        },
-        {
-            "version": "1.31.1",
-            "date": "2026-10-01",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "improvement",
-                    "description": "Format cetak Soal STS dibuat lebih hemat kertas: margin halaman minimalis (0.8cm x 1cm), line spacing rapat (1.15), ukuran font 11pt, jarak antar soal lebih kecil, dan gambar soal diperkecil (maks 180x120px)"
-                },
-                {
-                    "type": "fix",
-                    "description": "Gambar soal yang sudah tersimpan kini langsung tampil di halaman input soal (preview tidak lagi tersembunyi di balik tombol Tambah Gambar)"
-                }
-            ]
-        },
-        {
-            "version": "1.31.0",
-            "date": "2026-10-01",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Fitur baru Buat Soal STS (Sumatif Tengah Semester): pengaturan jumlah soal PG/Isian/Essay per mapel-kelas, input soal dengan gambar, preview cetak, dan cetak PDF beserta kunci jawaban; guru & wali kelas dapat mengisi soal untuk mapel yang diampu langsung dari dashboard"
-                },
-                {
-                    "type": "fix",
-                    "description": "Gambar soal STS kini diupload ke Cloudflare R2 (bucket sabilillah, prefix soal-sts/) sehingga tampil andal di daftar soal, preview cetak, dan PDF; mendukung kompatibilitas gambar lama (path lokal) secara mundur"
-                },
-                {
-                    "type": "fix",
-                    "description": "Perbaiki fatal error mime_content_type() pada server tanpa ekstensi fileinfo: gunakan helper safeImageMime() berbasis getimagesize() untuk deteksi tipe gambar (upload soal STS, kop rapor, dan kop PSB)"
-                }
-            ]
-        },
-        {
-            "version": "1.27.1",
-            "date": "2026-09-07",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "fix",
-                    "description": "Fix siswa yang izin dari wali kelas tetap tampil sebagai hadir di halaman edit absensi guru"
-                },
-                {
-                    "type": "fix",
-                    "description": "Pin CDN Lucide ke versi 0.460.0 di seluruh file untuk mencegah blank screen saat klik tombol status kehadiran"
-                },
-                {
-                    "type": "fix",
-                    "description": "Cegah duplikasi penugasan mapel-kelas saat ganti guru: validasi server dan AJAX warning di form tambah penugasan, badge jumlah jurnal di daftar penugasan, tombol hapus disabled jika ada riwayat jurnal"
-                }
-            ]
-        },
-        {
-            "version": "1.26.1",
-            "date": "2026-08-07",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Pagination pada halaman daftar siswa admin: pilihan jumlah data per halaman (25/50/100, tersimpan di browser), navigasi nomor halaman dengan tombol sebelumnya/berikutnya, info rentang data, tetap terintegrasi dengan pencarian dan filter kelas serta konsisten antara tabel desktop dan kartu mobile"
-                }
-            ]
-        },
-        {
-            "version": "1.26.0",
-            "date": "2026-08-07",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Runner migration berbasis tabel schema_migrations: kelas baru Migrator (app/core/Migrator.php) mencatat versi migration yang sudah diterapkan, menandai ulang (backfill) migration lama tanpa mengeksekusinya, dan hanya menjalankan migration yang belum diterapkan secara idempoten; Updater kini ikut mencatat migration semver ke schema_migrations"
-                },
-                {
-                    "type": "security",
-                    "description": "Pensiun bertahap password_plain di tampilan: helper baru PasswordMask (app/core/PasswordMask.php) men-masker nilai password_plain menjadi bullet pada daftar siswa/guru admin dan daftar siswa wali kelas (termasuk data JSON modal detail) sehingga kredensial tidak lagi bocor ke HTML sumber; kolom tetap dipertahankan dan fitur cetak kartu login tidak berubah"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Tombol 'Lihat' (ikon mata) pada daftar siswa/guru admin dan modal detail siswa untuk menampilkan password on-demand: password diambil lewat endpoint khusus admin (admin/lihatPassword) yang menolak akses non-admin dan non-AJAX, klik kedua menyembunyikan kembali"
-                }
-            ]
-        },
-        {
-            "version": "1.25.0",
-            "date": "2026-08-07",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "improvement",
-                    "description": "Konsolidasi kunci session: helper baru Session (app/core/Session.php) menyinkronkan kunci kanonik role/nama_lengkap dengan kunci legacy user_role/user_nama_lengkap secara otomatis di front controller, dan pembaca di seluruh aplikasi kini memakai kunci kanonik dengan fallback legacy"
-                },
-                {
-                    "type": "improvement",
-                    "description": "AdminController (7794 baris) dipecah menjadi beberapa trait per domain (siswa, guru, akademik, laporan, pengaturan, pesan/WA, pembayaran) sehingga lebih mudah dipelihara tanpa mengubah perilaku"
-                }
-            ]
-        },
-        {
-            "version": "1.24.0",
-            "date": "2026-08-07",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Proteksi CSRF menyeluruh: token per-sesi diinjeksi otomatis ke seluruh halaman (meta + patch form/fetch/XHR) dan divalidasi terpusat untuk semua POST pengguna yang sudah login; respons 419 bila token tidak valid"
-                },
-                {
-                    "type": "feature",
-                    "description": "Rate limiting login: akun/IP terkunci 15 menit setelah 5 kali percobaan gagal (login utama berbasis tabel login_history, login PSB berbasis session)"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Cookie sesi kini diberi flag Secure saat diakses lewat HTTPS dan folder backups/ dilindungi .htaccess deny sebagai lapisan pertahanan tambahan"
-                }
-            ]
-        },
-        {
-            "version": "1.23.0",
-            "date": "2026-08-07",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Akun admin kini dapat login menggunakan tombol Login dengan Google: email dicocokkan dari kolom email baru di tabel users (migration 1.23.0)"
-                },
-                {
-                    "type": "feature",
-                    "description": "Halaman Profil Admin (/admin/profil) memiliki field Email Google dengan validasi format dan cek duplikasi antar user"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Email admin utama otomatis diisi dengan turuae1@gmail.com sehingga login Google langsung siap digunakan"
-                }
-            ]
-        },
-        {
-            "version": "1.22.0",
-            "date": "2026-08-07",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Panel Persuratan baru (/persuratan): penggabungan Panel Surat Tugas dan Panel Surat Penerimaan dalam satu panel dengan dashboard terpadu (statistik lembaga, surat tugas, dan surat penerimaan)"
-                },
-                {
-                    "type": "feature",
-                    "description": "Sidebar Panel Persuratan berisi menu Dashboard, Surat Tugas, Surat Penerimaan, dan Lembaga (lembaga dipakai bersama kedua jenis surat)"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Menu di sidebar admin (grup Aplikasi Lain) dan kepala madrasah (grup Administrasi) disederhanakan menjadi satu tautan Panel Persuratan"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Dashboard lama /suratTugas dan /suratPenerimaan otomatis dialihkan ke /persuratan; seluruh URL CRUD surat tugas dan surat penerimaan tetap berfungsi tanpa perubahan"
-                },
-                {
-                    "type": "fix",
-                    "description": "Guard hapus lembaga kini juga memeriksa tabel surat_penerimaan sehingga lembaga yang masih memiliki surat penerimaan tidak dapat dihapus"
-                }
-            ]
-        },
-        {
-            "version": "1.21.0",
-            "date": "2026-08-07",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Panel baru Surat Penerimaan: surat keterangan penerimaan siswa pindahan dengan menu tersendiri (/suratPenerimaan) untuk admin dan kepala madrasah, mendukung multi lembaga"
-                },
-                {
-                    "type": "feature",
-                    "description": "Format PDF mengikuti contoh resmi: kop lembaga, judul SURAT PENERIMAAN SISWA + nomor, data penandatangan (Nama/Jabatan/Unit Kerja/Alamat), data siswa (Nama/TTL/Jenis Kelamin/NISN/Asal Sekolah/Nama Orang Tua), paragraf penerimaan, dan tanda tangan kanan dengan QR validasi elektronik"
-                },
-                {
-                    "type": "feature",
-                    "description": "Tabel baru surat_penerimaan (migration 1.21.0) dengan lembaga memakai ulang tabel surat_tugas_lembaga (kop & kepala madrasah dikelola di Panel Surat Tugas)"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Halaman validasi QR kini mengenali tipe dokumen surat_penerimaan (Surat Penerimaan Siswa) beserta nama siswa"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Menu Panel Surat Penerimaan ditambahkan di sidebar admin (grup Aplikasi Lain) dan sidebar kepala madrasah (grup Administrasi)"
-                }
-            ]
-        },
-        {
-            "version": "1.19.3",
-            "date": "2026-08-07",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "fix",
-                    "description": "Cleanup Surat Tugas: Hapus implementasi lama mati di AdminController (suratTugas/tambahSuratTugas/dkk) yang memanggil method model tidak ada (getAllSuratTugas, generateNomorSurat, updateSurat, tambahSurat) sehingga route /admin/suratTugas pasti fatal error"
-                },
-                {
-                    "type": "fix",
-                    "description": "Hapus view lama mati app/views/surat_tugas/{index,form,cetak}.php yang hanya dipakai implementasi lama"
-                },
-                {
-                    "type": "fix",
-                    "description": "Hapus lembaga yang masih memiliki surat tugas kini ditolak dengan pesan error (sebelumnya surat menjadi data yatim dan hilang dari daftar karena INNER JOIN)"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Menu Surat Tugas kini tersedia di sidebar Kepala Madrasah (sebelumnya hanya admin yang punya link meski controller mengizinkan kedua role)"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Sidebar panel Surat Tugas: tombol 'Kembali ke Admin' menyesuaikan role (kepala madrasah diarahkan ke dashboard kepala madrasah, bukan /admin/dashboard yang memblokirnya)"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Kolom created_by surat tugas kini terisi otomatis dengan user pembuat saat surat dibuat"
-                }
-            ]
-        },
-        {
-            "version": "1.19.2",
-            "date": "2026-08-07",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "fix",
-                    "description": "Fix Fatal Error RaporSTSController: Pernyataan 'use Dompdf' yang berada di dalam method dipindah ke atas file (syntax error 'unexpected token use' di line 110)"
-                },
-                {
-                    "type": "fix",
-                    "description": "Fix Upload Kop Surat Lembaga PSB: Controller aktif tidak menyimpan kop_gambar meski form dan database sudah mendukung, kini upload kop berfungsi di tambah/edit lembaga"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Kop Surat PDF Formulir PSB: Cetak/kirim formulir kini menampilkan kop surat gambar lembaga (fallback ke nama lembaga jika tidak ada gambar)"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Cleanup Duplikasi PSB: Hapus controller dead-code PSBController.php, PsbController-1.php dan .bak (berisiko fatal error redeclare class PsbController)"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Keamanan API: JWT secret kini dapat dikonfigurasi via pengaturan_sistem (key: api_secret_key) dengan fallback ke default lama agar token existing tetap valid"
-                }
-            ]
-        },
-        {
-            "version": "1.19.1",
-            "date": "2026-02-28",
-            "type": "patch",
-            "changes": [
-                {
-                    "type": "fix",
-                    "description": "Fix Nilai STS & SAS: Daftar siswa tidak tampil (0 siswa) di halaman Input Nilai Tengah Semester dan Akhir Semester karena model query memakai id_semester bukan id_tp"
-                },
-                {
-                    "type": "fix",
-                    "description": "Fix Auto-Update Timeout: Naikkan timeout cURL download dari 15s ke 300s agar tidak gagal saat koneksi lambat"
-                }
-            ]
-        },
-        {
-            "version": "1.19.0",
-            "date": "2026-02-15",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Google Drive Integration: Tambah kolom drive_file_id dan drive_url di psb_dokumen untuk backup dokumen ke Google Drive"
-                },
-                {
-                    "type": "fix",
-                    "description": "Remove Upload Limit: Hapus batasan 2MB file upload di form PSB, sekarang support upload dokumen tanpa batasan ukuran"
-                },
-                {
-                    "type": "fix",
-                    "description": "Empty Date Fields: Fix handling empty date fields (tanggal_lahir, ayah_tanggal_lahir, ibu_tanggal_lahir, wali_tanggal_lahir) agar tidak error 'Invalid datetime format'"
-                },
-                {
-                    "type": "improvement",
-                    "description": "PSB Form Schema: Tambah 60+ kolom missing di tabel psb_pendaftar (kip, alamat lengkap, data orang tua/wali, sekolah asal, dsb) sesuai schema yang diharapkan"
-                },
-                {
-                    "type": "fix",
-                    "description": "Database.php Syntax Error: Fix unmatched closing brace yang menyebabkan parse error"
-                }
-            ]
-        },
-        {
-            "version": "1.18.0",
-            "date": "2026-02-06",
-            "type": "minor",
-            "changes": [
-                {
-                    "type": "feature",
-                    "description": "Auto-Retry WA Queue: Pesan gagal otomatis dicoba kirim ulang (max 3x) oleh Cron Job"
-                },
-                {
-                    "type": "fix",
-                    "description": "Fix Direct Retry: Retry pesan saat mode antrian mati (Direct) kini statusnya langsung sukses/gagal seketika (tidak pending)"
-                },
-                {
-                    "type": "improvement",
-                    "description": "Format Laporan Absensi WA: Tampilan lebih bersih (tanpa ikon/nama guru), format tanggal Indonesia, dan tambahan info Waktu (WIB) & Materi"
-                }
-            ]
+          "type": "security",
+          "description": "Rotasi HMAC bridge secret yang sebelumnya hardcoded (terekspos GitGuardian). Secret kini bersumber tunggal dari config/ai-bridge.env, dibaca oleh PHP (loadEnvValue -> AI_BRIDGE_HMAC_SECRET) dan Go (viper BindEnv AI_BRIDGE_HMAC_SECRET + systemd EnvironmentFile). Backend Go di-rebuild dan service direstart."
         }
-    ]
+      ]
+    },
+    {
+      "version": "1.36.1",
+      "date": "2026-10-12",
+      "type": "security",
+      "changes": [
+        {
+          "type": "security",
+          "description": "Hapus HMAC bridge secret yang ter-hardcode di source code (SoalStsController, AichatController). Secret kini dibaca dari config/ai-bridge.env (tidak di-commit) via konstanta AI_BRIDGE_HMAC_SECRET. Menutup temuan GitGuardian."
+        }
+      ]
+    },
+    {
+      "version": "1.36.0",
+      "date": "2026-10-12",
+      "type": "feature",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Tambah fitur Generate Soal dengan AI di halaman Input Soal STS. Guru bisa memasukkan materi/topik (opsional), memilih tipe soal (Semua/PG/Isian/Essay), dan mode pengisian (isi kosong saja / timpa semua). AI men-generate soal sesuai struktur, mapel, kelas, dan semester secara streaming via backend Go, lalu otomatis mengisi form soal."
+        }
+      ]
+    },
+    {
+      "version": "1.35.11",
+      "date": "2026-10-03",
+      "type": "feature",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Tambah fitur cetak Surat Pemanggilan Orang Tua di halaman BK. PDF dengan kop surat lembaga, data siswa & orang tua, auto-numbering nomor surat, dan QR code validasi."
+        }
+      ]
+    },
+    {
+      "version": "1.35.10",
+      "date": "2026-10-02",
+      "type": "bugfix",
+      "changes": [
+        {
+          "type": "bugfix",
+          "description": "Fix kop surat tidak muncul di PDF (SKSA, absensi, pembayaran, RPP, jurnal). Path gambar kop/ttd sekarang menggunakan APPROOT absolute path dan mendukung folder lembaga (v1.32.0)."
+        }
+      ]
+    },
+    {
+      "version": "1.35.9",
+      "date": "2026-10-02",
+      "type": "bugfix",
+      "changes": [
+        {
+          "type": "bugfix",
+          "description": "Fix Tahun Pelajaran kosong pada SKSA siswa. Query getKeanggotaanSiswa sekarang join tabel tp untuk mengambil nama_tp."
+        }
+      ]
+    },
+    {
+      "version": "1.35.8",
+      "date": "2026-10-02",
+      "type": "bugfix",
+      "changes": [
+        {
+          "type": "bugfix",
+          "description": "Fix kelas siswa salah (menampilkan kelas tahun sebelumnya) pada PDF Absensi Harian, PDF Absensi Mapel, dan PDF Pembayaran. Query keanggotaan_kelas sekarang difilter berdasarkan tahun pelajaran aktif."
+        }
+      ]
+    },
+    {
+      "version": "1.35.7",
+      "date": "2026-10-02",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Pisahkan halaman Pengaturan Soal dan Daftar Soal per Mapel menjadi dua halaman terpisah untuk navigasi yang lebih jelas."
+        }
+      ]
+    },
+    {
+      "version": "1.35.6",
+      "date": "2026-10-02",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Statistik per kelas di halaman admin Soal STS: menampilkan jumlah mapel yang Siap Cetak dan Sudah Dicetak di setiap kartu kelas."
+        },
+        {
+          "type": "feature",
+          "description": "Stats card global baru di dashboard Soal STS: total Siap Cetak dan Sudah Dicetak dari seluruh kelas."
+        }
+      ]
+    },
+    {
+      "version": "1.35.5",
+      "date": "2026-10-02",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Fitur \"Siap Cetak\" pada Soal STS: guru/admin dapat menandai soal sebagai siap cetak setelah semua soal lengkap. Soal yang sudah ditandai akan terkunci dari edit, hapus, dan upload gambar."
+        },
+        {
+          "type": "feature",
+          "description": "Tombol cetak (Preview, Cetak+Nama, Kunci Jawaban) hanya muncul untuk guru setelah soal ditandai Siap Cetak. Admin tetap bisa mencetak kapan saja."
+        },
+        {
+          "type": "feature",
+          "description": "Admin dapat membatalkan penanda Siap Cetak untuk membuka kunci soal agar bisa diedit kembali."
+        },
+        {
+          "type": "feature",
+          "description": "Badge status \"Siap Cetak\" tampil di halaman Pengaturan, Daftar Soal, Input Soal, dan Dashboard Guru."
+        }
+      ]
+    },
+    {
+      "version": "1.35.4",
+      "date": "2026-10-02",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Penanda \"Sudah Dicetak\" pada Soal STS: admin kini bisa melihat mana soal yang sudah/belum dicetak. Badge status tampil di halaman Pengaturan dan Daftar Soal."
+        },
+        {
+          "type": "feature",
+          "description": "Penanda otomatis: saat membuka Preview Cetak, Cetak PDF, Cetak Kunci, atau Cetak dengan Nama, soal otomatis ditandai sudah dicetak beserta waktu dan user yang mencetak."
+        },
+        {
+          "type": "feature",
+          "description": "Tombol manual \"Tandai Sudah/Belum Dicetak\" untuk mengubah status cetak secara manual."
+        }
+      ]
+    },
+    {
+      "version": "1.35.3",
+      "date": "2026-10-02",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "change",
+          "description": "Menu \"Monitoring AI\" dipindahkan dari grup Pengaturan ke dropdown \"Aplikasi Lain\" pada sidebar admin."
+        }
+      ]
+    },
+    {
+      "version": "1.35.2",
+      "date": "2026-10-02",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Tambah tombol \"Hapus Gambar\" pada form input soal STS (PG, isian, essay). Gambar soal yang sudah diunggah kini bisa dihapus langsung dari form; file gambar lama di Cloudflare R2 ikut dihapus saat soal disimpan."
+        }
+      ]
+    },
+    {
+      "version": "1.35.1",
+      "date": "2026-10-02",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Perbaikan error \"Data too long for column 'kunci_jawaban'\" saat menyimpan soal STS essay/isian. Kolom kunci_jawaban diubah dari VARCHAR(10) menjadi TEXT sehingga bisa menampung pedoman penilaian yang panjang."
+        }
+      ]
+    },
+    {
+      "version": "1.35.0",
+      "date": "2026-10-02",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Monitoring Penggunaan AI: dashboard admin baru untuk memantau pemakaian asisten AI \"Pak Admin\". Menampilkan total request, token (input/output), user aktif, rata-rata latency, error rate, dan estimasi biaya."
+        },
+        {
+          "type": "feature",
+          "description": "Grafik interaktif: tren harian (request/token/user), distribusi model, aktivitas per jam, dan distribusi latency. Dilengkapi filter periode (7/30/90 hari atau rentang kustom)."
+        },
+        {
+          "type": "feature",
+          "description": "Analisis topik: daftar topik/percakapan yang paling sering dibahas, tabel penggunaan per user (request, token, percakapan, latency), daftar percakapan terbaru dengan modal detail isi chat, dan log error terbaru."
+        },
+        {
+          "type": "feature",
+          "description": "Pencatatan otomatis penggunaan AI: setiap request ke provider AI (chat & generate judul) dicatat token, latency, model, dan status ke tabel ai_chat_usage."
+        },
+        {
+          "type": "feature",
+          "description": "Pengaturan harga token (input/output per 1K) di halaman Pengaturan AI Chat untuk menghitung estimasi biaya pemakaian AI."
+        }
+      ]
+    },
+    {
+      "version": "1.34.2",
+      "date": "2026-10-02",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Perbaikan penomoran daftar di balon chat AI: daftar bernomor (1. 2. 3.) kini dikelompokkan menjadi satu ordered list sehingga nomor tampil berurutan (1, 2, 3, ...), bukan selalu mulai dari 1. Baris lanjutan seperti kunci jawaban tetap masuk ke dalam item. Bullet list juga tampil dengan tanda bullet (sebelumnya hilang karena dirender sebagai <ul> tanpa list-style)."
+        }
+      ]
+    },
+    {
+      "version": "1.34.1",
+      "date": "2026-10-02",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Perbaikan gambar soal STS tidak tampil di sebagian jaringan/HP: gambar R2 (r2.dev) kini disajikan lewat proxy lokal /foto/soal/ sehingga tidak lagi diblokir ISP. Berlaku di halaman input soal, daftar soal, preview cetak, dan PDF."
+        }
+      ]
+    },
+    {
+      "version": "1.34.0",
+      "date": "2026-10-02",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "AI Chat File Upload: kirim gambar, PDF, Word, Excel, CSV, TXT ke Pak Admin. AI bisa membaca dan menganalisis isi file. Gambar dan PDF dikirim langsung ke Gemini (vision/multimodal), Word dan Excel diekstrak teksnya otomatis."
+        },
+        {
+          "type": "feature",
+          "description": "AI Document Generation: minta Pak Admin buatkan dokumen PDF atau Excel. AI generate file yang bisa langsung didownload dari chat. PDF menggunakan Dompdf, Excel menggunakan native XLSX generator."
+        },
+        {
+          "type": "feature",
+          "description": "Pengaturan Upload File: toggle aktif/nonaktif upload file dan atur batas ukuran file (1-20 MB) dari halaman Pengaturan AI Chat."
+        },
+        {
+          "type": "improvement",
+          "description": "Kolom content di ai_chat_messages diubah ke MEDIUMTEXT untuk mendukung respons AI yang lebih panjang."
+        }
+      ]
+    },
+    {
+      "version": "1.33.0",
+      "date": "2026-10-01",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "AI Chat Assistant \"Pak Admin\": floating chat widget di semua halaman untuk guru dan staf (admin, guru, wali kelas, kepala madrasah). Mendukung endpoint OpenAI-compatible (OpenAI, OpenRouter, Groq, Ollama, dll). Fitur: sesi percakapan terpisah, riwayat chat, identitas user otomatis, rate limiting harian, markdown rendering aman."
+        },
+        {
+          "type": "feature",
+          "description": "Menu Pengaturan AI Chat: konfigurasi enable/disable, nama AI, base URL, API key, model, temperature, system prompt, max history, dan batas harian. Termasuk tombol Test Koneksi."
+        }
+      ]
+    },
+    {
+      "version": "1.32.0",
+      "date": "2026-10-01",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Menu baru Pengaturan Lembaga: kelola data lembaga (kop, nama lembaga, nama kepala, NIP, alamat, telp, email, website, kota, logo, ttd) sekali per lembaga (MTs/MA) dengan pemetaan jenjang (VII-IX untuk MTs, X-XII untuk MA)"
+        },
+        {
+          "type": "improvement",
+          "description": "Data lembaga (kop, nama madrasah, nama kepala, ttd) kini otomatis dipakai saat mencetak rapor & soal STS berdasarkan jenjang kelas, sehingga tidak lagi terduplikasi per wali kelas"
+        }
+      ]
+    },
+    {
+      "version": "1.31.3",
+      "date": "2026-10-01",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "security",
+          "description": "Pulihkan index.php sebagai front controller (47 baris) yang sebelumnya tertimpa snapshot HTML homepage dari insiden keamanan 2026-09-18; menghapus CSRF token hardcoded yang terdeteksi GitGuardian"
+        },
+        {
+          "type": "chore",
+          "description": "Hentikan pelacakan folder backups/ dan artefak keamanan (shell-found.txt, file verifikasi Google) dari git; perbarui .gitignore"
+        }
+      ]
+    },
+    {
+      "version": "1.31.2",
+      "date": "2026-10-01",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Soal Essay pada cetak Soal STS tidak lagi menyediakan garis jawaban di bawah soal — hanya menampilkan soal saja, sehingga siswa menjawab di lembar terpisah"
+        }
+      ]
+    },
+    {
+      "version": "1.31.1",
+      "date": "2026-10-01",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Format cetak Soal STS dibuat lebih hemat kertas: margin halaman minimalis (0.8cm x 1cm), line spacing rapat (1.15), ukuran font 11pt, jarak antar soal lebih kecil, dan gambar soal diperkecil (maks 180x120px)"
+        },
+        {
+          "type": "fix",
+          "description": "Gambar soal yang sudah tersimpan kini langsung tampil di halaman input soal (preview tidak lagi tersembunyi di balik tombol Tambah Gambar)"
+        }
+      ]
+    },
+    {
+      "version": "1.31.0",
+      "date": "2026-10-01",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Fitur baru Buat Soal STS (Sumatif Tengah Semester): pengaturan jumlah soal PG/Isian/Essay per mapel-kelas, input soal dengan gambar, preview cetak, dan cetak PDF beserta kunci jawaban; guru & wali kelas dapat mengisi soal untuk mapel yang diampu langsung dari dashboard"
+        },
+        {
+          "type": "fix",
+          "description": "Gambar soal STS kini diupload ke Cloudflare R2 (bucket sabilillah, prefix soal-sts/) sehingga tampil andal di daftar soal, preview cetak, dan PDF; mendukung kompatibilitas gambar lama (path lokal) secara mundur"
+        },
+        {
+          "type": "fix",
+          "description": "Perbaiki fatal error mime_content_type() pada server tanpa ekstensi fileinfo: gunakan helper safeImageMime() berbasis getimagesize() untuk deteksi tipe gambar (upload soal STS, kop rapor, dan kop PSB)"
+        }
+      ]
+    },
+    {
+      "version": "1.27.1",
+      "date": "2026-09-07",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Fix siswa yang izin dari wali kelas tetap tampil sebagai hadir di halaman edit absensi guru"
+        },
+        {
+          "type": "fix",
+          "description": "Pin CDN Lucide ke versi 0.460.0 di seluruh file untuk mencegah blank screen saat klik tombol status kehadiran"
+        },
+        {
+          "type": "fix",
+          "description": "Cegah duplikasi penugasan mapel-kelas saat ganti guru: validasi server dan AJAX warning di form tambah penugasan, badge jumlah jurnal di daftar penugasan, tombol hapus disabled jika ada riwayat jurnal"
+        }
+      ]
+    },
+    {
+      "version": "1.26.1",
+      "date": "2026-08-07",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Pagination pada halaman daftar siswa admin: pilihan jumlah data per halaman (25/50/100, tersimpan di browser), navigasi nomor halaman dengan tombol sebelumnya/berikutnya, info rentang data, tetap terintegrasi dengan pencarian dan filter kelas serta konsisten antara tabel desktop dan kartu mobile"
+        }
+      ]
+    },
+    {
+      "version": "1.26.0",
+      "date": "2026-08-07",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Runner migration berbasis tabel schema_migrations: kelas baru Migrator (app/core/Migrator.php) mencatat versi migration yang sudah diterapkan, menandai ulang (backfill) migration lama tanpa mengeksekusinya, dan hanya menjalankan migration yang belum diterapkan secara idempoten; Updater kini ikut mencatat migration semver ke schema_migrations"
+        },
+        {
+          "type": "security",
+          "description": "Pensiun bertahap password_plain di tampilan: helper baru PasswordMask (app/core/PasswordMask.php) men-masker nilai password_plain menjadi bullet pada daftar siswa/guru admin dan daftar siswa wali kelas (termasuk data JSON modal detail) sehingga kredensial tidak lagi bocor ke HTML sumber; kolom tetap dipertahankan dan fitur cetak kartu login tidak berubah"
+        },
+        {
+          "type": "improvement",
+          "description": "Tombol 'Lihat' (ikon mata) pada daftar siswa/guru admin dan modal detail siswa untuk menampilkan password on-demand: password diambil lewat endpoint khusus admin (admin/lihatPassword) yang menolak akses non-admin dan non-AJAX, klik kedua menyembunyikan kembali"
+        }
+      ]
+    },
+    {
+      "version": "1.25.0",
+      "date": "2026-08-07",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Konsolidasi kunci session: helper baru Session (app/core/Session.php) menyinkronkan kunci kanonik role/nama_lengkap dengan kunci legacy user_role/user_nama_lengkap secara otomatis di front controller, dan pembaca di seluruh aplikasi kini memakai kunci kanonik dengan fallback legacy"
+        },
+        {
+          "type": "improvement",
+          "description": "AdminController (7794 baris) dipecah menjadi beberapa trait per domain (siswa, guru, akademik, laporan, pengaturan, pesan/WA, pembayaran) sehingga lebih mudah dipelihara tanpa mengubah perilaku"
+        }
+      ]
+    },
+    {
+      "version": "1.24.0",
+      "date": "2026-08-07",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Proteksi CSRF menyeluruh: token per-sesi diinjeksi otomatis ke seluruh halaman (meta + patch form/fetch/XHR) dan divalidasi terpusat untuk semua POST pengguna yang sudah login; respons 419 bila token tidak valid"
+        },
+        {
+          "type": "feature",
+          "description": "Rate limiting login: akun/IP terkunci 15 menit setelah 5 kali percobaan gagal (login utama berbasis tabel login_history, login PSB berbasis session)"
+        },
+        {
+          "type": "improvement",
+          "description": "Cookie sesi kini diberi flag Secure saat diakses lewat HTTPS dan folder backups/ dilindungi .htaccess deny sebagai lapisan pertahanan tambahan"
+        }
+      ]
+    },
+    {
+      "version": "1.23.0",
+      "date": "2026-08-07",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Akun admin kini dapat login menggunakan tombol Login dengan Google: email dicocokkan dari kolom email baru di tabel users (migration 1.23.0)"
+        },
+        {
+          "type": "feature",
+          "description": "Halaman Profil Admin (/admin/profil) memiliki field Email Google dengan validasi format dan cek duplikasi antar user"
+        },
+        {
+          "type": "improvement",
+          "description": "Email admin utama otomatis diisi dengan turuae1@gmail.com sehingga login Google langsung siap digunakan"
+        }
+      ]
+    },
+    {
+      "version": "1.22.0",
+      "date": "2026-08-07",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Panel Persuratan baru (/persuratan): penggabungan Panel Surat Tugas dan Panel Surat Penerimaan dalam satu panel dengan dashboard terpadu (statistik lembaga, surat tugas, dan surat penerimaan)"
+        },
+        {
+          "type": "feature",
+          "description": "Sidebar Panel Persuratan berisi menu Dashboard, Surat Tugas, Surat Penerimaan, dan Lembaga (lembaga dipakai bersama kedua jenis surat)"
+        },
+        {
+          "type": "improvement",
+          "description": "Menu di sidebar admin (grup Aplikasi Lain) dan kepala madrasah (grup Administrasi) disederhanakan menjadi satu tautan Panel Persuratan"
+        },
+        {
+          "type": "improvement",
+          "description": "Dashboard lama /suratTugas dan /suratPenerimaan otomatis dialihkan ke /persuratan; seluruh URL CRUD surat tugas dan surat penerimaan tetap berfungsi tanpa perubahan"
+        },
+        {
+          "type": "fix",
+          "description": "Guard hapus lembaga kini juga memeriksa tabel surat_penerimaan sehingga lembaga yang masih memiliki surat penerimaan tidak dapat dihapus"
+        }
+      ]
+    },
+    {
+      "version": "1.21.0",
+      "date": "2026-08-07",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Panel baru Surat Penerimaan: surat keterangan penerimaan siswa pindahan dengan menu tersendiri (/suratPenerimaan) untuk admin dan kepala madrasah, mendukung multi lembaga"
+        },
+        {
+          "type": "feature",
+          "description": "Format PDF mengikuti contoh resmi: kop lembaga, judul SURAT PENERIMAAN SISWA + nomor, data penandatangan (Nama/Jabatan/Unit Kerja/Alamat), data siswa (Nama/TTL/Jenis Kelamin/NISN/Asal Sekolah/Nama Orang Tua), paragraf penerimaan, dan tanda tangan kanan dengan QR validasi elektronik"
+        },
+        {
+          "type": "feature",
+          "description": "Tabel baru surat_penerimaan (migration 1.21.0) dengan lembaga memakai ulang tabel surat_tugas_lembaga (kop & kepala madrasah dikelola di Panel Surat Tugas)"
+        },
+        {
+          "type": "improvement",
+          "description": "Halaman validasi QR kini mengenali tipe dokumen surat_penerimaan (Surat Penerimaan Siswa) beserta nama siswa"
+        },
+        {
+          "type": "improvement",
+          "description": "Menu Panel Surat Penerimaan ditambahkan di sidebar admin (grup Aplikasi Lain) dan sidebar kepala madrasah (grup Administrasi)"
+        }
+      ]
+    },
+    {
+      "version": "1.19.3",
+      "date": "2026-08-07",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Cleanup Surat Tugas: Hapus implementasi lama mati di AdminController (suratTugas/tambahSuratTugas/dkk) yang memanggil method model tidak ada (getAllSuratTugas, generateNomorSurat, updateSurat, tambahSurat) sehingga route /admin/suratTugas pasti fatal error"
+        },
+        {
+          "type": "fix",
+          "description": "Hapus view lama mati app/views/surat_tugas/{index,form,cetak}.php yang hanya dipakai implementasi lama"
+        },
+        {
+          "type": "fix",
+          "description": "Hapus lembaga yang masih memiliki surat tugas kini ditolak dengan pesan error (sebelumnya surat menjadi data yatim dan hilang dari daftar karena INNER JOIN)"
+        },
+        {
+          "type": "improvement",
+          "description": "Menu Surat Tugas kini tersedia di sidebar Kepala Madrasah (sebelumnya hanya admin yang punya link meski controller mengizinkan kedua role)"
+        },
+        {
+          "type": "improvement",
+          "description": "Sidebar panel Surat Tugas: tombol 'Kembali ke Admin' menyesuaikan role (kepala madrasah diarahkan ke dashboard kepala madrasah, bukan /admin/dashboard yang memblokirnya)"
+        },
+        {
+          "type": "improvement",
+          "description": "Kolom created_by surat tugas kini terisi otomatis dengan user pembuat saat surat dibuat"
+        }
+      ]
+    },
+    {
+      "version": "1.19.2",
+      "date": "2026-08-07",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Fix Fatal Error RaporSTSController: Pernyataan 'use Dompdf' yang berada di dalam method dipindah ke atas file (syntax error 'unexpected token use' di line 110)"
+        },
+        {
+          "type": "fix",
+          "description": "Fix Upload Kop Surat Lembaga PSB: Controller aktif tidak menyimpan kop_gambar meski form dan database sudah mendukung, kini upload kop berfungsi di tambah/edit lembaga"
+        },
+        {
+          "type": "improvement",
+          "description": "Kop Surat PDF Formulir PSB: Cetak/kirim formulir kini menampilkan kop surat gambar lembaga (fallback ke nama lembaga jika tidak ada gambar)"
+        },
+        {
+          "type": "improvement",
+          "description": "Cleanup Duplikasi PSB: Hapus controller dead-code PSBController.php, PsbController-1.php dan .bak (berisiko fatal error redeclare class PsbController)"
+        },
+        {
+          "type": "improvement",
+          "description": "Keamanan API: JWT secret kini dapat dikonfigurasi via pengaturan_sistem (key: api_secret_key) dengan fallback ke default lama agar token existing tetap valid"
+        }
+      ]
+    },
+    {
+      "version": "1.19.1",
+      "date": "2026-02-28",
+      "type": "patch",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Fix Nilai STS & SAS: Daftar siswa tidak tampil (0 siswa) di halaman Input Nilai Tengah Semester dan Akhir Semester karena model query memakai id_semester bukan id_tp"
+        },
+        {
+          "type": "fix",
+          "description": "Fix Auto-Update Timeout: Naikkan timeout cURL download dari 15s ke 300s agar tidak gagal saat koneksi lambat"
+        }
+      ]
+    },
+    {
+      "version": "1.19.0",
+      "date": "2026-02-15",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Google Drive Integration: Tambah kolom drive_file_id dan drive_url di psb_dokumen untuk backup dokumen ke Google Drive"
+        },
+        {
+          "type": "fix",
+          "description": "Remove Upload Limit: Hapus batasan 2MB file upload di form PSB, sekarang support upload dokumen tanpa batasan ukuran"
+        },
+        {
+          "type": "fix",
+          "description": "Empty Date Fields: Fix handling empty date fields (tanggal_lahir, ayah_tanggal_lahir, ibu_tanggal_lahir, wali_tanggal_lahir) agar tidak error 'Invalid datetime format'"
+        },
+        {
+          "type": "improvement",
+          "description": "PSB Form Schema: Tambah 60+ kolom missing di tabel psb_pendaftar (kip, alamat lengkap, data orang tua/wali, sekolah asal, dsb) sesuai schema yang diharapkan"
+        },
+        {
+          "type": "fix",
+          "description": "Database.php Syntax Error: Fix unmatched closing brace yang menyebabkan parse error"
+        }
+      ]
+    },
+    {
+      "version": "1.18.0",
+      "date": "2026-02-06",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Auto-Retry WA Queue: Pesan gagal otomatis dicoba kirim ulang (max 3x) oleh Cron Job"
+        },
+        {
+          "type": "fix",
+          "description": "Fix Direct Retry: Retry pesan saat mode antrian mati (Direct) kini statusnya langsung sukses/gagal seketika (tidak pending)"
+        },
+        {
+          "type": "improvement",
+          "description": "Format Laporan Absensi WA: Tampilan lebih bersih (tanpa ikon/nama guru), format tanggal Indonesia, dan tambahan info Waktu (WIB) & Materi"
+        }
+      ]
+    }
+  ]
 }
