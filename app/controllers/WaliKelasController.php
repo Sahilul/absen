@@ -692,6 +692,8 @@ class WaliKelasController extends Controller
             exit;
         }
 
+        if (StudentApp::renderIfEnabled('Daftar Siswa')) { return; }
+
         $id_guru = $_SESSION['id_ref'] ?? 0;
         $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
 
@@ -722,6 +724,8 @@ class WaliKelasController extends Controller
             header('Location: ' . BASEURL . '/waliKelas');
             exit;
         }
+
+        if (StudentApp::renderIfEnabled('Dokumen Siswa')) { return; }
 
         $id_guru = $_SESSION['id_ref'] ?? 0;
         $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
@@ -858,6 +862,8 @@ class WaliKelasController extends Controller
             header('Location: ' . BASEURL . '/waliKelas');
             exit;
         }
+
+        if (StudentApp::renderIfEnabled('Edit Data Siswa')) { return; }
 
         $id_guru = $_SESSION['id_ref'] ?? 0;
         $id_tp_aktif = $_SESSION['id_tp_aktif'] ?? 0;
@@ -1909,7 +1915,7 @@ class WaliKelasController extends Controller
                 $imageData = base64_encode(file_get_contents($kopPath));
                 $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
                 $imageSrc = 'data:image/' . $imageType . ';base64,' . $imageData;
-                $kopHTML = '<img src="' . $imageSrc . '" style="max-width: 100%; height: auto; max-height: 120px;">';
+                $kopHTML = '<img src="' . $imageSrc . '" style="width: 100%; height: auto;">';
             }
         }
 

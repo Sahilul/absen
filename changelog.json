@@ -1,6 +1,21 @@
 {
   "versions": [
     {
+      "version": "1.36.6",
+      "date": "2026-10-13",
+      "type": "fix",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Perbaiki gambar kop surat/lembaga yang tampak gepeng/pecah saat dicetak. Penyebabnya kombinasi CSS \"max-width:100% + height:auto + max-height\" pada gambar kop yang lebar (rasio ~4:1) sehingga rasio asli tertekan. Kini kop memakai \"width:100%; height:auto\" agar rasio asli terjaga di seluruh dokumen cetak/PDF."
+        },
+        {
+          "type": "fix",
+          "description": "Perbaikan diterapkan konsisten pada: cetak absensi harian, rekap absensi, riwayat pembayaran, SKSa, RPP, laporan nilai (harian/STS/SAS), rekap jurnal, Surat Pemanggilan Orang Tua (BK), Surat Penerimaan, Surat Tugas, dan Surat PSB."
+        }
+      ]
+    },
+    {
       "version": "1.36.5",
       "date": "2026-10-12",
       "type": "feature",

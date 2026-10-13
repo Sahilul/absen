@@ -510,7 +510,7 @@ class BkController extends Controller
                 $imageData = base64_encode(file_get_contents($kopPath));
                 $mimeType = 'image/' . pathinfo($kopPath, PATHINFO_EXTENSION);
                 $kopHTML = '<div style="text-align:center; margin-bottom:10px;">
-                    <img src="data:' . $mimeType . ';base64,' . $imageData . '" style="max-width:100%; height:auto; max-height:110px;">
+                    <img src="data:' . $mimeType . ';base64,' . $imageData . '" style="width:100%; height:auto;">
                 </div>';
             }
         }

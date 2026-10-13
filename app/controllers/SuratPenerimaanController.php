@@ -224,7 +224,7 @@ class SuratPenerimaanController extends Controller
                 position: relative;
             }
             .kop-container { width: 100%; padding-bottom: 8px; margin-bottom: 12px; text-align: center; border-bottom: 3px double #000; }
-            .kop-img { max-width: 100%; height: auto; max-height: 120px; }
+            .kop-img { width: 100%; height: auto; display: block; }
             .title { text-align: center; font-weight: bold; text-decoration: underline; margin-top: 18px; margin-bottom: 2px; font-size: 14pt; letter-spacing: 0.5px; }
             .nomor { text-align: center; margin-bottom: 22px; margin-top: 2px; }
             .content p { margin: 0 0 8px 0; text-align: justify; }

@@ -1572,7 +1572,7 @@ class PsbController extends Controller
                 $kopMime = safeImageMime($kopPath);
                 $kopSuratHtml = '
     <div style="text-align: center; margin-bottom: 15px; border-bottom: 3px double #333; padding-bottom: 10px;">
-        <img src="data:' . $kopMime . ';base64,' . $kopData . '" style="max-width: 100%; height: auto; max-height: 120px;">
+        <img src="data:' . $kopMime . ';base64,' . $kopData . '" style="width: 100%; height: auto;">
     </div>';
             }
         }

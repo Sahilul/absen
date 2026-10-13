@@ -615,7 +615,7 @@ class RiwayatJurnalController extends Controller
                 $imageData = base64_encode(file_get_contents($kopPath));
                 $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
                 $imageSrc = 'data:image/' . $imageType . ';base64,' . $imageData;
-                $kopHTML = '<div style="text-align:center; margin-bottom:10px;"><img src="' . $imageSrc . '" style="max-width:100%; height:auto; max-height:80px;"></div>';
+                $kopHTML = '<div style="text-align:center; margin-bottom:10px;"><img src="' . $imageSrc . '" style="width:100%; height:auto;"></div>';
             }
         }
 
@@ -822,7 +822,7 @@ class RiwayatJurnalController extends Controller
                 $imageData = base64_encode(file_get_contents($kopPath));
                 $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
                 $imageSrc = 'data:image/' . $imageType . ';base64,' . $imageData;
-                $kopHTML = '<div style="text-align:center; margin-bottom:15px;"><img src="' . $imageSrc . '" style="max-width:100%; height:auto; max-height:100px;"></div>';
+                $kopHTML = '<div style="text-align:center; margin-bottom:15px;"><img src="' . $imageSrc . '" style="width:100%; height:auto;"></div>';
             }
         }
 

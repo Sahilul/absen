@@ -331,9 +331,9 @@ class SuratTugasController extends Controller
                 display: block;
             }
             .kop-img { 
-                max-width: 100%; 
-                height: auto; 
-                max-height: 120px;
+                width: 100%; 
+                height: auto;
+                display: block;
             }
             .title { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 2px; font-size: 14pt; margin-top: 15px; }
             .nomor { text-align: center; margin-bottom: 20px; margin-top: 5px; }

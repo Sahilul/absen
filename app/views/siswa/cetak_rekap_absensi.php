@@ -8,7 +8,8 @@ if (!empty($pengaturan) && !empty($pengaturan['kop_rapor'])) {
         $imageData = base64_encode(file_get_contents($kopPath));
         $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
         $imageSrc = 'data:image/' . $imageType . ';base64,' . $imageData;
-        $kopHTML = '<img src="' . $imageSrc . '" style="max-width: 100%; height: auto; max-height: 110px;">';
+        // Letterhead gambar lebar: pakai lebar penuh + height:auto agar rasio asli terjaga (tidak gepeng/pecah)
+        $kopHTML = '<img src="' . $imageSrc . '" style="display:block; width: 100%; height: auto;">';
     }
 }
 
