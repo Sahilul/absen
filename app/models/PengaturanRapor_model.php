@@ -10,13 +10,53 @@ class PengaturanRapor_model {
 
     /**
      * Get pengaturan rapor by guru dan tahun pelajaran
+     * v1.36.7 - Data lembaga (kop, nama, kepala, ttd, kota) di-merge dari tabel `lembaga`
+     *           berdasarkan jenjang kelas wali kelas, agar halaman Pengaturan Rapor ikut
+     *           menampilkan kop/nama yang sudah diatur di Pengaturan Lembaga (tanpa upload ulang).
      */
     public function getPengaturanByGuru($id_guru, $id_tp) {
+        $this->db->query("SELECT pr.* FROM pengaturan_rapor pr
+            WHERE pr.id_guru = :id_guru AND pr.id_tp = :id_tp");
+        $this->db->bind(':id_guru', $id_guru);
+        $this->db->bind(':id_tp', $id_tp);
+        $result = $this->db->single();
+
+        if ($result) {
+            $jenjang = $this->getJenjangByGuru($id_guru, $id_tp);
+            $result = $this->mergeLembaga($result, $jenjang);
+        }
+
+        return $result;
+    }
+
+    /**
+     * v1.36.7 - Ambil nilai MENTAH dari tabel pengaturan_rapor (tanpa merge lembaga).
+     * Dipakai saat menyimpan agar nilai asli per-guru tidak tertimpa data lembaga.
+     */
+    public function getRawByGuru($id_guru, $id_tp) {
         $this->db->query("SELECT * FROM pengaturan_rapor 
             WHERE id_guru = :id_guru AND id_tp = :id_tp");
         $this->db->bind(':id_guru', $id_guru);
         $this->db->bind(':id_tp', $id_tp);
         return $this->db->single();
+    }
+
+    /**
+     * v1.36.7 - Cari jenjang kelas dari wali kelas (untuk merge data lembaga).
+     */
+    private function getJenjangByGuru($id_guru, $id_tp)    {
+        try {
+            $this->db->query("SELECT k.jenjang FROM wali_kelas wk
+                LEFT JOIN kelas k ON wk.id_kelas = k.id_kelas
+                WHERE wk.id_guru = :id_guru AND wk.id_tp = :id_tp
+                LIMIT 1");
+            $this->db->bind(':id_guru', $id_guru);
+            $this->db->bind(':id_tp', $id_tp);
+            $row = $this->db->single();
+            return $row['jenjang'] ?? null;
+        } catch (Exception $e) {
+            return null;
+        }
     }
 
     /**

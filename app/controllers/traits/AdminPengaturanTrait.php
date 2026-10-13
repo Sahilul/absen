@@ -1044,7 +1044,8 @@ function simpanPengaturanRapor()
         }
 
         // Handle upload gambar kop
-        $pengaturanLama = $this->model('PengaturanRapor_model')->getPengaturanByGuru($id_guru, $id_tp_aktif);
+        // v1.36.7: pakai nilai MENTAH (tanpa merge lembaga) agar nilai asli per-guru tidak tertimpa
+        $pengaturanLama = $this->model('PengaturanRapor_model')->getRawByGuru($id_guru, $id_tp_aktif);
 
         $kopFileName = $pengaturanLama['kop_rapor'] ?? '';
         $ttdKepalaFileName = $pengaturanLama['ttd_kepala_madrasah'] ?? '';
@@ -1122,7 +1123,8 @@ function simpanPengaturanRapor()
 
 function handleRaporImageUpload($file, $folder, $prefix, $maxSize)
     {
-        $uploadDir = 'public/img/' . $folder . '/';
+        $baseDir = dirname(dirname(__DIR__));
+        $uploadDir = $baseDir . '/public/img/' . $folder . '/';
 
         // Buat folder jika belum ada
         if (!is_dir($uploadDir)) {
@@ -1130,7 +1132,7 @@ function handleRaporImageUpload($file, $folder, $prefix, $maxSize)
         }
 
         $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
         if (!in_array($fileExtension, $allowedExtensions)) {
             return false;
@@ -1152,7 +1154,8 @@ function handleRaporImageUpload($file, $folder, $prefix, $maxSize)
 
 function deleteRaporImage($folder, $fileName)
     {
-        $filePath = 'public/img/' . $folder . '/' . $fileName;
+        $baseDir = dirname(dirname(__DIR__));
+        $filePath = $baseDir . '/public/img/' . $folder . '/' . $fileName;
         if (file_exists($filePath)) {
             unlink($filePath);
         }
@@ -1303,7 +1306,8 @@ function deleteRaporImage($folder, $fileName)
 
     function handleLembagaImageUpload($file, $prefix, $maxSize)
     {
-        $uploadDir = 'public/img/lembaga/';
+        $baseDir = dirname(dirname(__DIR__));
+        $uploadDir = $baseDir . '/public/img/lembaga/';
 
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
@@ -1332,7 +1336,8 @@ function deleteRaporImage($folder, $fileName)
 
     function deleteLembagaImage($fileName)
     {
-        $filePath = 'public/img/lembaga/' . $fileName;
+        $baseDir = dirname(dirname(__DIR__));
+        $filePath = $baseDir . '/public/img/lembaga/' . $fileName;
         if (file_exists($filePath)) {
             unlink($filePath);
         }

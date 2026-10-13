@@ -1065,7 +1065,8 @@ class WaliKelasController extends Controller
         }
 
         // Handle upload gambar kop
-        $pengaturanLama = $this->model('PengaturanRapor_model')->getPengaturanByGuru($id_guru, $id_tp_aktif);
+        // v1.36.7: pakai nilai MENTAH (tanpa merge lembaga) agar nilai asli per-guru tidak tertimpa
+        $pengaturanLama = $this->model('PengaturanRapor_model')->getRawByGuru($id_guru, $id_tp_aktif);
 
         $kopFileName = $pengaturanLama['kop_rapor'] ?? '';
         $ttdKepalaFileName = $pengaturanLama['ttd_kepala_madrasah'] ?? '';

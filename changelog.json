@@ -1,6 +1,25 @@
 {
   "versions": [
     {
+      "version": "1.36.7",
+      "date": "2026-10-13",
+      "type": "feature",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Kop rapor kini terisi otomatis dari Pengaturan Lembaga. Saat kop diunggah pada /admin/pengaturanLembaga, halaman Pengaturan Rapor (admin & wali kelas) beserta cetak SKSa otomatis memakai kop tersebut sesuai jenjang lembaga (MA/MTs)."
+        },
+        {
+          "type": "improvement",
+          "description": "Halaman Pengaturan Rapor menampilkan keterangan hijau \"Kop diambil otomatis dari Pengaturan Lembaga\" beserta tautan ke pengaturan lembaga ketika kop berasal dari lembaga; dan kotak peringatan bila belum ada kop."
+        },
+        {
+          "type": "fix",
+          "description": "Perbaiki folder public/img/lembaga/ yang dimiliki root sehingga upload kop dari Pengaturan Lembaga gagal secara diam-diam (move_uploaded_file mengembalikan false). Folder kini dimiliki www. Jika kop MTs belum tampil, silakan unggah ulang kop pada Pengaturan Lembaga."
+        }
+      ]
+    },
+    {
       "version": "1.36.6",
       "date": "2026-10-13",
       "type": "fix",

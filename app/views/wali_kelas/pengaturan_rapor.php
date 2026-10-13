@@ -29,12 +29,25 @@
                         Kop Rapor (Gambar)
                     </label>
                     
-                    <?php if (!empty($data['pengaturan']['kop_rapor'])): ?>
+                    <?php
+                    // v1.36.7: kop bisa berasal dari lembaga (auto) atau upload lama per-wali-kelas
+                    $kopUrl = kopRaporUrl($data['pengaturan']);
+                    $kopDariLembaga = !empty($data['pengaturan']['lembaga_id']) && $kopUrl !== '';
+                    ?>
+                    <?php if ($kopUrl !== ''): ?>
                     <div class="mb-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                        <img src="<?= BASEURL ?>/public/img/kop/<?= htmlspecialchars($data['pengaturan']['kop_rapor']) ?>" 
+                        <img src="<?= $kopUrl ?>" 
                              alt="Kop Rapor" 
                              class="w-full h-auto max-h-32 sm:max-h-48 object-contain mx-auto">
+                        <?php if ($kopDariLembaga): ?>
+                        <p class="text-xs text-emerald-600 mt-2 text-center">Kop diambil otomatis dari Pengaturan Lembaga</p>
+                        <?php else: ?>
                         <p class="text-xs text-slate-500 mt-2 text-center break-all"><?= htmlspecialchars($data['pengaturan']['kop_rapor']) ?></p>
+                        <?php endif; ?>
+                    </div>
+                    <?php else: ?>
+                    <div class="mb-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                        <p class="text-xs text-amber-700 text-center">Belum ada kop. Upload di sini, atau minta admin mengatur di Pengaturan Lembaga.</p>
                     </div>
                     <?php endif; ?>
                     

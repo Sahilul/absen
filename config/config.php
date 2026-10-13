@@ -141,6 +141,42 @@ function soalGambarUrl($value)
 }
 
 /**
+ * Resolve URL gambar kop rapor/lembaga untuk ditampilkan.
+ * v1.36.7 - Jika pengaturan berasal dari lembaga (ada 'lembaga_id'), gambar berada
+ *           di public/img/lembaga/. Jika tidak, fallback ke public/img/kop/ (legacy).
+ * Mengembalikan string kosong jika tidak ada file.
+ *
+ * @param array $pengaturan row pengaturan rapor (hasil getPengaturanByGuru/ByKelas)
+ * @return string URL gambar (relatif BASEURL) atau '' jika tidak ditemukan
+ */
+function kopRaporUrl($pengaturan)
+{
+    if (empty($pengaturan) || empty($pengaturan['kop_rapor'])) {
+        return '';
+    }
+
+    $file = basename($pengaturan['kop_rapor']);
+
+    // Folder lembaga dipakai jika pengaturan berasal dari tabel lembaga
+    $candidates = [];
+    if (!empty($pengaturan['lembaga_id'])) {
+        $candidates[] = ['folder' => 'lembaga', 'url' => '/public/img/lembaga/'];
+    }
+    // Fallback: kop legacy per-wali-kelas, lalu lembaga
+    $candidates[] = ['folder' => 'kop', 'url' => '/public/img/kop/'];
+    $candidates[] = ['folder' => 'lembaga', 'url' => '/public/img/lembaga/'];
+
+    foreach ($candidates as $c) {
+        $path = APPROOT . '/public/img/' . $c['folder'] . '/' . $file;
+        if (file_exists($path)) {
+            return BASEURL . $c['url'] . rawurlencode($file);
+        }
+    }
+
+    return '';
+}
+
+/**
  * Ambil object key R2 dari URL gambar soal (untuk hapus).
  * Return null jika bukan URL R2.
  */
