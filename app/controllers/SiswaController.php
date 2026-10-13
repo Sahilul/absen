@@ -392,6 +392,7 @@ class SiswaController extends Controller
      */
     public function dokumen()
     {
+        if (StudentApp::renderIfEnabled('Dokumen Saya')) { return; }
         $this->data['judul'] = 'Dokumen Saya';
         $id_siswa = $_SESSION['id_ref'];
 
@@ -414,6 +415,7 @@ class SiswaController extends Controller
      */
     public function editIdentitas()
     {
+        if (StudentApp::renderIfEnabled('Edit Identitas')) { return; }
         $this->data['judul'] = 'Edit Identitas';
         $id_siswa = $_SESSION['id_ref'];
 
@@ -710,18 +712,11 @@ class SiswaController extends Controller
             }
 
             // Ambil pengaturan rapor untuk kop berdasarkan id_kelas melalui wali_kelas
+            // v1.36.9: pakai getPengaturanByKelas agar data lembaga (kop + lembaga_id) ikut ter-merge
             $pengaturan = [];
             if (!empty($siswa_info['id_kelas'])) {
-                $db->query("
-                    SELECT pr.kop_rapor 
-                    FROM pengaturan_rapor pr
-                    INNER JOIN wali_kelas wk ON pr.id_guru = wk.id_guru AND pr.id_tp = wk.id_tp
-                    WHERE wk.id_kelas = :id_kelas AND wk.id_tp = :id_tp
-                    LIMIT 1
-                ");
-                $db->bind('id_kelas', $siswa_info['id_kelas']);
-                $db->bind('id_tp', $_SESSION['id_tp_aktif'] ?? 0);
-                $pengaturan = $db->single();
+                $pengaturan = $this->model('PengaturanRapor_model')
+                    ->getPengaturanByKelas($siswa_info['id_kelas'], $_SESSION['id_tp_aktif'] ?? 0) ?: [];
             }
 
             // Render HTML untuk PDF
@@ -903,18 +898,11 @@ class SiswaController extends Controller
             }
 
             // Ambil pengaturan rapor untuk kop berdasarkan id_kelas melalui wali_kelas
+            // v1.36.9: pakai getPengaturanByKelas agar data lembaga (kop + lembaga_id) ikut ter-merge
             $pengaturan = [];
             if (!empty($siswa_info['id_kelas'])) {
-                $db->query("
-                    SELECT pr.kop_rapor 
-                    FROM pengaturan_rapor pr
-                    INNER JOIN wali_kelas wk ON pr.id_guru = wk.id_guru AND pr.id_tp = wk.id_tp
-                    WHERE wk.id_kelas = :id_kelas AND wk.id_tp = :id_tp
-                    LIMIT 1
-                ");
-                $db->bind('id_kelas', $siswa_info['id_kelas']);
-                $db->bind('id_tp', $_SESSION['id_tp_aktif'] ?? 0);
-                $pengaturan = $db->single();
+                $pengaturan = $this->model('PengaturanRapor_model')
+                    ->getPengaturanByKelas($siswa_info['id_kelas'], $_SESSION['id_tp_aktif'] ?? 0) ?: [];
             }
 
             // Render HTML untuk PDF
@@ -1066,18 +1054,11 @@ class SiswaController extends Controller
         $total_pembayaran = array_sum(array_column($riwayat, 'jumlah'));
 
         // Ambil pengaturan kop
+        // v1.36.9: pakai getPengaturanByKelas agar data lembaga (kop + lembaga_id) ikut ter-merge
         $pengaturan = [];
         if (!empty($siswa['id_kelas'])) {
-            $db->query("
-                SELECT pr.kop_rapor 
-                FROM pengaturan_rapor pr
-                INNER JOIN wali_kelas wk ON pr.id_guru = wk.id_guru AND pr.id_tp = wk.id_tp
-                WHERE wk.id_kelas = :id_kelas AND wk.id_tp = :id_tp
-                LIMIT 1
-            ");
-            $db->bind('id_kelas', $siswa['id_kelas']);
-            $db->bind('id_tp', $_SESSION['id_tp_aktif'] ?? 0);
-            $pengaturan = $db->single();
+            $pengaturan = $this->model('PengaturanRapor_model')
+                ->getPengaturanByKelas($siswa['id_kelas'], $_SESSION['id_tp_aktif'] ?? 0) ?: [];
         }
 
         // Data untuk PDF

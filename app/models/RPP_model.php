@@ -273,16 +273,34 @@ class RPP_model {
 
     // Get pengaturan rapor for kelas (untuk kop, ttd, dll)
     public function getPengaturanRapor($id_kelas, $id_tp) {
+        // v1.36.9: pakai PengaturanRapor_model::getPengaturanByKelas agar data lembaga
+        //          (kop + lembaga_id) ikut ter-merge sehingga kop RPP bisa ditemukan.
+        if (!class_exists('PengaturanRapor_model')) {
+            require_once APPROOT . '/app/models/PengaturanRapor_model.php';
+        }
+        $prModel = new PengaturanRapor_model();
+        $pengaturan = $prModel->getPengaturanByKelas($id_kelas, $id_tp);
+
+        if (!$pengaturan) {
+            return $pengaturan;
+        }
+
+        // Lengkapi info wali kelas (dipakai cetak_rpp.php)
         $this->db->query("
-            SELECT pr.*, g.nama_guru as nama_wali_kelas, g.nik as nik_wali_kelas
-            FROM pengaturan_rapor pr
-            INNER JOIN wali_kelas wk ON pr.id_guru = wk.id_guru AND pr.id_tp = wk.id_tp
-            LEFT JOIN guru g ON pr.id_guru = g.id_guru
+            SELECT g.nama_guru as nama_wali_kelas, g.nik as nik_wali_kelas
+            FROM wali_kelas wk
+            LEFT JOIN guru g ON wk.id_guru = g.id_guru
             WHERE wk.id_kelas = :id_kelas AND wk.id_tp = :id_tp
             LIMIT 1
         ");
         $this->db->bind('id_kelas', $id_kelas);
         $this->db->bind('id_tp', $id_tp);
-        return $this->db->single();
+        $wali = $this->db->single();
+        if ($wali) {
+            $pengaturan['nama_wali_kelas'] = $wali['nama_wali_kelas'];
+            $pengaturan['nik_wali_kelas'] = $wali['nik_wali_kelas'];
+        }
+
+        return $pengaturan;
     }
 }

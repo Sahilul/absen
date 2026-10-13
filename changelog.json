@@ -1,6 +1,25 @@
 {
   "versions": [
     {
+      "version": "1.36.9",
+      "date": "2026-10-13",
+      "type": "fix",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Perbaiki kop yang tidak muncul pada export PDF absensi harian, rekap absensi, dan riwayat pembayaran (halaman siswa). Controller kini mengambil pengaturan rapor lewat PengaturanRapor_model::getPengaturanByKelas sehingga data lembaga (kop + lembaga_id) ikut ter-merge dan kop ditemukan di folder yang benar (lembaga/ atau kop/)."
+        },
+        {
+          "type": "fix",
+          "description": "Perbaiki kop pada laporan nilai guru (harian/STS/SAS) yang tidak muncul karena lookup memakai session user_id (bukan id_guru penugasan) dan path kop di-hardcode ke public/img/kop/. Ditambahkan helper buildKopHTML() yang memakai id_guru penugasan dan mendukung kop dari Pengaturan Lembaga."
+        },
+        {
+          "type": "fix",
+          "description": "Perbaiki kop pada cetak RPP: RPP_model::getPengaturanRapor kini memakai PengaturanRapor_model::getPengaturanByKelas agar data lembaga (kop + lembaga_id) ikut ter-merge."
+        }
+      ]
+    },
+    {
       "version": "1.36.8",
       "date": "2026-10-13",
       "type": "fix",

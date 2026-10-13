@@ -828,6 +828,34 @@ class NilaiController extends Controller
     }
 
     /**
+     * v1.36.9 - Bangun HTML kop untuk laporan nilai.
+     * Memakai pengaturan rapor milik guru penugasan dan mendukung kop dari
+     * Pengaturan Lembaga (folder lembaga/) maupun kop per-wali-kelas (folder kop/).
+     */
+    private function buildKopHTML($id_guru, $id_tp)
+    {
+        $pengaturanRapor = $id_guru
+            ? $this->model('PengaturanRapor_model')->getPengaturanByGuru($id_guru, $id_tp)
+            : null;
+        $kopRapor = $pengaturanRapor['kop_rapor'] ?? '';
+
+        if (empty($kopRapor)) {
+            return '';
+        }
+
+        $kopFolder = !empty($pengaturanRapor['lembaga_id']) ? 'lembaga' : 'kop';
+        $kopPath = APPROOT . '/public/img/' . $kopFolder . '/' . $kopRapor;
+        if (!file_exists($kopPath)) {
+            return '';
+        }
+
+        $imageData = base64_encode(file_get_contents($kopPath));
+        $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
+        $imageSrc = 'data:image/' . $imageType . ';base64,' . $imageData;
+        return '<div style="text-align:center; margin-bottom:15px;"><img src="' . $imageSrc . '" style="width:100%; height:auto;"></div>';
+    }
+
+    /**
      * Download PDF Rekap Nilai Harian
      */
     public function downloadNilaiHarianPDF()
@@ -881,21 +909,9 @@ class NilaiController extends Controller
             $nilai_harian[$siswa['id_siswa']] = round($rata_nilai, 2);
         }
 
-        // Load kop and settings
-        $pengaturanRapor = $this->model('PengaturanRapor_model')->getPengaturanByGuru($_SESSION['user_id'], $id_tp);
-        $kopRapor = $pengaturanRapor['kop_rapor'] ?? '';
-
-        // Kop header
-        $kopHTML = '';
-        if (!empty($kopRapor)) {
-            $kopPath = 'public/img/kop/' . $kopRapor;
-            if (file_exists($kopPath)) {
-                $imageData = base64_encode(file_get_contents($kopPath));
-                $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
-                $imageSrc = 'data:image/' . $imageType . ';base64,' . $imageData;
-                $kopHTML = '<div style="text-align:center; margin-bottom:15px;"><img src="' . $imageSrc . '" style="width:100%; height:auto;"></div>';
-            }
-        }
+        // Kop header (v1.36.9: pakai id_guru penugasan + kop lembaga-aware)
+        $pengaturanRapor = $this->model('PengaturanRapor_model')->getPengaturanByGuru($penugasan['id_guru'], $id_tp);
+        $kopHTML = $this->buildKopHTML($penugasan['id_guru'], $id_tp);
 
         // Format waktu Indonesia
         $bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -1061,20 +1077,9 @@ class NilaiController extends Controller
             $nilai_sts[$siswa['id_siswa']] = $nilai['nilai'] ?? 0;
         }
 
-        $pengaturanRapor = $this->model('PengaturanRapor_model')->getPengaturanByGuru($_SESSION['user_id'], $id_tp);
-        $kopRapor = $pengaturanRapor['kop_rapor'] ?? '';
-
-        // Kop header
-        $kopHTML = '';
-        if (!empty($kopRapor)) {
-            $kopPath = 'public/img/kop/' . $kopRapor;
-            if (file_exists($kopPath)) {
-                $imageData = base64_encode(file_get_contents($kopPath));
-                $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
-                $imageSrc = 'data:image/' . $imageType . ';base64,' . $imageData;
-                $kopHTML = '<div style="text-align:center; margin-bottom:15px;"><img src="' . $imageSrc . '" style="width:100%; height:auto;"></div>';
-            }
-        }
+        // Kop header (v1.36.9: pakai id_guru penugasan + kop lembaga-aware)
+        $pengaturanRapor = $this->model('PengaturanRapor_model')->getPengaturanByGuru($penugasan['id_guru'], $id_tp);
+        $kopHTML = $this->buildKopHTML($penugasan['id_guru'], $id_tp);
 
         // Format waktu Indonesia
         $bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -1239,20 +1244,9 @@ class NilaiController extends Controller
             $nilai_sas[$siswa['id_siswa']] = $nilai['nilai'] ?? 0;
         }
 
-        $pengaturanRapor = $this->model('PengaturanRapor_model')->getPengaturanByGuru($_SESSION['user_id'], $id_tp);
-        $kopRapor = $pengaturanRapor['kop_rapor'] ?? '';
-
-        // Kop header
-        $kopHTML = '';
-        if (!empty($kopRapor)) {
-            $kopPath = 'public/img/kop/' . $kopRapor;
-            if (file_exists($kopPath)) {
-                $imageData = base64_encode(file_get_contents($kopPath));
-                $imageType = pathinfo($kopPath, PATHINFO_EXTENSION);
-                $imageSrc = 'data:image/' . $imageType . ';base64,' . $imageData;
-                $kopHTML = '<div style="text-align:center; margin-bottom:15px;"><img src="' . $imageSrc . '" style="width:100%; height:auto;"></div>';
-            }
-        }
+        // Kop header (v1.36.9: pakai id_guru penugasan + kop lembaga-aware)
+        $pengaturanRapor = $this->model('PengaturanRapor_model')->getPengaturanByGuru($penugasan['id_guru'], $id_tp);
+        $kopHTML = $this->buildKopHTML($penugasan['id_guru'], $id_tp);
 
         // Format waktu Indonesia
         $bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];

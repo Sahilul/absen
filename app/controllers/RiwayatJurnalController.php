@@ -943,25 +943,17 @@ class RiwayatJurnalController extends Controller
 
     /**
      * Helper: Ambil kop rapor berdasarkan kelas (via wali_kelas)
+     * v1.36.9: pakai PengaturanRapor_model::getPengaturanByKelas agar data lembaga
+     *          (kop + lembaga_id) ikut ter-merge sehingga view bisa menemukan file kop.
      */
     private function getKopFromKelas($id_kelas, $id_tp)
     {
         if (empty($id_kelas) || empty($id_tp)) {
             return null;
         }
-        
+
         try {
-            $db = new Database;
-            $db->query("
-                SELECT pr.kop_rapor 
-                FROM pengaturan_rapor pr
-                INNER JOIN wali_kelas wk ON pr.id_guru = wk.id_guru AND pr.id_tp = wk.id_tp
-                WHERE wk.id_kelas = :id_kelas AND wk.id_tp = :id_tp
-                LIMIT 1
-            ");
-            $db->bind(':id_kelas', $id_kelas);
-            $db->bind(':id_tp', $id_tp);
-            return $db->single();
+            return $this->model('PengaturanRapor_model')->getPengaturanByKelas($id_kelas, $id_tp);
         } catch (Exception $e) {
             error_log("Error getKopFromKelas: " . $e->getMessage());
             return null;
