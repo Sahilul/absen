@@ -1123,7 +1123,7 @@ function simpanPengaturanRapor()
 
 function handleRaporImageUpload($file, $folder, $prefix, $maxSize)
     {
-        $baseDir = dirname(dirname(__DIR__));
+        $baseDir = APPROOT; // v1.36.8: root project (bukan app/) agar gambar tersimpan di public/img/
         $uploadDir = $baseDir . '/public/img/' . $folder . '/';
 
         // Buat folder jika belum ada
@@ -1154,7 +1154,7 @@ function handleRaporImageUpload($file, $folder, $prefix, $maxSize)
 
 function deleteRaporImage($folder, $fileName)
     {
-        $baseDir = dirname(dirname(__DIR__));
+        $baseDir = APPROOT; // v1.36.8: root project (bukan app/)
         $filePath = $baseDir . '/public/img/' . $folder . '/' . $fileName;
         if (file_exists($filePath)) {
             unlink($filePath);
@@ -1306,7 +1306,7 @@ function deleteRaporImage($folder, $fileName)
 
     function handleLembagaImageUpload($file, $prefix, $maxSize)
     {
-        $baseDir = dirname(dirname(__DIR__));
+        $baseDir = APPROOT; // v1.36.8: root project (bukan app/) agar kop tersimpan di public/img/lembaga/
         $uploadDir = $baseDir . '/public/img/lembaga/';
 
         if (!is_dir($uploadDir)) {
@@ -1336,7 +1336,7 @@ function deleteRaporImage($folder, $fileName)
 
     function deleteLembagaImage($fileName)
     {
-        $baseDir = dirname(dirname(__DIR__));
+        $baseDir = APPROOT; // v1.36.8: root project (bukan app/)
         $filePath = $baseDir . '/public/img/lembaga/' . $fileName;
         if (file_exists($filePath)) {
             unlink($filePath);
@@ -1370,7 +1370,7 @@ function simpanPengaturanAplikasi()
         $logoFileName = $pengaturanLama['logo'] ?? '';
 
         // Buat folder jika belum ada - gunakan absolute path
-        $baseDir = dirname(dirname(__DIR__)); // Path ke root folder absen
+        $baseDir = APPROOT; // v1.36.8: root project (bukan app/) // Path ke root folder absen
         $uploadDir = $baseDir . '/public/img/app/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
@@ -1582,7 +1582,7 @@ Waktu: ' . date('d/m/Y H:i:s');
 function handleAppImageUpload($file, $prefix, $maxSize)
     {
         // Gunakan absolute path
-        $baseDir = dirname(dirname(__DIR__)); // Path ke root folder absen
+        $baseDir = APPROOT; // v1.36.8: root project (bukan app/) // Path ke root folder absen
         $uploadDir = $baseDir . '/public/img/app/';
 
         // DEBUG: Log untuk troubleshooting
@@ -1636,7 +1636,7 @@ function handleAppImageUpload($file, $prefix, $maxSize)
 
 function deleteAppImage($fileName)
     {
-        $baseDir = dirname(dirname(__DIR__));
+        $baseDir = APPROOT; // v1.36.8: root project (bukan app/)
         $filePath = $baseDir . '/public/img/app/' . $fileName;
         if (file_exists($filePath)) {
             unlink($filePath);

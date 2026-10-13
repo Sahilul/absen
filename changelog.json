@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "version": "1.36.8",
+      "date": "2026-10-13",
+      "type": "fix",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Perbaiki upload kop/logo/ttd di Pengaturan Lembaga yang tersimpan ke folder salah (app/public/img/...) sehingga gambar tidak muncul. Path kini memakai konstanta APPROOT (root project) yang benar untuk semua handler upload/hapus gambar (AdminPengaturanTrait). File kop MTs yang sempat nyasar ke folder salah sudah dipindahkan ke public/img/lembaga/ sehingga kop langsung tampil."
+        }
+      ]
+    },
+    {
       "version": "1.36.7",
       "date": "2026-10-13",
       "type": "feature",
