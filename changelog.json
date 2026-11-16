@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "version": "1.37.1",
+      "date": "2026-11-16",
+      "type": "improvement",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Kartu Meja diperkecil: 6 kartu per A4 (sebelumnya 4), jarak/spasi kosong dihapus, NISN & Kelas dibuat satu baris. Ukuran huruf tetap."
+        }
+      ]
+    },
+    {
       "version": "1.37.0",
       "date": "2026-11-16",
       "type": "feature",

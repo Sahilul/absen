@@ -1,6 +1,6 @@
 <?php
 // File: app/views/admin/kartu_ujian/cetak_meja.php
-// v1.37.0 - Cetak Kartu Meja: 4 kartu per A4 (2 x 2), huruf besar.
+// v1.37.1 - Cetak Kartu Meja: 6 kartu per A4 (2 x 3), huruf besar, ringkas.
 // Isi: kop lembaga, nama ujian, nama, NISN, kelas.
 $ujian = $data['ujian'];
 $peserta = $data['peserta'];
@@ -20,15 +20,15 @@ $e = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
         .toolbar h1 { font-size: 15px; flex: 1; }
         .toolbar button, .toolbar a { background: #16a34a; color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font-size: 13px; cursor: pointer; text-decoration: none; }
         .toolbar a { background: #64748b; }
-        .page { width: 194mm; margin: 10px auto; background: #fff; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 138mm; gap: 3mm; page-break-after: always; break-after: page; }
+        .page { width: 194mm; margin: 10px auto; background: #fff; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 90mm; gap: 3mm; page-break-after: always; break-after: page; }
         .page:last-child { page-break-after: auto; break-after: auto; }
-        .meja { border: 2px solid #000; padding: 4mm; display: flex; flex-direction: column; overflow: hidden; }
+        .meja { border: 2px solid #000; padding: 3mm; display: flex; flex-direction: column; overflow: hidden; }
         .kop img { width: 100%; height: auto; display: block; }
         .kop-teks { text-align: center; font-weight: bold; font-size: 14pt; border-bottom: 2px solid #000; padding-bottom: 2mm; }
-        .judul { text-align: center; margin: 4mm 0; }
+        .judul { text-align: center; margin: 2mm 0; }
         .judul .t1 { font-size: 13pt; font-weight: bold; letter-spacing: 1px; }
         .judul .t2 { font-size: 11pt; font-weight: bold; text-transform: uppercase; margin-top: 1mm; }
-        .isi { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; gap: 4mm; }
+        .isi { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; gap: 1.5mm; }
         .nama { font-size: 20pt; font-weight: bold; line-height: 1.2; text-transform: uppercase; word-break: break-word; }
         .lbl { font-size: 10pt; color: #333; }
         .val { font-size: 16pt; font-weight: bold; }
@@ -51,7 +51,7 @@ $e = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
         <div class="kosong">Tidak ada siswa untuk filter ini.</div>
     <?php endif; ?>
 
-    <?php foreach (array_chunk($peserta, 4) as $halaman): ?>
+    <?php foreach (array_chunk($peserta, 6) as $halaman): ?>
         <div class="page">
             <?php foreach ($halaman as $p): $l = $p['lembaga']; ?>
                 <div class="meja">
@@ -67,18 +67,9 @@ $e = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
                         <div class="t2"><?= $e($ujian['nama_ujian']); ?></div>
                     </div>
                     <div class="isi">
-                        <div>
-                            <div class="lbl">Nama</div>
-                            <div class="nama"><?= $e($p['nama_siswa']); ?></div>
-                        </div>
-                        <div>
-                            <div class="lbl">NISN</div>
-                            <div class="val"><?= $e($p['nisn'] ?: '-'); ?></div>
-                        </div>
-                        <div>
-                            <div class="lbl">Kelas</div>
-                            <div class="val"><?= $e($p['nama_kelas']); ?></div>
-                        </div>
+                        <div class="nama"><?= $e($p['nama_siswa']); ?></div>
+                        <div><span class="lbl">NISN:</span> <span class="val"><?= $e($p['nisn'] ?: '-'); ?></span></div>
+                        <div><span class="lbl">Kelas:</span> <span class="val"><?= $e($p['nama_kelas']); ?></span></div>
                     </div>
                 </div>
             <?php endforeach; ?>
