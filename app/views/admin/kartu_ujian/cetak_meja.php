@@ -1,6 +1,7 @@
 <?php
 // File: app/views/admin/kartu_ujian/cetak_meja.php
-// v1.37.1 - Cetak Kartu Meja: 6 kartu per A4 (2 x 3), huruf besar, ringkas.
+// v1.37.2 - Cetak Kartu Meja: kartu mengalir bebas (tanpa batas per lembar),
+// jumlah per lembar mengikuti pengaturan printer (skala/ukuran kertas).
 // Isi: kop lembaga, nama ujian, nama, NISN, kelas.
 $ujian = $data['ujian'];
 $peserta = $data['peserta'];
@@ -20,9 +21,8 @@ $e = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
         .toolbar h1 { font-size: 15px; flex: 1; }
         .toolbar button, .toolbar a { background: #16a34a; color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font-size: 13px; cursor: pointer; text-decoration: none; }
         .toolbar a { background: #64748b; }
-        .page { width: 194mm; margin: 10px auto; background: #fff; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 90mm; gap: 3mm; page-break-after: always; break-after: page; }
-        .page:last-child { page-break-after: auto; break-after: auto; }
-        .meja { border: 2px solid #000; padding: 3mm; display: flex; flex-direction: column; overflow: hidden; }
+        .page { max-width: 194mm; margin: 10px auto; background: #fff; display: flex; flex-wrap: wrap; gap: 3mm; }
+        .meja { width: 95.5mm; height: 90mm; border: 2px solid #000; padding: 3mm; display: flex; flex-direction: column; overflow: hidden; page-break-inside: avoid; break-inside: avoid; }
         .kop img { width: 100%; height: auto; display: block; }
         .kop-teks { text-align: center; font-weight: bold; font-size: 14pt; border-bottom: 2px solid #000; padding-bottom: 2mm; }
         .judul { text-align: center; margin: 2mm 0; }
@@ -36,7 +36,7 @@ $e = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
         @media print {
             body { background: #fff; }
             .toolbar { display: none; }
-            .page { margin: 0; }
+            .page { margin: 0; max-width: none; }
         }
     </style>
 </head>
@@ -51,9 +51,9 @@ $e = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
         <div class="kosong">Tidak ada siswa untuk filter ini.</div>
     <?php endif; ?>
 
-    <?php foreach (array_chunk($peserta, 6) as $halaman): ?>
+    <?php if (!empty($peserta)): ?>
         <div class="page">
-            <?php foreach ($halaman as $p): $l = $p['lembaga']; ?>
+            <?php foreach ($peserta as $p): $l = $p['lembaga']; ?>
                 <div class="meja">
                     <div class="kop">
                         <?php if (!empty($l['kop_url'])): ?>
@@ -74,6 +74,6 @@ $e = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
                 </div>
             <?php endforeach; ?>
         </div>
-    <?php endforeach; ?>
+    <?php endif; ?>
 </body>
 </html>

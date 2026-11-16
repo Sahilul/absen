@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "version": "1.37.2",
+      "date": "2026-11-16",
+      "type": "improvement",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Kartu Meja tidak lagi dibatasi jumlah per lembar: kartu mengalir bebas sehingga jumlah per halaman bisa diatur lewat skala/ukuran kertas di pengaturan printer. Kartu tidak terpotong antar halaman."
+        }
+      ]
+    },
+    {
       "version": "1.37.1",
       "date": "2026-11-16",
       "type": "improvement",
