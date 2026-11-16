@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "version": "1.37.0",
+      "date": "2026-11-16",
+      "type": "feature",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Fitur baru Kartu Ujian (Admin → Akademik → Kartu Ujian): buat nama ujian, lalu cetak Kartu Peserta Ujian (8 per A4) dan Kartu Meja (4 per A4) per semua/lembaga/kelas. Kartu memakai kop masing-masing lembaga, berisi nama ujian, nama, NISN, kelas, tanda tangan 'Mengetahui, Kepala' + nama kepala, dan QR verifikasi kecil yang mengarah ke halaman verifikasi publik."
+        }
+      ]
+    },
+    {
       "version": "1.36.9",
       "date": "2026-10-13",
       "type": "fix",

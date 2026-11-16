@@ -241,7 +241,7 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
             <!-- ============================================== -->
             <!-- DROPDOWN: AKADEMIK -->
             <!-- ============================================== -->
-            <?php $akademikActive = isGroupActive($judul, ['Penugasan', 'Anggota Kelas', 'Monitoring Nilai', 'Review RPP', 'Pengaturan RPP', 'Pengaturan Rapor', 'Soal STS']); ?>
+            <?php $akademikActive = isGroupActive($judul, ['Penugasan', 'Anggota Kelas', 'Monitoring Nilai', 'Review RPP', 'Pengaturan RPP', 'Pengaturan Rapor', 'Soal STS', 'Kartu Ujian']); ?>
             <li class="pt-2" x-data="{ open: <?= $akademikActive ? 'true' : 'false' ?> }">
                 <button @click="open = !open"
                     class="w-full group flex items-center p-3 text-sm font-semibold rounded-xl transition-all duration-200 <?= $akademikActive ? 'bg-primary-50 text-primary-700' : 'text-secondary-600 hover:bg-white/50' ?>">
@@ -302,6 +302,13 @@ $logoExists = !empty($logoApp) && file_exists($logoPath);
                             class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Soal STS') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-violet-50 hover:text-violet-700' ?>">
                             <i data-lucide="file-question" class="w-4 h-4 mr-2"></i>
                             Soal STS
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASEURL; ?>/kartuUjian"
+                            class="flex items-center p-2.5 text-sm font-medium rounded-lg transition-all duration-200 <?= isActive($judul, 'Kartu Ujian') ? 'bg-primary-100 text-primary-700' : 'text-secondary-600 hover:bg-indigo-50 hover:text-indigo-700' ?>">
+                            <i data-lucide="id-card" class="w-4 h-4 mr-2"></i>
+                            Kartu Ujian
                         </a>
                     </li>
                 </ul>
